@@ -23,7 +23,6 @@ export interface LoginAttempt {
 export class LoginThrottleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Throws 429 while the IP or the email is locked. */
   async begin(email: string, ip: string, now = new Date()): Promise<LoginAttempt> {
     // IP first: a locked IP must not keep raising the counter of someone's email.
     const ipAttempts = await this.count(ipKey(ip), IP_MAX_ATTEMPTS, now);
@@ -31,7 +30,6 @@ export class LoginThrottleService {
     return { email, ip, emailAttempts, ipAttempts };
   }
 
-  /** Locks what has reached its limit and returns attempts left before the lock. */
   async fail(attempt: LoginAttempt, now = new Date()): Promise<number> {
     const emailLeft = EMAIL_MAX_ATTEMPTS - attempt.emailAttempts;
     const ipLeft = IP_MAX_ATTEMPTS - attempt.ipAttempts;
