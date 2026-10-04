@@ -126,17 +126,11 @@ export const residenceEn = {
     emailPlaceholder: "you@example.com",
     comment: "Comment, optional",
     commentPlaceholder: "Questions or a convenient time to call",
-    consentBefore: "I agree to the processing of my personal data for this request, as described in the ",
-    privacy: "Privacy policy",
-    consentAfter: ".",
     submit: "Send request",
     replyNote: "A sales manager replies within one working day.",
     close: "Close the enquiry",
     errors: {
       comment: "Keep the comment under 2000 characters",
-      consent: "Please agree to the processing of your data",
     },
-    checked:
-      "Thank you, the details are correct. Online requests open very soon; until then, please call +1 (555) 010-2040 and name residence {number}.",
   },
 };

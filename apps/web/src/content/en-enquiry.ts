@@ -1,0 +1,30 @@
+/** Sending an enquiry from the home and residence forms: progress, errors and the success screen. */
+export const enquirySendEn = {
+  enquirySend: {
+    consentBefore: "I agree to the processing of my personal data for this request, as described in the ",
+    privacy: "Privacy policy",
+    consentAfter: ".",
+    consentError: "Please agree to the processing of your data",
+    sending: "Sending",
+    rateLimited: "Too many requests from this device. Please try again later.",
+    failedBefore: "Something went wrong while sending your request. Please try again or call ",
+    failedAfter: ".",
+    success: {
+      overline: "Request sent",
+      title: "Thank you",
+      leadResidence: "Your request for residence {number} is with our sales team.",
+      lead: "Your request is with our sales team.",
+      nextTitle: "What happens next",
+      stepCall: "A sales manager calls you within one working day to answer your questions and arrange a viewing.",
+      stepReserve: "If you decide to go ahead, the manager reserves residence {number} for you for 7 days.",
+      stepReserved: "Residence {number} is reserved by another buyer. If that reservation ends without a deal, the manager calls you first.",
+      stepChoose: "The manager helps you choose a residence and can reserve it for you for 7 days.",
+      available: "Stays available until you decide",
+      reserved: "Held for another buyer for now",
+      backToResidences: "Back to residences",
+      chooseResidence: "Choose your residence",
+      questionsBefore: "Questions right now? Call ",
+      questionsAfter: ".",
+    },
+  },
+};

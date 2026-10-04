@@ -143,3 +143,14 @@
     line-height: 6.25rem;
   }
 }
+
+@utility text-step-number {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1.5rem;
+  line-height: 1.875rem;
+
+  @media (width >= 64rem) {
+    font-size: 1.125rem;
+  }
+}
