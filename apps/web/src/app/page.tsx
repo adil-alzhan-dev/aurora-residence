@@ -3,6 +3,7 @@ import { Advantages } from "@/components/home/advantages";
 import { Gallery } from "@/components/home/gallery/gallery";
 import { Hero } from "@/components/home/hero";
 import { Location } from "@/components/home/location/location";
+import { ConstructionProgress } from "@/components/home/progress/construction-progress";
 import { ResidencePicker } from "@/components/home/residences/residence-picker";
 import { Stats } from "@/components/home/stats";
 import { getDictionary } from "@/content";
@@ -20,6 +21,7 @@ export default async function HomePage() {
       <ResidencePicker floors={floors} t={{ residencePicker: t.residencePicker, status: t.status }} />
       <Gallery t={{ gallery: t.gallery }} />
       <Location t={{ location: t.location }} />
+      <ConstructionProgress t={{ progress: t.progress }} />
     </>
   );
 }
