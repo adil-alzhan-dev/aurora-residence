@@ -73,7 +73,7 @@ export class ReservationsService {
     }
     const enquiry =
       request.to === 'RESERVED' && request.enquiryId
-        ? await findOpenEnquiry(tx, request.enquiryId)
+        ? await findEnquiryForReservation(tx, request.enquiryId, residence)
         : null;
     await applyStatusChange(tx, {
       residence,
@@ -83,6 +83,7 @@ export class ReservationsService {
       note: request.note ?? defaultStatusNote(residence.status, request.to, enquiry?.name),
       now: new Date(),
     });
+    if (enquiry?.status === 'NEW') await startEnquiry(tx, enquiry.id, request.actorId);
   }
 
   /** Returns expired reservations to Available on behalf of "System". */
@@ -166,14 +167,39 @@ async function loadResidence(tx: Tx, number: string) {
   return residence;
 }
 
-async function findOpenEnquiry(tx: Tx, id: number) {
+async function findEnquiryForReservation(
+  tx: Tx,
+  id: number,
+  residence: { id: number; number: string },
+) {
   const enquiry = await tx.enquiry.findUnique({
     where: { id },
-    select: { id: true, name: true, status: true },
+    select: { id: true, name: true, status: true, residence: { select: { id: true, number: true } } },
   });
   if (!enquiry) throw new NotFoundException(`Enquiry ${id} not found`);
+  if (enquiry.residence.id !== residence.id) {
+    throw new BadRequestException(
+      `Enquiry ${id} is about residence ${enquiry.residence.number}, not ${residence.number}. ` +
+        `Choose an enquiry for ${residence.number}.`,
+    );
+  }
   if (enquiry.status === 'CLOSED') {
     throw new BadRequestException(`Enquiry ${id} is closed, reopen it before reserving`);
   }
   return enquiry;
+}
+
+/** A reservation means the manager has taken the enquiry on. */
+async function startEnquiry(tx: Tx, id: number, actorId: number): Promise<void> {
+  await tx.enquiry.update({ where: { id }, data: { status: 'IN_PROGRESS' } });
+  await tx.activityLog.create({
+    data: {
+      type: 'ENQUIRY_STATUS_CHANGED',
+      enquiryId: id,
+      actorId,
+      fromValue: 'NEW',
+      toValue: 'IN_PROGRESS',
+      note: 'Residence reserved for this enquiry',
+    },
+  });
 }

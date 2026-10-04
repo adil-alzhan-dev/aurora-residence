@@ -54,6 +54,30 @@ describe('Reservations (e2e)', () => {
     await http(app).post('/api/admin/residences/7.03/reserve').set(admin()).send({ enquiryId: id }).expect(409);
   });
 
+  it('refuses a reservation with an enquiry about another residence', async () => {
+    const id = await enquiryId('Elena Marsh');
+    const response = await http(app)
+      .post('/api/admin/residences/6.01/reserve')
+      .set(admin())
+      .send({ enquiryId: id })
+      .expect(400);
+    expect((response.body as { message: string }).message).toContain('is about residence 7.03, not 6.01');
+    expect((await card('6.01')).status).toBe('AVAILABLE');
+    expect(await activeReservations('6.01')).toBe(0);
+  });
+
+  it('moves a New enquiry to In progress when its residence is reserved', async () => {
+    const id = await enquiryId('Jonas Weber');
+    await http(app).post('/api/admin/residences/9.03/reserve').set(admin()).send({ enquiryId: id }).expect(201);
+
+    const enquiry = await http(app).get(`/api/admin/enquiries/${id}`).set(admin()).expect(200);
+    const body = enquiry.body as { status: string; activity: { type: string; from: string; to: string; author: string }[] };
+    expect(body.status).toBe('IN_PROGRESS');
+    expect(body.activity).toContainEqual(
+      expect.objectContaining({ type: 'ENQUIRY_STATUS_CHANGED', from: 'NEW', to: 'IN_PROGRESS', author: 'Maya Collins' }),
+    );
+  });
+
   it('allows only one of two parallel reservations', async () => {
     const id = await enquiryId('Amira Haddad');
     const results = await Promise.all(
