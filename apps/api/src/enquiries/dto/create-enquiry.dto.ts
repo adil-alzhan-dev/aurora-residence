@@ -18,6 +18,9 @@ export const ENQUIRY_SOURCES = [
   'Contacts form',
 ] as const;
 
+// "+", then 7-15 digits (E.164 length) with optional spaces, brackets and dashes.
+const PHONE_PATTERN = /^\+(?=(?:[\s()-]*\d){7,15}[\s()-]*$)[\d\s()-]+$/;
+
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class CreateEnquiryDto {
@@ -28,7 +31,8 @@ export class CreateEnquiryDto {
   name!: string;
 
   @Transform(trim)
-  @Matches(/^\+?[\d\s()-]{7,25}$/, { message: 'Enter a phone number with country code' })
+  @MaxLength(25)
+  @Matches(PHONE_PATTERN, { message: 'Enter a phone number with country code, for example +1 555 010 2040' })
   phone!: string;
 
   @Transform(trim)

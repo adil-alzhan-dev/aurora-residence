@@ -109,6 +109,9 @@ describe('Public API (e2e)', () => {
       const sold = await http(app).post('/api/enquiries').send({ ...enquiry, residence: '7.02' }).expect(400);
       expect((sold.body as { message: string }).message).toMatch(/already sold/);
       await http(app).post('/api/enquiries').send({ ...enquiry, email: 'nope' }).expect(400);
+      for (const phone of ['-------', '+ () - -', '555 010 2040', '+1 23', '+1234567890123456']) {
+        await http(app).post('/api/enquiries').set('X-Forwarded-For', '10.9.0.1').send({ ...enquiry, phone }).expect(400);
+      }
       await http(app).post('/api/enquiries').send({ ...enquiry, status: 'RESERVED' }).expect(400);
     });
   });
