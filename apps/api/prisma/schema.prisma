@@ -91,6 +91,7 @@ model Reservation {
   createdBy AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([residenceId, releasedAt])
+  @@index([releasedAt, endsAt])
 }
 
 model Enquiry {
@@ -145,4 +146,35 @@ model AdminUser {
 
   reservations Reservation[]
   activity     ActivityLog[]
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id          String    @id @default(uuid())
+  adminUserId Int
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+}
+
+/// Failed sign-in attempts per email and IP; a row is removed after a successful sign-in.
+model LoginThrottle {
+  email        String
+  ip           String
+  failedCount  Int       @default(0)
+  lastFailedAt DateTime
+  lockedUntil  DateTime?
+
+  @@id([email, ip])
+}
+
+/// Fixed demo exchange rates: how many units of the currency one US dollar buys.
+model CurrencyRate {
+  code      Currency @id
+  perUsd    Decimal  @db.Decimal(12, 4)
+  updatedAt DateTime @updatedAt
 }
