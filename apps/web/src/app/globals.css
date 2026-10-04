@@ -70,3 +70,10 @@
   }
 }
 
+/* Room under the footer for the fixed request bar of the residence page on phones. */
+@media (width < 64rem) {
+  body:has([data-sticky-request]) {
+    padding-bottom: 6rem;
+    background-color: var(--dark);
+  }
+}
