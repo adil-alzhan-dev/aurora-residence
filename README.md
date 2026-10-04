@@ -45,6 +45,19 @@ Open http://localhost. API health check: http://localhost/api/health.
 On start the API container applies migrations and seeds the demo data if the
 database is empty.
 
+## API
+
+All routes are under `/api`. Public: `GET /residences`, `GET /residences/:number`,
+`GET /floors`, `GET /floors/:n`, `GET /rates`, `POST /enquiries`. Sign-in:
+`POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me`.
+Admin (Bearer access token): `/admin/dashboard`, `/admin/residences`,
+`/admin/residences/:number/reserve|release`, `/admin/enquiries`.
+
+The access token lives 15 minutes and is sent as `Authorization: Bearer`; the
+refresh token is an httpOnly cookie limited to `/api/auth`. After 5 wrong
+passwords sign-in pauses for 15 minutes for that email and IP. Reservations
+last 7 days and are released automatically by a job that runs every minute.
+
 ## Demo login
 
 - Email: `maya.collins@aurora-residence.com` (the `ADMIN_EMAIL` value)
@@ -71,6 +84,7 @@ Requirements: Node.js 20.19+ and pnpm 10 (`corepack enable`).
 pnpm install
 
 # PostgreSQL from Compose, published on localhost:5432
+# (set POSTGRES_DEV_PORT in .env if that port is taken)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
 
 # API env: same values as .env, but DATABASE_URL points to localhost
@@ -82,6 +96,10 @@ pnpm --filter api db:seed
 pnpm --filter api start:dev    # http://localhost:4000/api/health
 pnpm --filter web dev          # http://localhost:3000
 ```
+
+`pnpm test` runs unit tests and API end-to-end tests against a separate
+database: set `TEST_DATABASE_URL` in `apps/api/.env` (name ending in `_test`,
+created and migrated automatically) and keep the dev PostgreSQL running.
 
 Checks across the workspace:
 

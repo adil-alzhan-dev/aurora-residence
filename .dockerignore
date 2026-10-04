@@ -5,7 +5,8 @@
 **/*.tsbuildinfo
 apps/api/src/generated
 .git
-.env
-.env.*
+**/.env
+**/.env.*
 README.md
 docker-compose*.yml
+!.env.example

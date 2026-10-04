@@ -1,5 +1,6 @@
-# Local development: publishes PostgreSQL on localhost for `pnpm dev` outside Docker.
+# Local development: publishes PostgreSQL on localhost for `pnpm dev` and `pnpm test` outside Docker.
+# Set POSTGRES_DEV_PORT in .env if 5432 is taken by another project.
 services:
   postgres:
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_DEV_PORT:-5432}:5432"
