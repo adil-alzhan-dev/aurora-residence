@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import type { ResidenceStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateEnquiryDto, ENQUIRY_SOURCES } from './dto/create-enquiry.dto.js';
 
@@ -13,7 +14,6 @@ export class EnquiriesService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Never touches the residence status: reservations are made by a manager. */
   async create(dto: CreateEnquiryDto): Promise<EnquiryReceipt> {
     const receipt: EnquiryReceipt = { received: true, residence: dto.residence };
     if (dto.website) {
@@ -45,7 +45,7 @@ export class EnquiriesService {
         activity: {
           create: {
             type: 'ENQUIRY_RECEIVED',
-            note: `Enquiry received from the site, residence ${dto.residence} stays Available`,
+            note: `Enquiry received from the site, residence ${dto.residence} is ${statusLabel(residence.status)}, status not changed`,
           },
         },
       },
@@ -53,4 +53,8 @@ export class EnquiriesService {
     });
     return receipt;
   }
+}
+
+function statusLabel(status: ResidenceStatus): string {
+  return status.charAt(0) + status.slice(1).toLowerCase();
 }

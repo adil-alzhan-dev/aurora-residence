@@ -95,6 +95,15 @@ describe('Public API (e2e)', () => {
       expect(residence.reservations).toHaveLength(0);
     });
 
+    it('logs the actual residence status with the enquiry', async () => {
+      await http(app).post('/api/enquiries').send({ ...enquiry, residence: '7.04' }).expect(201);
+      const log = await prisma.activityLog.findFirstOrThrow({
+        where: { type: 'ENQUIRY_RECEIVED', enquiry: { residence: { number: '7.04' } } },
+        orderBy: { id: 'desc' },
+      });
+      expect(log.note).toBe('Enquiry received from the site, residence 7.04 is Reserved, status not changed');
+    });
+
     it('silently drops a submission with the honeypot filled', async () => {
       const before = await prisma.enquiry.count();
       const response = await http(app)
