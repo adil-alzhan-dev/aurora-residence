@@ -1,6 +1,7 @@
+import { FLOOR_COUNT } from "@/lib/building";
+
 export const FACADE_WIDTH = 1536;
 export const FACADE_HEIGHT = 1024;
-export const FLOOR_COUNT = 11;
 
 const GROUND_Y = 716;
 const FLOOR_HEIGHT = 58.5;

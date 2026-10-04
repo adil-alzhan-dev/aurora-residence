@@ -18,6 +18,7 @@
   --status-reserved: #d8a23a;
   --status-sold: #9aa0a6;
   --status-subtle-strength: 16%;
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
@@ -31,6 +32,7 @@
   --disabled-foreground: #5e5b55;
   --destructive: #d0604a;
   --status-subtle-strength: 22%;
+  color-scheme: dark;
 }
 
 :root {
@@ -61,6 +63,7 @@
   --breakpoint-wide: 90rem;
   --container-page: 1280px;
   --radius-base: 2px;
+  --radius-sheet: 16px;
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

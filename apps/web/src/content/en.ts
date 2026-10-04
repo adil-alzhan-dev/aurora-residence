@@ -1,3 +1,5 @@
+import { residencesEn } from "./en-residences";
+
 export const en = {
   meta: {
     title: "Aurora Residence",
@@ -116,6 +118,7 @@ export const en = {
     soldOut: "Sold out",
     fromPrice: "from {price}",
     noData: "Availability is being updated",
+    noMatches: "No matching residences",
     openPlan: "open the plan",
     hintPointer: "Click a floor to open its plan",
     hintTouch: "Tap a floor to select it",
@@ -270,6 +273,7 @@ export const en = {
     reserved: "Reserved",
     sold: "Sold",
   },
+  ...residencesEn,
 };
 
 export type StatItem = { value: number; suffix: string; label: string } | { text: string; label: string };

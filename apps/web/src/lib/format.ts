@@ -9,3 +9,5 @@ export function fillTemplate(template: string, values: Record<string, string | n
 }
 
 export const padNumber = (value: number) => String(value).padStart(2, "0");
+
+export const formatArea = (squareMetres: number) => squareMetres.toFixed(1);

@@ -16,9 +16,15 @@ export function describeFloor(floor: number, summary: FloorSummary | undefined, 
   const title = fillTemplate(t.floor, { floor });
   if (!summary) return { title, availability: t.noData, price: null, soldOut: false, known: false };
   const soldOut = summary.available === 0;
+  const availability =
+    summary.total === 0
+      ? t.noMatches
+      : soldOut
+        ? t.soldOut
+        : fillTemplate(t.availableOf, { available: summary.available, total: summary.total });
   return {
     title,
-    availability: soldOut ? t.soldOut : fillTemplate(t.availableOf, { available: summary.available, total: summary.total }),
+    availability,
     price:
       !soldOut && summary.fromPriceUsd !== null
         ? fillTemplate(t.fromPrice, { price: formatUsd(summary.fromPriceUsd) })
