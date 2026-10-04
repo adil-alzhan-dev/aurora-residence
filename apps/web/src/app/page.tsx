@@ -1,5 +1,6 @@
 import { About } from "@/components/home/about";
 import { Advantages } from "@/components/home/advantages";
+import { Enquiry } from "@/components/home/enquiry/enquiry";
 import { Gallery } from "@/components/home/gallery/gallery";
 import { Hero } from "@/components/home/hero";
 import { Location } from "@/components/home/location/location";
@@ -22,6 +23,7 @@ export default async function HomePage() {
       <Gallery t={{ gallery: t.gallery }} />
       <Location t={{ location: t.location }} />
       <ConstructionProgress t={{ progress: t.progress }} />
+      <Enquiry t={{ enquiry: t.enquiry, contacts: t.contacts }} />
     </>
   );
 }
