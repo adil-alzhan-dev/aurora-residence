@@ -5,6 +5,7 @@ import { sortParam, type ResidenceSort } from "@/lib/residence-sort";
 import type { ResidencesData } from "@/lib/residences-data";
 
 import { FloorGrid } from "./grid/floor-grid";
+import { ListDesktop } from "./list/list-desktop";
 import { NoMatches } from "./no-matches";
 import { ViewComingSoon } from "./view-coming-soon";
 
@@ -31,8 +32,25 @@ export function ResidenceViews({ view, data, filters, sort, keep, t }: Residence
     return <NoMatches resetHref={`${residencesHref}${filtersToSearch(emptyFilters, keep)}`} t={t.residences} />;
   }
 
-  const list = <ViewComingSoon view="list" t={t.residences.comingSoon} />;
-  if (view === "list") return list;
+  const mobileList = <ViewComingSoon view="list" t={t.residences.comingSoon} />;
+  if (view === "list") {
+    return (
+      <>
+        <div className="hidden lg:block">
+          <ListDesktop
+            key={`${filtersToSearch(filters)}${sort}`}
+            residences={data.matching}
+            result={data.result}
+            filters={filters}
+            sort={sort}
+            view={view}
+            t={{ list: t.list, floorPage: t.floorPage, status: t.status }}
+          />
+        </div>
+        <div className="lg:hidden">{mobileList}</div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -46,7 +64,7 @@ export function ResidenceViews({ view, data, filters, sort, keep, t }: Residence
           t={t}
         />
       </div>
-      <div className="lg:hidden">{list}</div>
+      <div className="lg:hidden">{mobileList}</div>
     </>
   );
 }
