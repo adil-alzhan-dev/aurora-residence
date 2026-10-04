@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.next
+**/coverage
+**/*.tsbuildinfo
+apps/api/src/generated
+.git
+.env
+.env.*
+README.md
+docker-compose*.yml

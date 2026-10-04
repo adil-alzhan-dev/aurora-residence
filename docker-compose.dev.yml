@@ -1,0 +1,5 @@
+# Local development: publishes PostgreSQL on localhost for `pnpm dev` outside Docker.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
