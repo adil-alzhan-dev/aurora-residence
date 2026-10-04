@@ -110,7 +110,7 @@ function toListItem(row: ListRow) {
     email: row.email,
     status: row.status,
     source: row.source,
-    residence: row.residence.number,
+    residence: row.residence?.number ?? null,
     createdAt: row.createdAt,
   };
 }
@@ -118,13 +118,13 @@ function toListItem(row: ListRow) {
 function toCard(row: CardRow) {
   const active = row.reservations.find((r) => r.releasedAt === null) ?? null;
   return {
-    ...toListItem({ ...row, residence: { number: row.residence.number } }),
+    ...toListItem(row),
     comment: row.comment,
     locale: row.locale,
     currency: row.currency,
     managerNote: row.managerNote,
     updatedAt: row.updatedAt,
-    residence: { ...row.residence, areaM2: row.residence.areaM2.toNumber() },
+    residence: row.residence ? { ...row.residence, areaM2: row.residence.areaM2.toNumber() } : null,
     reservation: active ? { startsAt: active.startsAt, endsAt: active.endsAt } : null,
     activity: row.activity.map(toActivityEntry),
   };

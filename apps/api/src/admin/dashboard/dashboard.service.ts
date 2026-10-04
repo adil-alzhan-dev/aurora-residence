@@ -11,7 +11,7 @@ export interface Dashboard {
   latestEnquiries: {
     id: number;
     name: string;
-    residence: string;
+    residence: string | null;
     status: EnquiryStatus;
     createdAt: Date;
   }[];
@@ -72,7 +72,7 @@ export class DashboardService {
       latestEnquiries: latest.map((e) => ({
         id: e.id,
         name: e.name,
-        residence: e.residence.number,
+        residence: e.residence?.number ?? null,
         status: e.status,
         createdAt: e.createdAt,
       })),

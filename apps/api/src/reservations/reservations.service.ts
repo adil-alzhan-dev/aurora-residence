@@ -182,6 +182,11 @@ async function findEnquiryForReservation(
     select: { id: true, name: true, status: true, residence: { select: { id: true, number: true } } },
   });
   if (!enquiry) throw new NotFoundException(`Enquiry ${id} not found`);
+  if (!enquiry.residence) {
+    throw new BadRequestException(
+      `Enquiry ${id} has no residence. Link it to ${residence.number} before reserving.`,
+    );
+  }
   if (enquiry.residence.id !== residence.id) {
     throw new BadRequestException(
       `Enquiry ${id} is about residence ${enquiry.residence.number}, not ${residence.number}. ` +

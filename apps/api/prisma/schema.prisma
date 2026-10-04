@@ -100,7 +100,7 @@ model Enquiry {
   phone       String
   email       String
   comment     String
-  residenceId Int
+  residenceId Int?
   status      EnquiryStatus @default(NEW)
   locale      Locale        @default(EN)
   currency    Currency      @default(USD)
@@ -109,7 +109,7 @@ model Enquiry {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  residence    Residence     @relation(fields: [residenceId], references: [id], onDelete: Restrict)
+  residence    Residence?    @relation(fields: [residenceId], references: [id], onDelete: Restrict)
   reservations Reservation[]
   activity     ActivityLog[]
 

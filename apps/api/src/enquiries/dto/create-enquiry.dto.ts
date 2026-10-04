@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  Equals,
   IsEmail,
   IsEnum,
   IsIn,
@@ -12,11 +13,7 @@ import {
 import { RESIDENCE_NUMBER_PATTERN } from '../../common/residence-number.param.js';
 import { Currency, Locale } from '../../generated/prisma/enums.js';
 
-export const ENQUIRY_SOURCES = [
-  'Residence page, Send request',
-  'Floor plan, Enquire',
-  'Contacts form',
-] as const;
+export const ENQUIRY_SOURCES = ['Contacts form', 'Residence page'] as const;
 
 // "+", then 7-15 digits (E.164 length) with optional spaces, brackets and dashes.
 const PHONE_PATTERN = /^\+(?=(?:[\s()-]*\d){7,15}[\s()-]*$)[\d\s()-]+$/;
@@ -46,8 +43,9 @@ export class CreateEnquiryDto {
   @MaxLength(2000)
   comment?: string;
 
+  @IsOptional()
   @Matches(RESIDENCE_NUMBER_PATTERN, { message: 'Residence number must look like 7.03' })
-  residence!: string;
+  residence?: string;
 
   @IsOptional()
   @IsEnum(Locale)
@@ -57,9 +55,11 @@ export class CreateEnquiryDto {
   @IsEnum(Currency)
   currency?: Currency;
 
-  @IsOptional()
-  @IsIn(ENQUIRY_SOURCES)
-  source?: (typeof ENQUIRY_SOURCES)[number];
+  @IsIn(ENQUIRY_SOURCES, { message: `source must be one of: ${ENQUIRY_SOURCES.join(', ')}` })
+  source!: (typeof ENQUIRY_SOURCES)[number];
+
+  @Equals(true, { message: 'Please confirm you agree to be contacted' })
+  consent!: true;
 
   /** Honeypot: hidden from people, filled in by bots. */
   @IsOptional()

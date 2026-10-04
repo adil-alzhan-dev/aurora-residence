@@ -79,6 +79,8 @@ describe('Public API (e2e)', () => {
       email: 'test.buyer@example.com',
       comment: 'Interested in a viewing',
       residence: '6.01',
+      source: 'Residence page',
+      consent: true,
     };
 
     it('saves the enquiry and leaves the residence Available without a reservation', async () => {
