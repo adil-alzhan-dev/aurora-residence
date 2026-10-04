@@ -43,7 +43,7 @@ export function Advantages({ t }: AdvantagesProps) {
                 <span aria-hidden="true" data-reveal="line-x" style={delay(start)} className="h-px bg-border" />
                 <div className="flex gap-4 py-6 lg:flex-col lg:gap-6 lg:pb-0">
                   <span data-reveal="draw" style={delay(start + 200)} className="shrink-0">
-                    <Icon className="text-foreground lg:text-primary" />
+                    <Icon className="text-primary" />
                   </span>
                   <div data-reveal="up" style={delay(start + 700)} className="flex flex-col gap-2 lg:gap-3">
                     <h3 className="text-h3 text-foreground">{item.title}</h3>

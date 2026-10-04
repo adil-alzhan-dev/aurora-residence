@@ -119,7 +119,7 @@ export function Hero({ t }: HeroProps) {
           </div>
           <Button asChild className="w-full lg:hidden">
             <a href={sectionHref("residences")}>
-              {hero.ctaMobile}
+              {hero.cta}
               <ButtonArrow />
             </a>
           </Button>
