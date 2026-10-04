@@ -1,0 +1,14 @@
+{
+  "name": "aurora-residence",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "lint": "pnpm -r --parallel run lint",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "build": "pnpm -r run build"
+  }
+}
