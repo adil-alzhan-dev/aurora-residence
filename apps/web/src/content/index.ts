@@ -8,4 +8,4 @@ export function getDictionary(locale: Locale = "en"): Dictionary {
   return dictionaries[locale];
 }
 
-export type { AdvantageItem, Dictionary, StatItem } from "./en";
+export type { AdvantageItem, Dictionary, GalleryItem, PlaceItem, StatItem } from "./en";

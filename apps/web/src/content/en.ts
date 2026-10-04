@@ -101,6 +101,159 @@ export const en = {
       },
     ] as AdvantageItem[],
   },
+  residencePicker: {
+    overline: "Choose your residence",
+    title: "Find your floor right on the facade",
+    lead: "Hover over the house to see what is free on each floor, then open the plan. Availability updates live, the moment a residence is reserved.",
+    leadTouch:
+      "Tap a floor on the house to see what is free, then open the plan. Availability updates live, the moment a residence is reserved.",
+    viewsLabel: "Ways to choose",
+    views: { facade: "Facade", grid: "Floor grid", list: "List" },
+    facadeAlt: "Aurora Residence at dusk: eleven floors of lit windows above the courtyard garden",
+    floorsLabel: "Floors of the house",
+    floor: "Floor {floor}",
+    availableOf: "{available} of {total} available",
+    soldOut: "Sold out",
+    fromPrice: "from {price}",
+    noData: "Availability is being updated",
+    openPlan: "open the plan",
+    hintPointer: "Click a floor to open its plan",
+    hintTouch: "Tap a floor to select it",
+    legendTitle: "Live availability",
+    cta: "Open the interactive facade",
+    ctaFloor: "Open floor {floor}",
+  },
+  gallery: {
+    overline: "Gallery",
+    title: "Light in every room",
+    lead: "Architectural renders of the residences and the view from the upper floors. Final finishes may vary.",
+    items: [
+      {
+        id: "view",
+        caption: "Sunset over the park, view from the ninth floor",
+        alt: "Sunset over the park and the lake, seen through a floor-to-ceiling window on the ninth floor",
+      },
+      {
+        id: "bedroom",
+        caption: "Main bedroom at first light",
+        alt: "Main bedroom with a travertine wall and a window onto the park at sunrise",
+      },
+      {
+        id: "living",
+        caption: "Living room with a corner window",
+        alt: "Living room with a corner window, a low sofa and a dining table by the glass",
+      },
+    ] as GalleryItem[],
+    carouselLabel: "Gallery images",
+    swipeHint: "Swipe to see more",
+    openImage: "Open image: {caption}",
+    viewerLabel: "Image viewer",
+    close: "Close",
+    previous: "Previous image",
+    next: "Next image",
+  },
+  location: {
+    overline: "Location",
+    title: "Everything within a short walk",
+    lead: "A quiet residential street between the park and the business district. Schools, shops and the metro are minutes away on foot.",
+    places: [
+      { id: "park", name: "Park", mapName: "Park", minutes: 3 },
+      { id: "school", name: "School", mapName: "School", minutes: 6 },
+      { id: "metro", name: "Metro station", mapName: "Metro", minutes: 8 },
+      { id: "mall", name: "Shopping mall", mapName: "Mall", minutes: 12 },
+      { id: "business", name: "Business center", mapName: "Business center", minutes: 15 },
+    ] as PlaceItem[],
+    walk: "{minutes} min walk",
+    mapMinutes: "{minutes} min",
+    mapLabel: "Map of the neighbourhood with walking times from Aurora Residence",
+    home: "Aurora Residence",
+    entrance: "Main entrance",
+    north: "N",
+    scale: "200 m",
+    dragHint: "Drag to move the map",
+  },
+  progress: {
+    overline: "Construction progress",
+    title: "On schedule for Q4 2027",
+    lead: "Updated every month with photos from the site. Last update: October 2026.",
+    currentStage: 2,
+    currentPercent: 60,
+    stages: [
+      { number: "01", period: "Q2 2025", title: "Foundations", text: "Piling, foundation slab and two levels of underground parking." },
+      { number: "02", period: "Q2 2026", title: "Structure", text: "Eleven floors and the roof are topped out. The frame is complete." },
+      {
+        number: "03",
+        period: "Q4 2026 - Q2 2027",
+        title: "Facade and engineering",
+        text: "Travertine cladding, bronze fins, glazing, lifts and building systems.",
+      },
+      {
+        number: "04",
+        period: "Q4 2027",
+        title: "Interiors and handover",
+        text: "Common areas, courtyard landscaping, inspection and key handover.",
+      },
+    ],
+    stageMeta: "Stage {number}  ·  {period}",
+    completed: "Completed",
+    inProgress: "In progress, {percent}%",
+    planned: "Planned",
+  },
+  enquiry: {
+    overline: "Private viewing",
+    title: "Visit the sales gallery",
+    lead: "Leave your details and a sales manager will call you back within one working day to arrange a viewing or send you floor plans and prices.",
+    phoneTitle: "Phone",
+    emailTitle: "Email",
+    emailNote: "Reply within a day",
+    galleryTitle: "Sales gallery",
+    galleryPlace: "At the main entrance",
+    galleryNote: "Viewings by appointment",
+    formTitle: "Request a call back",
+    name: "Name",
+    namePlaceholder: "Your name",
+    phone: "Phone",
+    countryCode: "Country code",
+    codePlaceholder: "Code",
+    phoneNumber: "Phone number",
+    email: "Email",
+    emailPlaceholder: "name@example.com",
+    website: "Website",
+    submit: "Request a call back",
+    consent: "By sending the form you agree to the processing of personal data under our privacy policy.",
+    errors: {
+      name: "Enter your name",
+      code: "Choose a country code",
+      phone: "Enter a phone number with 7 to 15 digits including the code",
+      email: "Enter a valid email address",
+    },
+    notConnected:
+      "Thank you. Online requests open very soon; until then, please call +1 (555) 010-2040 or write to sales@aurora-residence.com.",
+    countries: [
+      ["+1", "United States, Canada"],
+      ["+44", "United Kingdom"],
+      ["+49", "Germany"],
+      ["+33", "France"],
+      ["+34", "Spain"],
+      ["+39", "Italy"],
+      ["+31", "Netherlands"],
+      ["+41", "Switzerland"],
+      ["+48", "Poland"],
+      ["+90", "Turkey"],
+      ["+971", "United Arab Emirates"],
+      ["+972", "Israel"],
+      ["+7", "Kazakhstan, Russia"],
+      ["+998", "Uzbekistan"],
+      ["+996", "Kyrgyzstan"],
+      ["+995", "Georgia"],
+      ["+374", "Armenia"],
+      ["+994", "Azerbaijan"],
+      ["+86", "China"],
+      ["+91", "India"],
+      ["+65", "Singapore"],
+      ["+61", "Australia"],
+    ] as [string, string][],
+  },
   footer: {
     tagline: "Eleven floors of quiet architecture above the park. A Meridian Group residence.",
     residencesTitle: "Residences",
@@ -125,6 +278,15 @@ export type AdvantageItem = {
   id: "park" | "glass" | "courtyard" | "concierge";
   title: string;
   text: string;
+};
+
+export type GalleryItem = { id: "view" | "bedroom" | "living"; caption: string; alt: string };
+
+export type PlaceItem = {
+  id: "park" | "school" | "metro" | "mall" | "business";
+  name: string;
+  mapName: string;
+  minutes: number;
 };
 
 export type Dictionary = typeof en;
