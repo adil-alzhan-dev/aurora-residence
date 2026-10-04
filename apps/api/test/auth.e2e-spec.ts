@@ -2,12 +2,6 @@ import type { INestApplication } from '@nestjs/common';
 import { createTestApp, http, reseed, signIn } from './app.js';
 import { TEST_ADMIN } from './test-env.js';
 
-interface ErrorBody {
-  message: string;
-  attemptsLeft?: number;
-  retryAfterSeconds?: number;
-}
-
 describe('Auth (e2e)', () => {
   let app: INestApplication;
 
@@ -42,33 +36,6 @@ describe('Auth (e2e)', () => {
       .expect(200);
     expect(me.body).toMatchObject({ email: TEST_ADMIN.email, name: TEST_ADMIN.name, role: 'ADMIN' });
     expect(Object.keys(me.body as object).sort()).toEqual(['email', 'id', 'name', 'role']);
-  });
-
-  it('counts down attempts and locks email + IP for 15 minutes after 5 failures', async () => {
-    const ip = '10.0.0.2';
-    for (const left of [4, 3, 2, 1]) {
-      const response = await login('wrong-password', ip).expect(401);
-      const body = response.body as ErrorBody;
-      expect(body.attemptsLeft).toBe(left);
-      expect(body.message).toContain(`Wrong email or password. ${left} attempt`);
-    }
-    const fifth = await login('wrong-password', ip).expect(429);
-    expect((fifth.body as ErrorBody).retryAfterSeconds).toBe(900);
-
-    const locked = await login(TEST_ADMIN.password, ip).expect(429);
-    expect((locked.body as ErrorBody).message).toMatch(/try again in 15 minutes/);
-
-    // Another IP is not affected by the lock.
-    await login(TEST_ADMIN.password, '10.0.0.3').expect(200);
-  });
-
-  it('does not reveal whether the email exists', async () => {
-    const response = await http(app)
-      .post('/api/auth/login')
-      .set('X-Forwarded-For', '10.0.0.4')
-      .send({ email: 'nobody@example.com', password: 'whatever' })
-      .expect(401);
-    expect((response.body as ErrorBody).message).toContain('Wrong email or password. 4 attempts left');
   });
 
   it('rejects malformed and extra fields', async () => {

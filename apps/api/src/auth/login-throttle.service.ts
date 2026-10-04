@@ -1,61 +1,97 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
-export const MAX_FAILED_ATTEMPTS = 5;
+export const EMAIL_MAX_ATTEMPTS = 5;
+export const IP_MAX_ATTEMPTS = 20;
 export const LOCK_MINUTES = 15;
 const LOCK_MS = LOCK_MINUTES * 60_000;
 
+export interface LoginAttempt {
+  email: string;
+  ip: string;
+  emailAttempts: number;
+  ipAttempts: number;
+}
+
 /**
- * Sign-in lockout per email + IP, stored in PostgreSQL so it survives API
- * restarts and does not depend on a single process.
+ * Sign-in counters live in PostgreSQL, so a lockout survives restarts and is
+ * shared by every API instance. The attempt is counted before the password is
+ * checked: parallel requests cannot get more password checks than the limit.
+ * The email counter ignores the IP, the IP counter ignores the email.
  */
 @Injectable()
 export class LoginThrottleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async assertNotLocked(email: string, ip: string, now = new Date()): Promise<void> {
-    const row = await this.prisma.loginThrottle.findUnique({
-      where: { email_ip: { email, ip } },
-      select: { lockedUntil: true },
-    });
-    if (row?.lockedUntil && row.lockedUntil > now) {
-      throw lockedException(row.lockedUntil.getTime() - now.getTime());
-    }
+  /** Throws 429 while the IP or the email is locked. */
+  async begin(email: string, ip: string, now = new Date()): Promise<LoginAttempt> {
+    // IP first: a locked IP must not keep raising the counter of someone's email.
+    const ipAttempts = await this.count(ipKey(ip), IP_MAX_ATTEMPTS, now);
+    const emailAttempts = await this.count(emailKey(email), EMAIL_MAX_ATTEMPTS, now);
+    return { email, ip, emailAttempts, ipAttempts };
   }
 
-  /** Records a failed attempt and returns how many attempts are left before the lock. */
-  async registerFailure(email: string, ip: string, now = new Date()): Promise<number> {
-    const key = { email, ip };
-    // Start a new series after a quiet period or after an expired lock.
+  /** Locks what has reached its limit and returns attempts left before the lock. */
+  async fail(attempt: LoginAttempt, now = new Date()): Promise<number> {
+    const emailLeft = EMAIL_MAX_ATTEMPTS - attempt.emailAttempts;
+    const ipLeft = IP_MAX_ATTEMPTS - attempt.ipAttempts;
+    if (emailLeft <= 0) await this.lock(emailKey(attempt.email), now);
+    if (ipLeft <= 0) await this.lock(ipKey(attempt.ip), now);
+    if (emailLeft <= 0 || ipLeft <= 0) throw lockedException(LOCK_MS);
+    return Math.min(emailLeft, ipLeft);
+  }
+
+  /** A successful sign-in clears the email series and does not count against the IP. */
+  async succeed(attempt: LoginAttempt): Promise<void> {
+    await this.prisma.loginThrottle.deleteMany({ where: { key: emailKey(attempt.email) } });
+    await this.prisma.loginThrottle.updateMany({
+      where: { key: ipKey(attempt.ip), attempts: { gt: 0 } },
+      data: { attempts: { decrement: 1 } },
+    });
+  }
+
+  private async count(key: string, limit: number, now: Date): Promise<number> {
+    // A new series starts after 15 quiet minutes or when the lock is over.
     await this.prisma.loginThrottle.updateMany({
       where: {
-        ...key,
-        OR: [{ lastFailedAt: { lt: new Date(now.getTime() - LOCK_MS) } }, { lockedUntil: { lte: now } }],
+        key,
+        OR: [{ lastAttemptAt: { lt: new Date(now.getTime() - LOCK_MS) } }, { lockedUntil: { lte: now } }],
       },
-      data: { failedCount: 0, lockedUntil: null },
+      data: { attempts: 0, lockedUntil: null },
     });
     const row = await this.prisma.loginThrottle.upsert({
-      where: { email_ip: key },
-      create: { ...key, failedCount: 1, lastFailedAt: now },
-      update: { failedCount: { increment: 1 }, lastFailedAt: now },
-      select: { failedCount: true },
+      where: { key },
+      create: { key, attempts: 1, lastAttemptAt: now },
+      update: { attempts: { increment: 1 }, lastAttemptAt: now },
+      select: { attempts: true, lockedUntil: true },
     });
-    const attemptsLeft = MAX_FAILED_ATTEMPTS - row.failedCount;
-    if (attemptsLeft <= 0) {
-      await this.prisma.loginThrottle.update({
-        where: { email_ip: key },
-        data: { lockedUntil: new Date(now.getTime() + LOCK_MS) },
-      });
+    if (row.lockedUntil && row.lockedUntil > now) {
+      throw lockedException(row.lockedUntil.getTime() - now.getTime());
+    }
+    if (row.attempts > limit) {
+      await this.lock(key, now);
       throw lockedException(LOCK_MS);
     }
-    return attemptsLeft;
+    return row.attempts;
   }
 
-  async clear(email: string, ip: string): Promise<void> {
-    await this.prisma.loginThrottle.deleteMany({ where: { email, ip } });
+  private async lock(key: string, now: Date): Promise<void> {
+    await this.prisma.loginThrottle.updateMany({
+      where: { key, OR: [{ lockedUntil: null }, { lockedUntil: { lte: now } }] },
+      data: { lockedUntil: new Date(now.getTime() + LOCK_MS) },
+    });
   }
 }
 
+function emailKey(email: string): string {
+  return `email:${email.trim().toLowerCase()}`;
+}
+
+function ipKey(ip: string): string {
+  return `ip:${ip}`;
+}
+
+// The same answer for an email lock and an IP lock; unknown emails lock the same way.
 function lockedException(remainingMs: number): HttpException {
   const retryAfterSeconds = Math.ceil(remainingMs / 1000);
   const minutes = Math.ceil(retryAfterSeconds / 60);
@@ -63,7 +99,7 @@ function lockedException(remainingMs: number): HttpException {
     {
       statusCode: HttpStatus.TOO_MANY_REQUESTS,
       error: 'Too Many Requests',
-      message: `Too many failed attempts. Sign-in is paused, try again in ${minutes} ${plural(minutes, 'minute')}.`,
+      message: `Too many failed sign-in attempts. Sign-in is paused, try again in ${minutes} ${plural(minutes, 'minute')}.`,
       retryAfterSeconds,
     },
     HttpStatus.TOO_MANY_REQUESTS,

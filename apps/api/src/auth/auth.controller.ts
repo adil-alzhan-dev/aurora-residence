@@ -1,7 +1,5 @@
-import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
 import type { CookieOptions, Request, Response } from 'express';
-import { LOGIN_RATE_LIMIT } from '../common/throttle.js';
 import { AdminAccess } from './admin-access.decorator.js';
 import { AuthService } from './auth.service.js';
 import type { AuthenticatedAdmin, IssuedSession } from './auth.types.js';
@@ -27,8 +25,6 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @UseGuards(ThrottlerGuard)
-  @Throttle(LOGIN_RATE_LIMIT)
   async login(
     @Body() dto: LoginDto,
     @Req() request: Request,

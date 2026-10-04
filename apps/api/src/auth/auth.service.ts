@@ -18,14 +18,14 @@ export class AuthService {
   ) {}
 
   async login(dto: LoginDto, ip: string): Promise<IssuedSession> {
-    await this.throttle.assertNotLocked(dto.email, ip);
+    const attempt = await this.throttle.begin(dto.email, ip);
 
     const admin = await this.prisma.adminUser.findUnique({ where: { email: dto.email } });
     const passwordHash = admin?.passwordHash ?? (await this.timingGuardHash);
     const valid = await argon2.verify(passwordHash, dto.password);
 
     if (!admin || !valid) {
-      const attemptsLeft = await this.throttle.registerFailure(dto.email, ip);
+      const attemptsLeft = await this.throttle.fail(attempt);
       throw new UnauthorizedException({
         statusCode: 401,
         error: 'Unauthorized',
@@ -36,7 +36,7 @@ export class AuthService {
       });
     }
 
-    await this.throttle.clear(dto.email, ip);
+    await this.throttle.succeed(attempt);
     return this.sessions.issue({
       id: admin.id,
       email: admin.email,

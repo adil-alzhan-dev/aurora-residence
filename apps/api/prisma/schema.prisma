@@ -161,15 +161,12 @@ model AdminSession {
   @@index([adminUserId])
 }
 
-/// Failed sign-in attempts per email and IP; a row is removed after a successful sign-in.
+/// Sign-in attempt counter; key is "email:<normalized email>" or "ip:<address>".
 model LoginThrottle {
-  email        String
-  ip           String
-  failedCount  Int       @default(0)
-  lastFailedAt DateTime
-  lockedUntil  DateTime?
-
-  @@id([email, ip])
+  key           String    @id
+  attempts      Int       @default(0)
+  lastAttemptAt DateTime
+  lockedUntil   DateTime?
 }
 
 /// Fixed demo exchange rates: how many units of the currency one US dollar buys.
