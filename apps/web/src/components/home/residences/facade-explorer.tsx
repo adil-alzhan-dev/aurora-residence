@@ -1,21 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { useMemo, useRef } from "react";
 
+import { FacadeOverlay } from "@/components/facade/facade-overlay";
+import { FacadeRender } from "@/components/facade/facade-render";
+import { floorCenter, houseRightPercent, toPercentY } from "@/components/facade/facade-geometry";
+import { FloorRuler } from "@/components/facade/floor-ruler";
+import { describeFloor, FloorTooltip } from "@/components/facade/floor-tooltip";
+import { useFloorDemo } from "@/components/facade/use-floor-demo";
+import { useFloorTaps } from "@/components/facade/use-floor-taps";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import { floorHref, residencesHref } from "@/content/navigation";
 import type { FloorSummary } from "@/lib/api/floors";
 import { fillTemplate } from "@/lib/format";
-
-import { defaultTapX, FACADE_WIDTH, floorCenter, houseRightPercent, toPercentY } from "./facade-geometry";
-import { FacadeOverlay } from "./facade-overlay";
-import { FloorRuler } from "./floor-ruler";
-import { describeFloor, FloorTooltip } from "./floor-tooltip";
-import { useFloorDemo } from "./use-floor-demo";
 
 const DEMO_FLOOR = 7;
 
@@ -27,9 +27,8 @@ type FacadeExplorerProps = {
 export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
   const picker = t.residencePicker;
   const stageRef = useRef<HTMLDivElement>(null);
-  const pointerType = useRef<string | null>(null);
   const { active, settled, select } = useFloorDemo(stageRef, DEMO_FLOOR);
-  const [tapX, setTapX] = useState(defaultTapX);
+  const taps = useFloorTaps({ active, settled, select });
 
   const byFloor = useMemo(() => new Map(floors?.map((summary) => [summary.floor, summary])), [floors]);
   const selectedFloor = active ?? DEMO_FLOOR;
@@ -38,29 +37,6 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
   const floorLabel = (floor: number) => {
     const info = describeFloor(floor, byFloor.get(floor), picker);
     return [info.title, info.availability, info.price, picker.openPlan].filter(Boolean).join(", ");
-  };
-
-  const handlePointerDown = (event: PointerEvent<Element>) => {
-    pointerType.current = event.pointerType;
-  };
-
-  // Focus that comes from a tap must not count as the first tap, or the second tap logic navigates at once.
-  const handleFocus = (floor: number) => {
-    if (pointerType.current === null) select(floor);
-  };
-
-  const handleFloorClick = (floor: number, event: MouseEvent<Element>) => {
-    const type = pointerType.current;
-    pointerType.current = null;
-    const isTap = type === "touch" || type === "pen";
-    if (!isTap || (floor === active && settled)) return;
-    event.preventDefault();
-    const svg = event.currentTarget.closest("svg");
-    if (svg) {
-      const box = svg.getBoundingClientRect();
-      setTapX(((event.clientX - box.left) / box.width) * FACADE_WIDTH);
-    }
-    select(floor);
   };
 
   const tooltip = (className?: string) => (
@@ -77,23 +53,21 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
           data-reveal="zoom"
           className="absolute top-[-10px] left-1/2 aspect-[3/2] w-[181.2%] -translate-x-1/2 lg:inset-0 lg:w-full lg:translate-x-0"
         >
-          <Image
-            src="/images/facade-dusk.jpg"
+          <FacadeRender
+            time="evening"
             alt={picker.facadeAlt}
-            fill
             sizes="(min-width: 1024px) min(100vw, 1440px), 182vw"
-            className="object-cover"
           />
           <div className="absolute inset-0 hidden facade-shade lg:block" />
           <FloorRuler active={active} />
           <FacadeOverlay
             active={active}
-            tapX={tapX}
+            tapX={taps.tapX}
             floorLabel={floorLabel}
             onHover={select}
-            onFocusFloor={handleFocus}
-            onFloorClick={handleFloorClick}
-            onFloorPointerDown={handlePointerDown}
+            onFocusFloor={taps.handleFocus}
+            onFloorClick={taps.handleFloorClick}
+            onFloorPointerDown={taps.handlePointerDown}
           />
           {showTooltip && (
             <div
