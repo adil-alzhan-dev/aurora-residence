@@ -9,9 +9,8 @@ import { parseResidenceSort, sortOptions, type ResidenceSort } from "@/lib/resid
 import { cn } from "@/lib/utils";
 
 import type { PriceRange } from "../filters/filter-fields";
-import { FiltersSheet } from "../filters/filters-sheet";
-import { FilterChips } from "./filter-chips";
 import { residenceNoun } from "./list-text";
+import { MobileFilterRow } from "./mobile-filter-row";
 import { ResidenceCard } from "./residence-card";
 import { ShowMore } from "./show-more";
 import { useShowMore } from "./use-show-more";
@@ -38,10 +37,7 @@ export function ListMobile({ residences, result, filters, priceRange, sort, view
   return (
     <div className="container-page flex flex-col gap-6 pb-12">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <FiltersSheet filters={filters} result={result} priceRange={priceRange} keep={keep} t={t.filters} theme="light" />
-          <FilterChips filters={filters} keep={keep} t={t.list} />
-        </div>
+        <MobileFilterRow filters={filters} result={result} priceRange={priceRange} keep={keep} t={t} />
         <SelectField
           id="list-sort"
           label={t.list.sortBy}

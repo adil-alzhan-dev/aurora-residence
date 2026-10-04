@@ -7,6 +7,7 @@ import type { ResidencesData } from "@/lib/residences-data";
 import { FloorGrid } from "./grid/floor-grid";
 import { ListDesktop } from "./list/list-desktop";
 import { ListMobile } from "./list/list-mobile";
+import { MobileFilterRow } from "./list/mobile-filter-row";
 import { NoMatches } from "./no-matches";
 
 type ResidenceViewsProps = {
@@ -20,7 +21,7 @@ type ResidenceViewsProps = {
 
 /** Floor grid (desktop only) and list: phones get the list for ?view=grid as well. */
 export function ResidenceViews({ view, data, filters, sort, keep, t }: ResidenceViewsProps) {
-  if (!data.residences) {
+  if (!data.residences || !data.result) {
     return (
       <p role="alert" className="container-page py-16 text-body text-muted-foreground lg:py-24">
         {t.residences.viewUnavailable}
@@ -28,58 +29,48 @@ export function ResidenceViews({ view, data, filters, sort, keep, t }: Residence
     );
   }
 
+  const shared = { filters, sort, keep, result: data.result, priceRange: data.priceRange };
+
   if (data.matching.length === 0) {
-    return <NoMatches resetHref={`${residencesHref}${filtersToSearch(emptyFilters, keep)}`} t={t.residences} />;
-  }
-
-  const listKey = `${filtersToSearch(filters)}${sort}`;
-  const listText = { list: t.list, floorPage: t.floorPage, status: t.status };
-  const mobileList = (
-    <ListMobile
-      key={listKey}
-      residences={data.matching}
-      result={data.result}
-      filters={filters}
-      priceRange={data.priceRange}
-      sort={sort}
-      view={view}
-      keep={keep}
-      t={{ ...listText, filters: t.filters }}
-    />
-  );
-
-  if (view === "list") {
     return (
       <>
-        <div className="hidden lg:block">
-          <ListDesktop
-            key={listKey}
-            residences={data.matching}
-            result={data.result}
-            filters={filters}
-            sort={sort}
-            view={view}
-            t={listText}
-          />
+        <div className="container-page lg:hidden">
+          <MobileFilterRow {...shared} t={{ list: t.list, filters: t.filters }} />
         </div>
-        <div className="lg:hidden">{mobileList}</div>
+        <NoMatches resetHref={`${residencesHref}${filtersToSearch(emptyFilters, keep)}`} t={t.residences} />
       </>
     );
   }
 
+  // A new sort or filter starts the list again from its first page.
+  const listKey = `${filtersToSearch(filters)}${sort}`;
+  const listText = { list: t.list, floorPage: t.floorPage, status: t.status };
+
   return (
     <>
       <div className="hidden lg:block">
-        <FloorGrid
-          residences={data.residences}
-          matching={data.matching}
-          filters={filters}
-          priceRange={data.priceRange}
-          listHref={`${residencesHref}${filtersToSearch(filters, { view: "list", sort: sortParam(sort) })}`}
-          t={t}
+        {view === "list" ? (
+          <ListDesktop key={listKey} {...shared} residences={data.matching} view={view} t={listText} />
+        ) : (
+          <FloorGrid
+            residences={data.residences}
+            matching={data.matching}
+            filters={filters}
+            priceRange={data.priceRange}
+            listHref={`${residencesHref}${filtersToSearch(filters, { view: "list", sort: sortParam(sort) })}`}
+            t={t}
+          />
+        )}
+      </div>
+      <div className="lg:hidden">
+        <ListMobile
+          key={listKey}
+          {...shared}
+          residences={data.matching}
+          view={view}
+          t={{ ...listText, filters: t.filters }}
         />
       </div>
-      <div className="lg:hidden">{mobileList}</div>
     </>
   );
 }
