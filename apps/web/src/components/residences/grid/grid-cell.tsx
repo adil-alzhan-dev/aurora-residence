@@ -70,20 +70,27 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
       className={className}
     >
       {content}
-      <span
-        data-theme="dark"
-        aria-hidden="true"
-        className={cn(
-          "pointer-events-none absolute -top-2.5 z-10 hidden w-max flex-col gap-1 rounded-base bg-card px-6 py-4 group-hover/cell:flex group-focus-visible/cell:flex",
-          residence.position === 1 ? "left-[calc(100%+8px)]" : "right-[calc(100%+8px)]",
-        )}
-      >
-        <span className="text-label text-primary">{fillTemplate(t.floorPage.residence, { number: residence.number })}</span>
-        <span className="text-body text-foreground">{typeAreaText(residence, t.floorPage)}</span>
-        {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.floorPage.penthouse}</span>}
-        <span className="text-body-l text-foreground">{formatUsd(residence.priceUsd)}</span>
-        <span className="text-caption text-muted-foreground">{t.floorPage.clickToOpen}</span>
-      </span>
+      <GridTooltip residence={residence} t={t.floorPage} />
     </Link>
+  );
+}
+
+/** Dark card beside the hovered or focused cell, as on the Floor grid frame; the first column opens it to the right. */
+function GridTooltip({ residence, t }: { residence: Residence; t: Dictionary["floorPage"] }) {
+  return (
+    <span
+      data-theme="dark"
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute -top-2.5 z-10 hidden w-max flex-col gap-1 rounded-base bg-card px-6 py-4 group-hover/cell:flex group-focus-visible/cell:flex",
+        residence.position === 1 ? "left-[calc(100%+8px)]" : "right-[calc(100%+8px)]",
+      )}
+    >
+      <span className="text-label text-primary">{fillTemplate(t.residence, { number: residence.number })}</span>
+      <span className="text-body text-foreground">{typeAreaText(residence, t)}</span>
+      {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.penthouse}</span>}
+      <span className="text-body-l text-foreground">{formatUsd(residence.priceUsd)}</span>
+      <span className="text-caption text-muted-foreground">{t.clickToOpen}</span>
+    </span>
   );
 }
