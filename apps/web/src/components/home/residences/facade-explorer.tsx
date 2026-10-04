@@ -44,6 +44,11 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
     pointerType.current = event.pointerType;
   };
 
+  // Focus that comes from a tap must not count as the first tap, or the second tap logic navigates at once.
+  const handleFocus = (floor: number) => {
+    if (pointerType.current === null) select(floor);
+  };
+
   const handleFloorClick = (floor: number, event: MouseEvent<Element>) => {
     const type = pointerType.current;
     pointerType.current = null;
@@ -86,7 +91,7 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
             tapX={tapX}
             floorLabel={floorLabel}
             onHover={select}
-            onFocusFloor={select}
+            onFocusFloor={handleFocus}
             onFloorClick={handleFloorClick}
             onFloorPointerDown={handlePointerDown}
           />
