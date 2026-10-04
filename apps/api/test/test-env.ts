@@ -15,8 +15,8 @@ export function applyTestEnv(): string {
   const url = process.env.TEST_DATABASE_URL;
   if (!url) {
     throw new Error(
-      'TEST_DATABASE_URL is not set. Add it to apps/api/.env (see .env.example) and start ' +
-        'PostgreSQL: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres',
+      'TEST_DATABASE_URL is not set. Run the tests with `pnpm --filter api test`, it starts ' +
+        'a throwaway PostgreSQL in Docker and sets the URL.',
     );
   }
   Object.assign(process.env, {

@@ -1,0 +1,20 @@
+# Throwaway PostgreSQL for the API tests: data lives in memory and is gone after `down`.
+# Started and stopped by apps/api/scripts/test-with-db.sh, separate from the main stack.
+name: aurora-residence-test
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aurora_test
+      POSTGRES_PASSWORD: aurora_test
+      POSTGRES_DB: aurora_test
+    ports:
+      - "127.0.0.1:${TEST_POSTGRES_PORT:-5443}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U aurora_test -d aurora_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

@@ -8,7 +8,8 @@
     "start:dev": "nest start --watch",
     "lint": "eslint .",
     "typecheck": "prisma generate && tsc --noEmit",
-    "test": "prisma generate && NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "sh scripts/test-with-db.sh",
+    "test:run": "prisma generate && NODE_OPTIONS=--experimental-vm-modules jest",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed"
   },

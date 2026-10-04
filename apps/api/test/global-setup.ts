@@ -9,7 +9,7 @@ import { config } from 'dotenv';
 export default async function globalSetup(): Promise<void> {
   config({ quiet: true });
   if (!process.env.TEST_DATABASE_URL) {
-    throw new Error('TEST_DATABASE_URL is not set, see apps/api/.env and .env.example');
+    throw new Error('TEST_DATABASE_URL is not set, run the tests with `pnpm --filter api test`');
   }
   const url = new URL(process.env.TEST_DATABASE_URL);
   const database = url.pathname.slice(1);
