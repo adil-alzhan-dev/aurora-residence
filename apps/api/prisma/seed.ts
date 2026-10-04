@@ -10,7 +10,9 @@ import {
   createActivity,
   createReservations,
   recreateEnquiries,
+  resetAuthState,
   upsertAdmin,
+  upsertRates,
   upsertResidences,
 } from './seed/writers.js';
 
@@ -36,7 +38,9 @@ async function seed(prisma: PrismaClient): Promise<void> {
 
   await prisma.$transaction(
     async (tx) => {
+      await resetAuthState(tx);
       const manager = await upsertAdmin(tx, admin);
+      await upsertRates(tx);
       const residenceIds = await upsertResidences(tx, residences, statusChangedAt);
       const enquiryIds = await recreateEnquiries(tx, residenceIds, clock);
       const ids = { residences: residenceIds, enquiries: enquiryIds, manager };

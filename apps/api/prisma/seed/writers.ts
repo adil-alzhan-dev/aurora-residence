@@ -3,6 +3,7 @@ import type { Prisma } from '../../src/generated/prisma/client.js';
 import type { DemoClock } from './dates.js';
 import { ENQUIRIES, enquiryEmail } from './enquiries.js';
 import type { ActivitySeed, ReservationSeed } from './plan.js';
+import { CURRENCY_RATES } from './rates.js';
 import type { ResidenceSeed } from './residences.js';
 
 type Tx = Prisma.TransactionClient;
@@ -26,6 +27,22 @@ export async function upsertAdmin(tx: Tx, admin: AdminSeed): Promise<number> {
     update: fields,
   });
   return saved.id;
+}
+
+export async function upsertRates(tx: Tx): Promise<void> {
+  for (const rate of CURRENCY_RATES) {
+    await tx.currencyRate.upsert({
+      where: { code: rate.code },
+      create: rate,
+      update: { perUsd: rate.perUsd },
+    });
+  }
+}
+
+/** Demo reset signs everyone out and clears sign-in lockouts. */
+export async function resetAuthState(tx: Tx): Promise<void> {
+  await tx.adminSession.deleteMany();
+  await tx.loginThrottle.deleteMany();
 }
 
 export async function upsertResidences(
