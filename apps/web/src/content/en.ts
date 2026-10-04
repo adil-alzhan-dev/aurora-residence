@@ -1,3 +1,4 @@
+import { residenceEn } from "./en-residence";
 import { residencesEn } from "./en-residences";
 
 export const en = {
@@ -274,6 +275,7 @@ export const en = {
     sold: "Sold",
   },
   ...residencesEn,
+  ...residenceEn,
 };
 
 export type StatItem = { value: number; suffix: string; label: string } | { text: string; label: string };

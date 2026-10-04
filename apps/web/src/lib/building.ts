@@ -15,3 +15,12 @@ export function parseFloorParam(param: string) {
   if (!FLOOR_PARAM.test(param)) notFound();
   return Number(param);
 }
+
+// "<floor>.<position>": floors 1-11, positions 01-06, so "7.03" is a residence and "7.3" or "12.01" are not.
+const RESIDENCE_PARAM = /^(?:[1-9]|1[01])\.0[1-6]$/;
+
+export function parseResidenceParam(param: string) {
+  if (!RESIDENCE_PARAM.test(param)) notFound();
+  const [floor, position] = param.split(".").map(Number);
+  return { number: param, floor, position };
+}

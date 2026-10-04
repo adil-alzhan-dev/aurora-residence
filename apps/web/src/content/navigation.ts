@@ -31,7 +31,7 @@ export type HeaderVariant = "overlay" | "dark" | "light";
  */
 export function headerVariant(pathname: string, view: string | null = null): HeaderVariant {
   if (pathname === "/") return "overlay";
-  if (pathname.startsWith(`${residencesHref}/floor/`)) return "light";
+  if (pathname.startsWith(`${residencesHref}/`)) return "light";
   if (pathname === residencesHref && (view === "grid" || view === "list")) return "light";
   return "dark";
 }

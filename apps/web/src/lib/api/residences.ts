@@ -36,3 +36,7 @@ export function getResidences(query: ResidenceQuery = {}) {
   const search = params.size > 0 ? `?${params}` : "";
   return fetchFromApi(`/api/residences${search}`, z.array(residenceSchema));
 }
+
+export function getResidence(number: string) {
+  return fetchFromApi(`/api/residences/${encodeURIComponent(number)}`, residenceSchema);
+}
