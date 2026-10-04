@@ -5,7 +5,7 @@ import type { FloorSummary } from "@/lib/api/floors";
 import { revealDelay } from "@/lib/motion";
 
 import { FacadeExplorer } from "./facade-explorer";
-import { ViewLinks } from "./view-links";
+import { ViewLinks } from "@/components/residences/view-links";
 
 type ResidencePickerProps = {
   floors: FloorSummary[] | null;

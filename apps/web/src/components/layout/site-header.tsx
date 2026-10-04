@@ -37,7 +37,7 @@ export function SiteHeader({ t }: SiteHeaderProps) {
       className={cn(
         "fixed inset-x-0 top-0 z-40 animate-fade-down border-b transition-[background-color,border-color,color] duration-300",
         solid ? "border-border bg-background" : "bg-transparent",
-        !solid && (variant === "overlay" ? "border-transparent" : "border-border"),
+        !solid && (variant === "overlay" ? "border-transparent" : "border-transparent lg:border-border"),
       )}
     >
       <a

@@ -18,7 +18,8 @@ export const maxPriceOptions = [150_000, 200_000, 250_000, 300_000, 400_000] as 
 
 const firstValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
-const filterParam = (schema: z.ZodNumber) => z.preprocess(firstValue, z.coerce.number().pipe(schema)).nullable().catch(null);
+const filterParam = (schema: z.ZodNumber) =>
+  z.preprocess(firstValue, z.coerce.number().pipe(schema)).nullable().catch(null);
 
 const filtersSchema = z.object({
   bedrooms: filterParam(z.number().int().min(0).max(3)),
@@ -61,7 +62,9 @@ export function matchesFilters(residence: Residence, filters: ResidenceFilters) 
 export function summarizeFloors(residences: Residence[]): FloorSummary[] {
   return floorNumbers.map((floor) => {
     const onFloor = residences.filter((residence) => residence.floor === floor);
-    const prices = onFloor.filter((residence) => residence.status === "available").map((residence) => residence.priceUsd);
+    const prices = onFloor
+      .filter((residence) => residence.status === "available")
+      .map((residence) => residence.priceUsd);
     return {
       floor,
       total: onFloor.length,

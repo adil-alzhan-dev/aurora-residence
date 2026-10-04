@@ -1,6 +1,7 @@
 /** Texts of the residence selection pages: facade, filters, floor plan. Merged into the English dictionary. */
 export const residencesEn = {
   residences: {
+    metaTitle: "Choose your residence · Aurora Residence",
     overline: "Residences",
     title: "Choose your residence",
     lead: "Sixty-six residences on eleven floors. Hover a floor to see what is free, click it to open the plan.",
@@ -11,6 +12,7 @@ export const residencesEn = {
     openFloor: "Open floor {floor}",
     floorSelectedOverline: "Floor selected",
     available: "Available",
+    availableShort: "{available} of {total}",
     price: "Price",
     floorBelow: "Floor below",
     floorAbove: "Floor above",

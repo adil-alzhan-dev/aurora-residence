@@ -42,7 +42,10 @@ export function FiltersBar({ filters, result, priceRange, view, t }: FiltersProp
           {result && (
             <p
               aria-live="polite"
-              className={cn("text-body whitespace-nowrap text-foreground transition-opacity", navigation.pending && "opacity-50")}
+              className={cn(
+                "text-body whitespace-nowrap text-foreground transition-opacity",
+                navigation.pending && "opacity-50",
+              )}
             >
               {describeResult(result, filters, t)}
             </p>
