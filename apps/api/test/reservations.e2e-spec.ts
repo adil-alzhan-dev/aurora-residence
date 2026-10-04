@@ -96,16 +96,66 @@ describe('Reservations (e2e)', () => {
     await http(app).post('/api/admin/residences/4.06/release').set(admin()).send({}).expect(409);
   });
 
-  it('keeps status and reservations in step on PATCH', async () => {
-    await http(app).patch('/api/admin/residences/7.04').set(admin()).send({ status: 'SOLD' }).expect(200);
-    expect(await activeReservations('7.04')).toBe(0);
+  it('refuses RESERVED on PATCH and leaves the residence untouched', async () => {
+    const historyBefore = (await card('6.02')).history.length;
+    const response = await http(app)
+      .patch('/api/admin/residences/6.02')
+      .set(admin())
+      .send({ status: 'RESERVED' })
+      .expect(400);
+    expect(String((response.body as { message: string[] }).message)).toContain(
+      'To reserve a residence, use POST /api/admin/residences/:number/reserve',
+    );
+    await http(app)
+      .patch('/api/admin/residences/6.02')
+      .set(admin())
+      .send({ status: 'RESERVED', enquiryId: await enquiryId('Elena Marsh') })
+      .expect(400);
+    await http(app).patch('/api/admin/residences/7.02').set(admin()).send({ status: 'RESERVED' }).expect(400);
+    const service = app.get(ReservationsService);
+    await expect(
+      prisma.$transaction((tx) => service.changeStatus(tx, { number: '6.02', to: 'RESERVED', actorId: 1 })),
+    ).rejects.toThrow('can be reserved only for an enquiry');
 
-    await http(app).patch('/api/admin/residences/6.02').set(admin()).send({ status: 'RESERVED' }).expect(200);
-    expect(await activeReservations('6.02')).toBe(1);
-    await http(app).patch('/api/admin/residences/6.02').set(admin()).send({ status: 'AVAILABLE' }).expect(200);
+    const residence = await card('6.02');
+    expect(residence.status).toBe('AVAILABLE');
+    expect(residence.history).toHaveLength(historyBefore);
     expect(await activeReservations('6.02')).toBe(0);
+  });
 
-    await http(app).patch('/api/admin/residences/7.04').set(admin()).send({ status: 'RESERVED' }).expect(409);
+  it('releases the reservation on PATCH RESERVED -> AVAILABLE and logs it', async () => {
+    const enquiry = await enquiryId('Olivia Grant');
+    await http(app).patch('/api/admin/residences/8.04').set(admin()).send({ status: 'AVAILABLE' }).expect(200);
+
+    const residence = await card('8.04');
+    expect(residence.status).toBe('AVAILABLE');
+    expect(residence.reservation).toBeNull();
+    expect(await activeReservations('8.04')).toBe(0);
+    expect(residence.history[0]).toMatchObject({
+      author: 'Maya Collins', from: 'RESERVED', to: 'AVAILABLE', note: 'Reservation released by manager',
+    });
+    const log = await prisma.activityLog.findFirstOrThrow({
+      where: { residence: { number: '8.04' } },
+      orderBy: { id: 'desc' },
+    });
+    expect(log.enquiryId).toBe(enquiry);
+  });
+
+  it('closes the reservation on PATCH RESERVED -> SOLD and logs it', async () => {
+    const before = await prisma.reservation.findFirstOrThrow({
+      where: { residence: { number: '7.04' }, releasedAt: null },
+    });
+    await http(app).patch('/api/admin/residences/7.04').set(admin()).send({ status: 'SOLD' }).expect(200);
+
+    const residence = await card('7.04');
+    expect(residence.status).toBe('SOLD');
+    expect(residence.reservation).toBeNull();
+    expect(await activeReservations('7.04')).toBe(0);
+    const closed = await prisma.reservation.findUniqueOrThrow({ where: { id: before.id } });
+    expect(closed.releasedAt).not.toBeNull();
+    expect(residence.history[0]).toMatchObject({
+      author: 'Maya Collins', from: 'RESERVED', to: 'SOLD', note: 'Contract signed',
+    });
   });
 
   it('logs a price change with the manager as author', async () => {

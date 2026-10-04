@@ -1,5 +1,7 @@
-import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import { ResidenceStatus } from '../../../generated/prisma/enums.js';
+import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import type { ResidenceStatus } from '../../../generated/prisma/enums.js';
+
+export const PATCHABLE_STATUSES = ['AVAILABLE', 'SOLD'] as const satisfies readonly ResidenceStatus[];
 
 export class UpdateResidenceDto {
   @IsOptional()
@@ -9,14 +11,12 @@ export class UpdateResidenceDto {
   priceUsd?: number;
 
   @IsOptional()
-  @IsEnum(ResidenceStatus, { message: 'status must be AVAILABLE, RESERVED or SOLD' })
-  status?: ResidenceStatus;
-
-  /** Optional enquiry when the status is set to RESERVED from the table. */
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  enquiryId?: number;
+  @IsIn(PATCHABLE_STATUSES, {
+    message:
+      'status can be AVAILABLE or SOLD here. To reserve a residence, use ' +
+      'POST /api/admin/residences/:number/reserve with the enquiry of the buyer',
+  })
+  status?: (typeof PATCHABLE_STATUSES)[number];
 
   /** Shown in the residence history, for example "Autumn price list". */
   @IsOptional()

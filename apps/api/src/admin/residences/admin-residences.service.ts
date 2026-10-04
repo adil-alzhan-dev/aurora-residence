@@ -98,13 +98,7 @@ export class AdminResidencesService {
         });
       }
       if (dto.status !== undefined) {
-        await this.reservations.changeStatus(tx, {
-          number,
-          to: dto.status,
-          actorId,
-          enquiryId: dto.enquiryId,
-          note: dto.note,
-        });
+        await this.reservations.changeStatus(tx, { number, to: dto.status, actorId, note: dto.note });
       }
     });
     return this.card(number);

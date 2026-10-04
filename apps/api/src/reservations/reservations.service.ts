@@ -62,8 +62,14 @@ export class ReservationsService {
     return this.state(number);
   }
 
-  /** Status change used by the reserve/release routes and the admin PATCH, inside one transaction. */
   async changeStatus(tx: Tx, request: StatusChangeRequest): Promise<void> {
+    // The only way into RESERVED is a reservation for an enquiry about this residence.
+    if (request.to === 'RESERVED' && request.enquiryId === undefined) {
+      throw new BadRequestException(
+        `Residence ${request.number} can be reserved only for an enquiry, ` +
+          'use POST /api/admin/residences/:number/reserve',
+      );
+    }
     const residence = await loadResidence(tx, request.number);
     if (residence.status === request.to) return;
     if (request.to === 'RESERVED' && residence.status !== 'AVAILABLE') {
@@ -72,7 +78,7 @@ export class ReservationsService {
       );
     }
     const enquiry =
-      request.to === 'RESERVED' && request.enquiryId
+      request.to === 'RESERVED' && request.enquiryId !== undefined
         ? await findEnquiryForReservation(tx, request.enquiryId, residence)
         : null;
     await applyStatusChange(tx, {
@@ -86,7 +92,6 @@ export class ReservationsService {
     if (enquiry?.status === 'NEW') await startEnquiry(tx, enquiry.id, request.actorId);
   }
 
-  /** Returns expired reservations to Available on behalf of "System". */
   async releaseExpired(now = new Date()): Promise<number> {
     const expired = await this.prisma.reservation.findMany({
       where: { releasedAt: null, endsAt: { lte: now }, residence: { status: 'RESERVED' } },
