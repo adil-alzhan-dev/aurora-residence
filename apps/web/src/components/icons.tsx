@@ -37,6 +37,14 @@ export function ChevronDownIcon(props: IconProps) {
   );
 }
 
+export function CheckIcon(props: IconProps) {
+  return (
+    <LineIcon size={16} {...props}>
+      <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
+    </LineIcon>
+  );
+}
+
 export function MenuIcon(props: IconProps) {
   return (
     <LineIcon size={24} {...props}>
