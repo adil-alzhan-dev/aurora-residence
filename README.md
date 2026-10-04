@@ -54,8 +54,20 @@ Admin (Bearer access token): `/admin/dashboard`, `/admin/residences`,
 `/admin/residences/:number/reserve|release`, `/admin/enquiries`.
 
 The access token lives 15 minutes and is sent as `Authorization: Bearer`; the
-refresh token is an httpOnly cookie limited to `/api/auth`. After 5 wrong
-passwords sign-in pauses for 15 minutes for that email and IP. Reservations
+refresh token is an httpOnly cookie limited to `/api/auth`. Every access token
+belongs to a session row in the database, and admin routes check that session
+on each request, so logout signs the device out at once.
+
+Sign-in limits are stored in PostgreSQL and work across restarts and several
+API instances: 5 failed attempts for one email (from any IP) pause sign-in for
+that email for 15 minutes, and 20 failed attempts from one IP (for any emails)
+pause that IP for 15 minutes. A wrong email and a wrong password get the same
+answer.
+
+A residence is reserved only with `POST /admin/residences/:number/reserve` and
+an enquiry about that residence. `PATCH /admin/residences/:number` accepts the
+status `AVAILABLE` or `SOLD`: from Reserved it releases or closes the
+reservation. Every change is written to the residence history. Reservations
 last 7 days and are released automatically by a job that runs every minute.
 
 ## HTTP and HTTPS
@@ -64,7 +76,83 @@ last 7 days and are released automatically by a job that runs every minute.
 flag on the refresh cookie and the HSTS header. It is `false` by default, so the
 production build works on http://localhost, for example when showing the
 project from a laptop. Set it to `true` only when the site is served over https,
-otherwise browsers drop the cookie and the session cannot be refreshed.
+otherwise browsers drop the cookie and the session cannot be refreshed. For a
+public server follow the Deploy section: never publish the admin over plain
+http.
+
+## Deploy
+
+The stack runs on any VPS with Docker. TLS ends at the nginx container, the
+API and the web app stay on the internal Compose network.
+
+1. Point the domain (for example `aurora.example.com`) to the server and open
+   ports 80 and 443.
+2. Get a Let's Encrypt certificate with certbot on the host while port 80 is
+   free:
+
+   ```bash
+   docker compose stop nginx
+   sudo certbot certonly --standalone -d aurora.example.com
+   ```
+
+3. Next to `docker-compose.yml` create `docker-compose.https.yml` and
+   `nginx/https.conf` (they are server specific and not in the repository):
+
+   ```yaml
+   services:
+     nginx:
+       ports:
+         - "80:80"
+         - "443:443"
+       volumes:
+         - ./nginx/https.conf:/etc/nginx/conf.d/default.conf:ro
+         - /etc/letsencrypt:/etc/letsencrypt:ro
+   ```
+
+   `nginx/https.conf` is `nginx/default.conf` with these changes: the port 80
+   server only redirects, and the existing `location` blocks move to a 443
+   server.
+
+   ```nginx
+   server {
+       listen 80;
+       server_name aurora.example.com;
+       return 301 https://$host$request_uri;
+   }
+
+   server {
+       listen 443 ssl;
+       http2 on;
+       server_name aurora.example.com;
+       ssl_certificate     /etc/letsencrypt/live/aurora.example.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/aurora.example.com/privkey.pem;
+       ssl_protocols TLSv1.2 TLSv1.3;
+       # proxy settings and location blocks from nginx/default.conf
+   }
+   ```
+
+4. In `.env` set `HTTPS_ENABLED=true` and strong values for every secret, then
+   start:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+   ```
+
+5. Check: `curl -I http://aurora.example.com` answers 301 to https, and
+   `curl -I https://aurora.example.com/api/health` has a
+   `Strict-Transport-Security` header. The refresh cookie must have `Secure`.
+6. Renewal: certificates live 90 days. Add a cron job on the host:
+
+   ```bash
+   certbot renew --quiet \
+     --pre-hook "docker compose -f /path/to/docker-compose.yml stop nginx" \
+     --post-hook "docker compose -f /path/to/docker-compose.yml -f /path/to/docker-compose.https.yml up -d nginx"
+   ```
+
+The API trusts exactly one proxy hop (nginx) for the client IP used by the
+sign-in limits. If another proxy or a CDN is put in front of nginx, change
+`trust proxy` in `apps/api/src/app.setup.ts` to match, otherwise all visitors
+share one IP limit.
 
 ## Demo login
 
@@ -105,11 +193,25 @@ pnpm --filter api start:dev    # http://localhost:4000/api/health
 pnpm --filter web dev          # http://localhost:3000
 ```
 
-`pnpm test` runs unit tests and API end-to-end tests against a separate
-database: set `TEST_DATABASE_URL` in `apps/api/.env` (name ending in `_test`,
-created and migrated automatically) and keep the dev PostgreSQL running.
+## Tests
 
-Checks across the workspace:
+```bash
+pnpm --filter api test
+```
+
+One command, only Docker is needed: it starts a throwaway PostgreSQL from
+`docker-compose.test.yml` (in memory, on `127.0.0.1:5443`), applies the
+migrations, runs the unit and end-to-end tests and removes the database, also
+when tests fail. It does not touch the main stack or its data. `pnpm test` in
+the root runs the same for the API. If port 5443 is taken:
+`TEST_POSTGRES_PORT=5444 pnpm --filter api test`.
+
+To run the tests against a database you already have, set `TEST_DATABASE_URL`
+(the name must end with `_test`) and run `pnpm --filter api test:run`.
+
+## Checks
+
+Across the workspace:
 
 ```bash
 pnpm lint
