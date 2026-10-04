@@ -27,7 +27,16 @@ type ResidencesIntroProps = {
 export function ResidencesIntro({ view, filters, sort, keep, result, priceRange, t }: ResidencesIntroProps) {
   const filterProps = { filters, result, priceRange, keep, t: t.filters };
   const isFacade = view === "facade";
-  const lead = { facade: t.residences.lead, grid: t.residences.leadGrid, list: t.residences.leadList }[view];
+  // Phones show the list for ?view=grid, so they get the list text as well.
+  const lead =
+    view === "grid" ? (
+      <>
+        <span className="lg:hidden">{t.residences.leadList}</span>
+        <span className="max-lg:hidden">{t.residences.leadGrid}</span>
+      </>
+    ) : (
+      { facade: t.residences.lead, list: t.residences.leadList }[view]
+    );
   const viewLinks = <ViewLinks t={t.residencePicker} current={view} filters={filters} sort={sort} />;
 
   return (
@@ -43,7 +52,7 @@ export function ResidencesIntro({ view, filters, sort, keep, result, priceRange,
         <div
           data-reveal="up"
           style={revealDelay(120)}
-          className={cn(isFacade ? "hidden lg:block" : "-mx-3 pt-4 pb-6 lg:mx-0 lg:p-0")}
+          className={cn(isFacade ? "hidden lg:block" : "pt-4 pb-6 lg:p-0")}
         >
           {viewLinks}
         </div>

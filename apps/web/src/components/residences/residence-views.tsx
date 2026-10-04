@@ -6,8 +6,8 @@ import type { ResidencesData } from "@/lib/residences-data";
 
 import { FloorGrid } from "./grid/floor-grid";
 import { ListDesktop } from "./list/list-desktop";
+import { ListMobile } from "./list/list-mobile";
 import { NoMatches } from "./no-matches";
-import { ViewComingSoon } from "./view-coming-soon";
 
 type ResidenceViewsProps = {
   view: "grid" | "list";
@@ -32,19 +32,34 @@ export function ResidenceViews({ view, data, filters, sort, keep, t }: Residence
     return <NoMatches resetHref={`${residencesHref}${filtersToSearch(emptyFilters, keep)}`} t={t.residences} />;
   }
 
-  const mobileList = <ViewComingSoon view="list" t={t.residences.comingSoon} />;
+  const listKey = `${filtersToSearch(filters)}${sort}`;
+  const listText = { list: t.list, floorPage: t.floorPage, status: t.status };
+  const mobileList = (
+    <ListMobile
+      key={listKey}
+      residences={data.matching}
+      result={data.result}
+      filters={filters}
+      priceRange={data.priceRange}
+      sort={sort}
+      view={view}
+      keep={keep}
+      t={{ ...listText, filters: t.filters }}
+    />
+  );
+
   if (view === "list") {
     return (
       <>
         <div className="hidden lg:block">
           <ListDesktop
-            key={`${filtersToSearch(filters)}${sort}`}
+            key={listKey}
             residences={data.matching}
             result={data.result}
             filters={filters}
             sort={sort}
             view={view}
-            t={{ list: t.list, floorPage: t.floorPage, status: t.status }}
+            t={listText}
           />
         </div>
         <div className="lg:hidden">{mobileList}</div>

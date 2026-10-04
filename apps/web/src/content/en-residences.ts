@@ -98,6 +98,13 @@ export const residencesEn = {
     planOf: "Plan of residence {number}",
     showing: "Showing {shown} of {total}",
     showMore: "Show more",
+    activeFilters: "Active filters",
+    chips: {
+      bedrooms: ["Studio", "1 bedroom", "2 bedrooms", "3 bedrooms"],
+      price: "Up to {price}",
+      floor: "Floor {floor}",
+      remove: "Remove filter: {label}",
+    },
   },
   filters: {
     label: "Filter residences",

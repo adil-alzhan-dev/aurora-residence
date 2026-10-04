@@ -8,7 +8,8 @@ const MARGIN = 2.5;
 
 type MiniPlanProps = {
   position: number;
-  label: string;
+  /** Without a label the drawing is decorative, for cards that already name the residence. */
+  label?: string;
   className?: string;
 };
 
@@ -20,7 +21,13 @@ export function MiniPlan({ position, label, className }: MiniPlanProps) {
   const viewBox = `${x - MARGIN} ${y - MARGIN} ${width + 2 * MARGIN} ${height + 2 * MARGIN}`;
 
   return (
-    <svg viewBox={viewBox} role="img" aria-label={label} className={cn("text-foreground", className)}>
+    <svg
+      viewBox={viewBox}
+      role={label ? "img" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+      className={cn("text-foreground", className)}
+    >
       <path d={planLines} vectorEffect="non-scaling-stroke" className="fill-none stroke-current" />
       <path d={planWalls} className="fill-current" />
     </svg>
