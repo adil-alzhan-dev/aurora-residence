@@ -29,16 +29,16 @@ export function FiltersBar({ filters, result, priceRange, view, t }: FiltersProp
 
   return (
     <section aria-label={t.label} className="hidden border-y border-border lg:block">
-      <div className="container-page flex items-end gap-12 py-6">
+      <div className="container-page flex flex-wrap items-end gap-x-8 gap-y-6 py-6 xl:flex-nowrap xl:gap-12">
         <FilterFields
           filters={navigation.filters}
           priceRange={priceRange}
           onChange={navigation.update}
           t={t}
           idPrefix="filters-bar"
-          className="flex-row items-end gap-12"
+          className="flex-row items-end gap-8 xl:gap-12"
         />
-        <div className="ml-12 flex items-center gap-6">
+        <div className="flex items-center gap-6 xl:ml-12">
           {result && (
             <p
               aria-live="polite"

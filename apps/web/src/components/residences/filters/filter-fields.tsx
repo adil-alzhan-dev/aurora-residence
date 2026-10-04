@@ -55,7 +55,7 @@ export function FilterFields({ filters, priceRange, onChange, t, idPrefix, class
           options={bedrooms}
           value={filters.bedrooms === null ? ANY : String(filters.bedrooms)}
           onValueChange={(value) => onChange({ bedrooms: toNumber(value) })}
-          className="-mx-3 flex-wrap lg:mx-0"
+          className="-mx-3 flex-wrap lg:mx-0 lg:flex-nowrap"
         />
       </div>
       <SelectField

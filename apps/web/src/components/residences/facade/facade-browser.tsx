@@ -56,15 +56,15 @@ export function FacadeBrowser({ summaries, cells, initialFloor, noMatches, t }: 
         t={t}
       />
 
-      <div className="container-page hidden items-center justify-between gap-8 pt-8 pb-16 lg:flex">
+      <div className="container-page hidden flex-wrap items-center justify-between gap-x-8 gap-y-4 pt-8 pb-16 lg:flex">
         <div className="flex items-center gap-6">
-          <p className="text-overline text-muted-foreground">{picker.legendTitle}</p>
+          <p className="text-overline whitespace-nowrap text-muted-foreground">{picker.legendTitle}</p>
           <StatusBadge status="available" label={t.status.available} />
           <StatusBadge status="reserved" label={t.status.reserved} />
           <StatusBadge status="sold" label={t.status.sold} />
         </div>
         <div className="flex items-center gap-8">
-          <p aria-live="polite" className="text-body text-muted-foreground">
+          <p aria-live="polite" className="text-body whitespace-nowrap text-muted-foreground">
             {noMatches
               ? t.residences.noMatches
               : fillTemplate(t.residences.floorSelected, { floor: active, availability: activeInfo.availability })}
