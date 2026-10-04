@@ -11,14 +11,16 @@ const FLOORS_OVER_TREES = 2;
 
 type FloorRulerProps = {
   active: number | null;
+  dimmed?: ReadonlySet<number>;
 };
 
-export function FloorRuler({ active }: FloorRulerProps) {
+export function FloorRuler({ active, dimmed }: FloorRulerProps) {
   return (
     <ol aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
       {floorsTopDown.map((floor) => {
         const isActive = floor === active;
         const overTrees = floor <= FLOORS_OVER_TREES;
+        const isDimmed = dimmed?.has(floor) && !isActive;
         return (
           <li
             key={floor}
@@ -36,6 +38,7 @@ export function FloorRuler({ active }: FloorRulerProps) {
               className={cn(
                 "flex h-[22px] w-8 items-center justify-center rounded-full text-caption transition-colors duration-150",
                 overTrees && "bg-dark/78",
+                isDimmed && "opacity-40",
                 isActive ? "text-primary" : overTrees ? "text-foreground" : "text-muted-foreground",
               )}
             >
@@ -44,6 +47,7 @@ export function FloorRuler({ active }: FloorRulerProps) {
             <span
               className={cn(
                 "h-px transition-[width,background-color] duration-150",
+                isDimmed && "opacity-40",
                 isActive ? "w-6 bg-primary" : cn("w-3", overTrees ? "bg-muted-foreground" : "bg-border"),
               )}
             />

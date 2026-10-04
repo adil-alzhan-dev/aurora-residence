@@ -8,6 +8,8 @@ import { FACADE_HEIGHT, FACADE_WIDTH, floorTop, floorsTopDown, house } from "./f
 type FacadeOverlayProps = {
   active: number | null;
   tapX: number | null;
+  /** Floors without residences that match the filters are shaded. */
+  dimmed?: ReadonlySet<number>;
   floorLabel: (floor: number) => string;
   onHover: (floor: number) => void;
   onFocusFloor: (floor: number) => void;
@@ -20,6 +22,7 @@ const viewBox = `0 0 ${FACADE_WIDTH} ${FACADE_HEIGHT}`;
 export function FacadeOverlay({
   active,
   tapX,
+  dimmed,
   floorLabel,
   onHover,
   onFocusFloor,
@@ -45,7 +48,27 @@ export function FacadeOverlay({
         />
       </svg>
       <svg viewBox={viewBox} preserveAspectRatio="none" className="absolute inset-0 size-full">
-        <g style={offset} className={cn("transition-[transform,opacity] duration-150 ease-out", !visible && "opacity-0")}>
+        {dimmed && (
+          <g aria-hidden="true" className="pointer-events-none">
+            {floorsTopDown.map((floor) => (
+              <rect
+                key={floor}
+                x={house.left}
+                y={floorTop(floor)}
+                width={house.width}
+                height={house.floorHeight}
+                className={cn(
+                  "fill-dark transition-opacity duration-300",
+                  dimmed.has(floor) ? "opacity-62" : "opacity-0",
+                )}
+              />
+            ))}
+          </g>
+        )}
+        <g
+          style={offset}
+          className={cn("transition-[transform,opacity] duration-150 ease-out", !visible && "opacity-0")}
+        >
           <rect
             {...band}
             vectorEffect="non-scaling-stroke"

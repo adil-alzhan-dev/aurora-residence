@@ -54,7 +54,9 @@ export function FloorTooltip({ floor, summary, t, className }: FloorTooltipProps
         )}
         {info.availability}
       </p>
-      {info.price && <p className="font-sans text-base leading-[1.625rem] whitespace-nowrap text-primary">{info.price}</p>}
+      {info.price && (
+        <p className="font-sans text-base leading-[1.625rem] whitespace-nowrap text-primary">{info.price}</p>
+      )}
     </div>
   );
 }
