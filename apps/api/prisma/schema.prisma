@@ -1,0 +1,148 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ResidenceStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum ResidenceSide {
+  NORTH
+  SOUTH
+  WEST
+  EAST
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+enum Locale {
+  EN
+  RU
+}
+
+enum Currency {
+  USD
+  EUR
+  KZT
+}
+
+enum ActivityType {
+  STATUS_CHANGED
+  PRICE_CHANGED
+  ENQUIRY_RECEIVED
+  ENQUIRY_STATUS_CHANGED
+  NOTE_ADDED
+}
+
+enum AdminRole {
+  ADMIN
+  MANAGER
+}
+
+model Residence {
+  id              Int             @id @default(autoincrement())
+  number          String          @unique
+  floor           Int
+  position        Int
+  bedrooms        Int
+  areaM2          Decimal         @db.Decimal(6, 1)
+  isPenthouse     Boolean         @default(false)
+  priceUsd        Int
+  status          ResidenceStatus @default(AVAILABLE)
+  statusChangedAt DateTime
+  layout          String
+  side            ResidenceSide
+  view            String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  enquiries    Enquiry[]
+  reservations Reservation[]
+  activity     ActivityLog[]
+
+  @@unique([floor, position])
+}
+
+model Reservation {
+  id          Int       @id @default(autoincrement())
+  residenceId Int
+  enquiryId   Int?
+  startsAt    DateTime
+  endsAt      DateTime
+  createdById Int?
+  releasedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  residence Residence  @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+  enquiry   Enquiry?   @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  createdBy AdminUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([residenceId, releasedAt])
+}
+
+model Enquiry {
+  id          Int           @id @default(autoincrement())
+  name        String
+  phone       String
+  email       String
+  comment     String
+  residenceId Int
+  status      EnquiryStatus @default(NEW)
+  locale      Locale        @default(EN)
+  currency    Currency      @default(USD)
+  source      String
+  managerNote String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  residence    Residence     @relation(fields: [residenceId], references: [id], onDelete: Restrict)
+  reservations Reservation[]
+  activity     ActivityLog[]
+
+  @@index([status, createdAt])
+}
+
+model ActivityLog {
+  id          Int          @id @default(autoincrement())
+  residenceId Int?
+  enquiryId   Int?
+  type        ActivityType
+  fromValue   String?
+  toValue     String?
+  actorId     Int?
+  note        String?
+  createdAt   DateTime     @default(now())
+
+  residence Residence? @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+  enquiry   Enquiry?   @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  actor     AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([residenceId, createdAt])
+  @@index([enquiryId, createdAt])
+}
+
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(MANAGER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  reservations Reservation[]
+  activity     ActivityLog[]
+}
