@@ -25,9 +25,13 @@ export const residenceHref = (number: string) => `${residencesHref}/${number}`;
 
 export type HeaderVariant = "overlay" | "dark" | "light";
 
-/** Home starts transparent over the hero, other dark pages keep the hairline, light pages start solid. */
-export function headerVariant(pathname: string): HeaderVariant {
+/**
+ * Home starts transparent over the hero, other dark pages keep the hairline, light pages start solid.
+ * On /residences only the facade is dark: the floor grid and the list are light pages.
+ */
+export function headerVariant(pathname: string, view: string | null = null): HeaderVariant {
   if (pathname === "/") return "overlay";
   if (pathname.startsWith(`${residencesHref}/floor/`)) return "light";
+  if (pathname === residencesHref && (view === "grid" || view === "list")) return "light";
   return "dark";
 }

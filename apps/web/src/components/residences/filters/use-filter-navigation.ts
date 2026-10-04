@@ -3,13 +3,13 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
 
-import { emptyFilters, filtersToSearch, type ResidenceFilters } from "@/lib/residence-filters";
+import { emptyFilters, filtersToSearch, type KeptParams, type ResidenceFilters } from "@/lib/residence-filters";
 
 /**
  * Filters live in the address, so a link can be shared. The page reloads its data on the server;
  * the controls switch at once and `pending` marks the numbers that are still on their way.
  */
-export function useFilterNavigation(filters: ResidenceFilters, view: string | null) {
+export function useFilterNavigation(filters: ResidenceFilters, keep: KeptParams) {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
@@ -18,7 +18,7 @@ export function useFilterNavigation(filters: ResidenceFilters, view: string | nu
   const apply = (next: ResidenceFilters) => {
     startTransition(() => {
       setCurrent(next);
-      router.replace(`${pathname}${filtersToSearch(next, view)}`, { scroll: false });
+      router.replace(`${pathname}${filtersToSearch(next, keep)}`, { scroll: false });
     });
   };
 

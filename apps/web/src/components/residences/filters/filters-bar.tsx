@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
 import { fillTemplate } from "@/lib/format";
-import { activeFilterCount, type FilterResult, type ResidenceFilters } from "@/lib/residence-filters";
+import { activeFilterCount, type FilterResult, type KeptParams, type ResidenceFilters } from "@/lib/residence-filters";
 import { cn } from "@/lib/utils";
 
 import { FilterFields, type PriceRange } from "./filter-fields";
@@ -13,8 +13,8 @@ export type FiltersProps = {
   filters: ResidenceFilters;
   result: FilterResult | null;
   priceRange: PriceRange | null;
-  /** Kept in the address next to the filters, for example "grid" or "list". */
-  view: string | null;
+  /** Kept in the address next to the filters: the view and the sort order. */
+  keep: KeptParams;
   t: Dictionary["filters"];
 };
 
@@ -24,8 +24,8 @@ export function describeResult(result: FilterResult, filters: ResidenceFilters, 
 }
 
 /** Desktop row from Figma: bedrooms as segments, price and floor selects, the count and Reset. */
-export function FiltersBar({ filters, result, priceRange, view, t }: FiltersProps) {
-  const navigation = useFilterNavigation(filters, view);
+export function FiltersBar({ filters, result, priceRange, keep, t }: FiltersProps) {
+  const navigation = useFilterNavigation(filters, keep);
 
   return (
     <section aria-label={t.label} className="hidden border-y border-border lg:block">

@@ -4,6 +4,8 @@ import { fetchFromApi } from "./client";
 
 export type ResidenceStatus = "available" | "reserved" | "sold";
 
+export type ResidenceSide = "north" | "south" | "east" | "west";
+
 export const residenceSchema = z.object({
   number: z.string(),
   floor: z.number().int().min(1),
@@ -13,6 +15,8 @@ export const residenceSchema = z.object({
   isPenthouse: z.boolean(),
   priceUsd: z.number(),
   status: z.enum(["AVAILABLE", "RESERVED", "SOLD"]).transform((status) => status.toLowerCase() as ResidenceStatus),
+  side: z.enum(["NORTH", "SOUTH", "EAST", "WEST"]).transform((side) => side.toLowerCase() as ResidenceSide),
+  view: z.string(),
 });
 
 export type Residence = z.infer<typeof residenceSchema>;

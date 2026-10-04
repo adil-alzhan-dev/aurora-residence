@@ -18,8 +18,8 @@ type FiltersSheetProps = FiltersProps & {
 };
 
 /** Mobile: a "Filters" button opens the same fields in a bottom sheet; results update behind it. */
-export function FiltersSheet({ filters, result, priceRange, view, t, theme, className }: FiltersSheetProps) {
-  const navigation = useFilterNavigation(filters, view);
+export function FiltersSheet({ filters, result, priceRange, keep, t, theme, className }: FiltersSheetProps) {
+  const navigation = useFilterNavigation(filters, keep);
   const count = activeFilterCount(navigation.filters);
 
   return (

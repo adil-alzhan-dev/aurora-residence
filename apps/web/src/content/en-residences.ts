@@ -5,6 +5,10 @@ export const residencesEn = {
     overline: "Residences",
     title: "Choose your residence",
     lead: "Sixty-six residences on eleven floors. Hover a floor to see what is free, click it to open the plan.",
+    leadList:
+      "All residences in one list. Sort by price or area and open any residence for its plan, view and instalment plan.",
+    leadGrid:
+      "Every residence of the house in one view: floors from top to bottom, six residences on each. Hover a cell for details, click it to open the residence.",
     loading: "Loading live availability",
     hintPointer: "Click to open the plan",
     hintTouch: "Tap a floor to select it",
@@ -19,6 +23,9 @@ export const residencesEn = {
     floorAbove: "Floor above",
     residencesOnFloor: "Residences on floor {floor}",
     noMatches: "No residences match these filters. Try a higher price or another floor.",
+    resetFilters: "Reset filters",
+    viewUnavailable:
+      "Live availability is not reachable right now, so the residences cannot be shown. Please refresh the page in a minute or call +1 (555) 010-2040.",
     unavailable:
       "Live availability is not reachable right now, so the facade is shown without numbers. Please refresh in a minute or call +1 (555) 010-2040.",
     comingSoon: {
@@ -27,6 +34,28 @@ export const residencesEn = {
       text: "Every residence of the house in one view is on its way. Meanwhile, choose your floor on the facade.",
       back: "Choose on the facade",
     },
+  },
+  grid: {
+    title: "Floor grid: {count} residences, floors from top to bottom",
+    floor: "Floor",
+    column: ".{position}  {type}",
+    floorLabel: "Floor {floor}",
+    info: "{bedrooms} · {area}",
+    cellLabel: "Residence {number}, {type}, {price}, {status}",
+    mutedNote: "Muted residences do not match the filters.",
+    note: "Prices in USD, availability updates live.",
+    summaryOverline: "Whole house",
+    summaryTitle: "Availability",
+    yourFilters: "Your filters",
+    filtersText: "{type}, {floor}, {price}",
+    anyType: "Any size",
+    anyFloor: "any floor",
+    floorNumber: "floor {floor}",
+    matching: "Matching residences",
+    availableNow: "Available now",
+    pricesFrom: "Prices from",
+    noneAvailable: "None available",
+    showInList: "Show {count} in list",
   },
   filters: {
     label: "Filter residences",

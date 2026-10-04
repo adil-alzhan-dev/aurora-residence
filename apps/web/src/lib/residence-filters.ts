@@ -41,9 +41,14 @@ export function parseResidenceFilters(params: SearchParams): ResidenceFilters {
 export const activeFilterCount = (filters: ResidenceFilters) =>
   Object.values(filters).filter((value) => value !== null).length;
 
-export function filtersToSearch(filters: ResidenceFilters, view?: string | null) {
+/** Other address parameters that must survive a filter change, such as the view and the sort order. */
+export type KeptParams = Record<string, string | null | undefined>;
+
+export function filtersToSearch(filters: ResidenceFilters, keep: KeptParams = {}) {
   const params = new URLSearchParams();
-  if (view) params.set("view", view);
+  for (const [key, value] of Object.entries(keep)) {
+    if (value) params.set(key, value);
+  }
   for (const [key, value] of Object.entries(filters)) {
     if (value !== null) params.set(key, String(value));
   }

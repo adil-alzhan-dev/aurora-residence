@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/logo";
@@ -17,10 +17,16 @@ const SOLID_AFTER_PX = 80;
 
 type SiteHeaderProps = {
   t: Dictionary;
+  view?: string | null;
 };
 
-export function SiteHeader({ t }: SiteHeaderProps) {
-  const variant = headerVariant(usePathname());
+/** Reads ?view=, so the layout renders it inside Suspense with the plain SiteHeader as fallback. */
+export function SiteHeaderWithView({ t }: SiteHeaderProps) {
+  return <SiteHeader t={t} view={useSearchParams().get("view")} />;
+}
+
+export function SiteHeader({ t, view = null }: SiteHeaderProps) {
+  const variant = headerVariant(usePathname(), view);
   const [scrolled, setScrolled] = useState(false);
   const solid = scrolled || variant === "light";
 
