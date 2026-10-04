@@ -23,9 +23,10 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Figma sets digits inside Cormorant headings in Manrope Light, so the digit face is fixed at 300.
 const liningDigits = localFont({
   src: "../fonts/manrope-latin-wght.woff2",
-  weight: "200 800",
+  weight: "300",
   variable: "--font-digits",
   display: "swap",
   adjustFontFallback: false,
