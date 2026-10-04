@@ -1,4 +1,5 @@
 import type Lenis from "lenis";
+import type { CSSProperties } from "react";
 
 let lenis: Lenis | null = null;
 
@@ -20,3 +21,5 @@ export function scrollToSection(id: string) {
   }
   window.history.replaceState(null, "", `#${id}`);
 }
+
+export const revealDelay = (ms: number) => ({ "--reveal-delay": `${ms}ms` }) as CSSProperties;

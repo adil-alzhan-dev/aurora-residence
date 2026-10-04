@@ -5,6 +5,9 @@
   --animate-cue: cue 2.4s var(--ease-out-soft) infinite;
   --animate-fade-in: fade-in 0.3s var(--ease-out-soft) both;
   --animate-fade-out: fade-out 0.2s ease-in both;
+  --animate-tooltip-in: tooltip-in 0.25s var(--ease-out-soft) both;
+  --animate-halo: halo 2.4s var(--ease-out-soft) infinite;
+  --animate-route: route-flow 1.4s linear infinite;
 
   @keyframes hero-render {
     from {
@@ -53,6 +56,30 @@
       opacity: 0;
     }
   }
+
+  @keyframes tooltip-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes halo {
+    from {
+      opacity: 0.2;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.6);
+    }
+  }
+
+  @keyframes route-flow {
+    to {
+      stroke-dashoffset: -7;
+    }
+  }
 }
 
 html.lenis,
@@ -99,6 +126,17 @@ html.lenis body {
 
   [data-reveal="wipe"] {
     clip-path: inset(0 0 0 100%);
+    transition-duration: 1.2s;
+  }
+
+  [data-reveal="wipe-up"] {
+    clip-path: inset(100% 0 0 0);
+    transition-duration: 1.2s;
+  }
+
+  [data-reveal="zoom"] {
+    opacity: 0;
+    transform: scale(1.04);
     transition-duration: 1.2s;
   }
 
