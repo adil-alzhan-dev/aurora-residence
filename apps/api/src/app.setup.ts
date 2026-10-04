@@ -3,6 +3,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { isHttpsEnabled } from './common/env.js';
+import { validationExceptionFactory } from './common/validation-errors.js';
 
 /** Shared by main.ts and the e2e tests so both run the same pipeline. */
 export function configureApp(app: NestExpressApplication): void {
@@ -22,6 +23,7 @@ export function configureApp(app: NestExpressApplication): void {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: validationExceptionFactory,
     }),
   );
 }
