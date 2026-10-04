@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import type { Tx } from '../../reservations/status-change.js';
 import { ACTIVITY_SELECT, toActivityEntry } from '../activity.view.js';
 import type { AdminEnquiriesQueryDto } from './dto/admin-enquiries-query.dto.js';
 import type { UpdateEnquiryDto } from './dto/update-enquiry.dto.js';
@@ -70,15 +71,19 @@ export class AdminEnquiriesService {
   }
 
   async update(id: number, dto: UpdateEnquiryDto, actorId: number) {
-    if (dto.status === undefined && dto.managerNote === undefined) {
-      throw new BadRequestException('Send a new status or managerNote');
+    if (dto.status === undefined && dto.managerNote === undefined && dto.residenceNumber === undefined) {
+      throw new BadRequestException('Send a new status, managerNote or residenceNumber');
     }
     await this.prisma.$transaction(async (tx) => {
       const current = await tx.enquiry.findUnique({
         where: { id },
-        select: { status: true, managerNote: true },
+        select: { status: true, managerNote: true, residence: { select: { number: true } } },
       });
       if (!current) throw new NotFoundException(`Enquiry ${id} not found`);
+      if (dto.residenceNumber !== undefined) {
+        if (current.residence) throw alreadyLinked(current.residence.number);
+        await linkResidence(tx, id, dto.residenceNumber, actorId);
+      }
 
       const statusChanged = dto.status !== undefined && dto.status !== current.status;
       const noteChanged = dto.managerNote !== undefined && dto.managerNote !== (current.managerNote ?? '');
@@ -100,6 +105,45 @@ export class AdminEnquiriesService {
     });
     return this.card(id);
   }
+}
+
+/**
+ * The update is conditional on the enquiry still having no residence, so of two
+ * parallel links only the first succeeds and the second gets 409.
+ */
+async function linkResidence(tx: Tx, id: number, number: string, actorId: number): Promise<void> {
+  const residence = await tx.residence.findUnique({
+    where: { number },
+    select: { id: true, status: true },
+  });
+  if (!residence) throw new BadRequestException(`Residence ${number} does not exist`);
+  if (residence.status === 'SOLD') throw new ConflictException(`Residence ${number} is sold`);
+
+  const linked = await tx.enquiry.updateMany({
+    where: { id, residenceId: null },
+    data: { residenceId: residence.id },
+  });
+  if (linked.count === 0) {
+    const winner = await tx.enquiry.findUniqueOrThrow({
+      where: { id },
+      select: { residence: { select: { number: true } } },
+    });
+    throw alreadyLinked(winner.residence?.number ?? number);
+  }
+  await tx.activityLog.create({
+    data: {
+      type: 'ENQUIRY_RESIDENCE_LINKED',
+      enquiryId: id,
+      residenceId: residence.id,
+      actorId,
+      toValue: number,
+      note: `Residence ${number} linked to the enquiry`,
+    },
+  });
+}
+
+function alreadyLinked(number: string): ConflictException {
+  return new ConflictException(`Enquiry already has residence ${number}`);
 }
 
 function toListItem(row: ListRow) {
