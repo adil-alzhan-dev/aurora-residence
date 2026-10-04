@@ -1,4 +1,4 @@
-/** Texts of the residence selection pages: facade, filters, floor plan. Merged into the English dictionary. */
+/** Texts of the residence selection pages: facade, floor grid, list, filters, floor plan. Merged into the English dictionary. */
 export const residencesEn = {
   residences: {
     metaTitle: "Choose your residence · Aurora Residence",
@@ -28,12 +28,6 @@ export const residencesEn = {
       "Live availability is not reachable right now, so the residences cannot be shown. Please refresh the page in a minute or call +1 (555) 010-2040.",
     unavailable:
       "Live availability is not reachable right now, so the facade is shown without numbers. Please refresh in a minute or call +1 (555) 010-2040.",
-    comingSoon: {
-      grid: "The floor grid is coming soon",
-      list: "The list of residences is coming soon",
-      text: "Every residence of the house in one view is on its way. Meanwhile, choose your floor on the facade.",
-      back: "Choose on the facade",
-    },
   },
   grid: {
     title: "Floor grid: {count} residences, floors from top to bottom",
