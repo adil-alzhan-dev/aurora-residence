@@ -9,14 +9,14 @@ export interface AuthenticatedAdmin {
 
 export interface AccessTokenPayload {
   sub: number;
-  email: string;
-  name: string;
-  role: AdminRole;
+  sid: string;
 }
 
 export interface RefreshTokenPayload {
   sub: number;
   sid: string;
+  /** Matches AdminSession.refreshTokenId while this refresh token is the current one. */
+  rid: string;
 }
 
 export interface IssuedSession {

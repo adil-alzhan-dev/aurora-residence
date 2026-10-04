@@ -149,12 +149,15 @@ model AdminUser {
   sessions     AdminSession[]
 }
 
+/// One signed-in device. Access tokens carry its id and stop working once it is revoked.
 model AdminSession {
-  id          String    @id @default(uuid())
-  adminUserId Int
-  expiresAt   DateTime
-  revokedAt   DateTime?
-  createdAt   DateTime  @default(now())
+  id             String    @id @default(uuid())
+  adminUserId    Int
+  /// Id of the only refresh token that is still valid; replaced on every refresh.
+  refreshTokenId String
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
 
   adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 

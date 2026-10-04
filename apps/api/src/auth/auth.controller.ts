@@ -5,6 +5,7 @@ import { AuthService } from './auth.service.js';
 import type { AuthenticatedAdmin, IssuedSession } from './auth.types.js';
 import { CurrentAdmin } from './current-admin.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
+import { readBearerToken } from './jwt-auth.guard.js';
 import { SessionsService } from './sessions.service.js';
 import { isHttpsEnabled } from '../common/env.js';
 
@@ -50,14 +51,14 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.sessions.revoke(readRefreshCookie(request));
+    await this.sessions.revoke(readRefreshCookie(request), readBearerToken(request));
     response.clearCookie(REFRESH_COOKIE, cookieOptions());
   }
 
   @Get('me')
   @AdminAccess()
-  me(@CurrentAdmin() admin: AuthenticatedAdmin): Promise<AuthenticatedAdmin> {
-    return this.auth.profile(admin.id);
+  me(@CurrentAdmin() admin: AuthenticatedAdmin): AuthenticatedAdmin {
+    return admin;
   }
 }
 

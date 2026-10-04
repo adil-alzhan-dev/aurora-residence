@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { AuthenticatedAdmin, IssuedSession } from './auth.types.js';
+import type { IssuedSession } from './auth.types.js';
 import type { LoginDto } from './dto/login.dto.js';
 import { LOCK_MINUTES, LoginThrottleService, plural } from './login-throttle.service.js';
 import { SessionsService } from './sessions.service.js';
@@ -43,14 +43,5 @@ export class AuthService {
       name: admin.name,
       role: admin.role,
     });
-  }
-
-  async profile(adminId: number): Promise<AuthenticatedAdmin> {
-    const admin = await this.prisma.adminUser.findUnique({
-      where: { id: adminId },
-      select: { id: true, email: true, name: true, role: true },
-    });
-    if (!admin) throw new UnauthorizedException('Account no longer exists');
-    return admin;
   }
 }

@@ -11,11 +11,14 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AdminRequest>();
-    const [scheme, token] = request.headers.authorization?.split(' ') ?? [];
-    if (scheme !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Sign in to access the admin area');
-    }
+    const token = readBearerToken(request);
+    if (!token) throw new UnauthorizedException('Sign in to access the admin area');
     request.admin = await this.sessions.verifyAccess(token);
     return true;
   }
+}
+
+export function readBearerToken(request: Request): string | undefined {
+  const [scheme, token] = request.headers.authorization?.split(' ') ?? [];
+  return scheme === 'Bearer' && token ? token : undefined;
 }
