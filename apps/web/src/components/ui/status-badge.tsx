@@ -1,8 +1,7 @@
 import { cva } from "class-variance-authority";
 
+import type { ResidenceStatus } from "@/lib/api/residences";
 import { cn } from "@/lib/utils";
-
-export type ResidenceStatus = "available" | "reserved" | "sold";
 
 const badgeVariants = cva("inline-flex items-center gap-2 rounded-base px-2 py-1 text-label text-foreground", {
   variants: {
