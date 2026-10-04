@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { Logo } from "@/components/logo";
 import type { Dictionary } from "@/content";
-import { contactLinks, sectionHref } from "@/content/navigation";
+import { contactLinks, residencesHref, residencesViewHref, sectionHref } from "@/content/navigation";
 
 import { LanguageSwitcher } from "./settings-switchers";
 
@@ -45,11 +45,11 @@ export function SiteFooter({ t }: SiteFooterProps) {
 
           <nav aria-label={t.a11y.footerNavigation} className="flex flex-col gap-8 whitespace-nowrap lg:flex-row lg:gap-24">
             <FooterColumn title={footer.residencesTitle}>
-              <FooterLink href={sectionHref("residences")}>{footer.chooseOnFacade}</FooterLink>
-              <FooterLink href={sectionHref("residences")} className="max-lg:hidden">
+              <FooterLink href={residencesHref}>{footer.chooseOnFacade}</FooterLink>
+              <FooterLink href={residencesViewHref("grid")} className="max-lg:hidden">
                 {footer.floorGrid}
               </FooterLink>
-              <FooterLink href={sectionHref("residences")}>{footer.allResidences}</FooterLink>
+              <FooterLink href={residencesViewHref("list")}>{footer.allResidences}</FooterLink>
             </FooterColumn>
             <FooterColumn title={footer.projectTitle}>
               <FooterLink href={sectionHref("about")}>{nav.about}</FooterLink>

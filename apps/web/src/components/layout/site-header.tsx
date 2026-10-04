@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
-import { sectionHref, sectionIds } from "@/content/navigation";
+import { headerVariant, sectionHref, sectionIds } from "@/content/navigation";
 import { cn } from "@/lib/utils";
 
 import { CurrencySwitcher, LanguageSwitcher } from "./settings-switchers";
@@ -19,10 +20,12 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ t }: SiteHeaderProps) {
-  const [solid, setSolid] = useState(false);
+  const variant = headerVariant(usePathname());
+  const [scrolled, setScrolled] = useState(false);
+  const solid = scrolled || variant === "light";
 
   useEffect(() => {
-    const update = () => setSolid(window.scrollY > SOLID_AFTER_PX);
+    const update = () => setScrolled(window.scrollY > SOLID_AFTER_PX);
     update();
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
@@ -33,7 +36,8 @@ export function SiteHeader({ t }: SiteHeaderProps) {
       data-theme={solid ? "light" : "dark"}
       className={cn(
         "fixed inset-x-0 top-0 z-40 animate-fade-down border-b transition-[background-color,border-color,color] duration-300",
-        solid ? "border-border bg-background" : "border-transparent bg-transparent",
+        solid ? "border-border bg-background" : "bg-transparent",
+        !solid && (variant === "overlay" ? "border-transparent" : "border-border"),
       )}
     >
       <a

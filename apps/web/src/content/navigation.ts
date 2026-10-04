@@ -4,7 +4,8 @@ export type SectionId = keyof Dictionary["nav"];
 
 export const sectionIds: SectionId[] = ["about", "residences", "gallery", "location", "progress", "contacts"];
 
-export const sectionHref = (id: SectionId) => `#${id}`;
+// Absolute, so the same links work from the residence pages and lead back to the home sections.
+export const sectionHref = (id: SectionId) => `/#${id}`;
 
 export const contactLinks = {
   phone: "tel:+15550102040",
@@ -19,3 +20,14 @@ export const residencesViewHref = (view: ResidenceView) =>
   view === "facade" ? residencesHref : `${residencesHref}?view=${view}`;
 
 export const floorHref = (floor: number) => `${residencesHref}/floor/${floor}`;
+
+export const residenceHref = (number: string) => `${residencesHref}/${number}`;
+
+export type HeaderVariant = "overlay" | "dark" | "light";
+
+/** Home starts transparent over the hero, other dark pages keep the hairline, light pages start solid. */
+export function headerVariant(pathname: string): HeaderVariant {
+  if (pathname === "/") return "overlay";
+  if (pathname.startsWith(`${residencesHref}/floor/`)) return "light";
+  return "dark";
+}

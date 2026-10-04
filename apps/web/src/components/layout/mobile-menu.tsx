@@ -26,8 +26,11 @@ export function MobileMenu({ t, className }: MobileMenuProps) {
   const pendingSection = useRef<string | null>(null);
 
   const handleNavigate = (event: MouseEvent<HTMLAnchorElement>) => {
+    const id = event.currentTarget.hash.slice(1);
+    // On other pages the section is not here, so the browser follows the link to the home page.
+    if (!document.getElementById(id)) return;
     event.preventDefault();
-    pendingSection.current = event.currentTarget.hash.slice(1);
+    pendingSection.current = id;
     setOpen(false);
   };
 
