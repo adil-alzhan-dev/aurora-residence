@@ -5,6 +5,7 @@ export const residencesEn = {
     overline: "Residences",
     title: "Choose your residence",
     lead: "Sixty-six residences on eleven floors. Hover a floor to see what is free, click it to open the plan.",
+    loading: "Loading live availability",
     hintPointer: "Click to open the plan",
     hintTouch: "Tap a floor to select it",
     floorSelected: "Floor {floor} selected, {availability}",
@@ -49,6 +50,7 @@ export const residencesEn = {
   },
   floorPage: {
     metaTitle: "Floor {floor} plan · Aurora Residence",
+    loading: "Loading the floor plan",
     back: "Back to facade",
     backShort: "Facade",
     overline: "Residences / Floor plan",
