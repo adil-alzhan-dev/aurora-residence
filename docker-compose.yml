@@ -30,6 +30,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_NAME: ${ADMIN_NAME}
       TZ: ${TZ:-UTC}
+      HTTPS_ENABLED: ${HTTPS_ENABLED:-false}
       API_PORT: 4000
     depends_on:
       postgres:

@@ -8,6 +8,7 @@ import type { AuthenticatedAdmin, IssuedSession } from './auth.types.js';
 import { CurrentAdmin } from './current-admin.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
 import { SessionsService } from './sessions.service.js';
+import { isHttpsEnabled } from '../common/env.js';
 
 export const REFRESH_COOKIE = 'aurora_refresh';
 
@@ -68,7 +69,7 @@ function cookieOptions(): CookieOptions {
   return {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttpsEnabled(),
     path: '/api/auth',
   };
 }
