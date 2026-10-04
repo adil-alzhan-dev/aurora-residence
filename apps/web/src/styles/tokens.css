@@ -1,0 +1,95 @@
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
+  --background: #f5f2ec;
+  --card: #fbf9f5;
+  --foreground: #16181d;
+  --primary: #b08d57;
+  --primary-hover: #9c7a47;
+  --primary-foreground: #101215;
+  --dark: #101215;
+  --muted-foreground: #8a8577;
+  --border: #e3ded3;
+  --disabled: #e3ded3;
+  --disabled-foreground: #ada798;
+  --destructive: #c2462f;
+  --status-free: #3e8e6a;
+  --status-reserved: #d8a23a;
+  --status-sold: #9aa0a6;
+  --status-subtle-strength: 16%;
+}
+
+[data-theme="dark"] {
+  --background: #101215;
+  --card: #17191d;
+  --foreground: #f5f2ec;
+  --primary-hover: #c4a26e;
+  --muted-foreground: #8f897c;
+  --border: #2a2c31;
+  --disabled: #25272b;
+  --disabled-foreground: #5e5b55;
+  --destructive: #d0604a;
+  --status-subtle-strength: 22%;
+}
+
+:root {
+  --page-gutter: 16px;
+  --header-height: 64px;
+}
+
+@media (width >= 48rem) {
+  :root {
+    --page-gutter: 32px;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --page-gutter: 80px;
+  }
+}
+
+@media (width >= 80rem) {
+  :root {
+    --header-height: 98px;
+  }
+}
+
+@theme {
+  --color-*: initial;
+  --breakpoint-wide: 90rem;
+  --container-page: 1280px;
+  --radius-base: 2px;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-dark: var(--dark);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+  --color-destructive: var(--destructive);
+  --color-status-free: var(--status-free);
+  --color-status-reserved: var(--status-reserved);
+  --color-status-sold: var(--status-sold);
+  --color-status-free-subtle: color-mix(in srgb, var(--status-free) var(--status-subtle-strength), transparent);
+  --color-status-reserved-subtle: color-mix(in srgb, var(--status-reserved) var(--status-subtle-strength), transparent);
+  --color-status-sold-subtle: color-mix(in srgb, var(--status-sold) var(--status-subtle-strength), transparent);
+  --font-serif: var(--font-digits), var(--font-cormorant), "Times New Roman", serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: calc(var(--container-page) + 2 * var(--page-gutter));
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}

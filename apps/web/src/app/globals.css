@@ -1,5 +1,48 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/typography.css";
+@import "../styles/motion.css";
 
-:root {
-  font-variant-numeric: lining-nums;
+@layer base {
+  html {
+    font-variant-numeric: lining-nums;
+    font-feature-settings: "lnum" 1;
+    scroll-padding-top: var(--header-height);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  [data-theme] {
+    color: var(--foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@utility hero-shade {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--dark) 62%, transparent) 0%,
+    color-mix(in srgb, var(--dark) 30%, transparent) 12%,
+    transparent 24%,
+    transparent 42%,
+    color-mix(in srgb, var(--dark) 55%, transparent) 60%,
+    color-mix(in srgb, var(--dark) 82%, transparent) 78%,
+    color-mix(in srgb, var(--dark) 94%, transparent) 100%
+  );
 }
