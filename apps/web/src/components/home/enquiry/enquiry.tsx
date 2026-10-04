@@ -3,10 +3,10 @@ import type { Dictionary } from "@/content";
 import { contactLinks, type SectionId } from "@/content/navigation";
 import { revealDelay } from "@/lib/motion";
 
-import { EnquiryForm } from "./enquiry-form";
+import { EnquiryPanel } from "./enquiry-panel";
 
 type EnquiryProps = {
-  t: Pick<Dictionary, "enquiry" | "contacts">;
+  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
 };
 
 type Contact = { title: string; value: string; note: string; href?: string };
@@ -58,7 +58,7 @@ export function Enquiry({ t }: EnquiryProps) {
           </ul>
         </div>
         <div data-reveal="up" style={revealDelay(240)}>
-          <EnquiryForm t={enquiry} />
+          <EnquiryPanel t={t} />
         </div>
       </div>
     </RevealSection>

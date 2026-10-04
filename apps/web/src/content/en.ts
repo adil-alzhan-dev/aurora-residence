@@ -225,15 +225,12 @@ export const en = {
     emailPlaceholder: "name@example.com",
     website: "Website",
     submit: "Request a call back",
-    consent: "By sending the form you agree to the processing of personal data under our privacy policy.",
     errors: {
       name: "Enter your name",
       code: "Choose a country code",
       phone: "Enter a phone number with 7 to 15 digits including the code",
       email: "Enter a valid email address",
     },
-    notConnected:
-      "Thank you. Online requests open very soon; until then, please call +1 (555) 010-2040 or write to sales@aurora-residence.com.",
     countries: [
       ["+1", "United States, Canada"],
       ["+44", "United Kingdom"],

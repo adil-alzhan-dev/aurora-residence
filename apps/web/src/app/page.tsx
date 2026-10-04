@@ -23,7 +23,7 @@ export default async function HomePage() {
       <Gallery t={{ gallery: t.gallery }} />
       <Location t={{ location: t.location }} />
       <ConstructionProgress t={{ progress: t.progress }} />
-      <Enquiry t={{ enquiry: t.enquiry, contacts: t.contacts }} />
+      <Enquiry t={{ enquiry: t.enquiry, enquirySend: t.enquirySend, contacts: t.contacts }} />
     </>
   );
 }

@@ -25,11 +25,7 @@ const ids = { comment: "residence-enquiry-comment", consent: "residence-enquiry-
 export function ResidenceEnquiryForm({ number, t, onSent }: ResidenceEnquiryFormProps) {
   const text = t.residenceEnquiry;
   const schema = useMemo(
-    () =>
-      createEnquirySchema(
-        { ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError },
-        { requireConsent: true },
-      ),
+    () => createEnquirySchema({ ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError }),
     [t.enquiry.errors, text.errors, t.enquirySend.consentError],
   );
   const form = useForm<EnquiryValues>({

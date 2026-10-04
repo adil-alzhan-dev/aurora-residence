@@ -12,14 +12,14 @@ type EnquiryErrors = {
   phone: string;
   email: string;
   comment?: string;
-  consent?: string;
+  consent: string;
 };
 
 /**
  * Mirrors CreateEnquiryDto in apps/api: name 2-80, "+" code and 7-15 digits in total, valid email,
- * comment up to 2000 characters. The residence form also asks for an explicit consent tick.
+ * comment up to 2000 characters and an explicit consent tick, which the API requires.
  */
-export function createEnquirySchema(errors: EnquiryErrors, { requireConsent = false } = {}) {
+export function createEnquirySchema(errors: EnquiryErrors) {
   return z
     .object({
       name: z.string().trim().min(2, { error: errors.name }).max(80, { error: errors.name }),
@@ -33,7 +33,7 @@ export function createEnquirySchema(errors: EnquiryErrors, { requireConsent = fa
       consent: z
         .boolean()
         .optional()
-        .refine((consent) => !requireConsent || consent === true, { error: errors.consent }),
+        .refine((consent) => consent === true, { error: errors.consent }),
       website: z.string().max(500).optional(),
     })
     .refine(

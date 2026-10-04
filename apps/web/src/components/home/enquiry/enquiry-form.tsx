@@ -1,52 +1,53 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { ConsentField } from "@/components/enquiry/consent-field";
 import { ContactFields } from "@/components/enquiry/contact-fields";
 import { createEnquirySchema, type EnquiryValues } from "@/components/enquiry/enquiry-schema";
-import { Button, ButtonArrow } from "@/components/ui/button";
+import { FormAlertMessage, SubmitButton } from "@/components/enquiry/form-status";
+import { useEnquirySubmit } from "@/components/enquiry/use-enquiry-submit";
 import type { Dictionary } from "@/content";
 
 type EnquiryFormProps = {
-  t: Dictionary["enquiry"];
+  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
+  onSent: () => void;
 };
 
-export function EnquiryForm({ t }: EnquiryFormProps) {
-  const schema = useMemo(() => createEnquirySchema(t.errors), [t.errors]);
-  const [submitted, setSubmitted] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<EnquiryValues>({
+/** Call back request without a residence: the manager helps to choose one. */
+export function EnquiryForm({ t, onSent }: EnquiryFormProps) {
+  const { enquiry, enquirySend } = t;
+  const schema = useMemo(
+    () => createEnquirySchema({ ...enquiry.errors, consent: enquirySend.consentError }),
+    [enquiry.errors, enquirySend.consentError],
+  );
+  const form = useForm<EnquiryValues>({
     resolver: zodResolver(schema),
     mode: "onTouched",
-    defaultValues: { name: "", code: "", phone: "", email: "", website: "" },
+    defaultValues: { name: "", code: "", phone: "", email: "", consent: false, website: "" },
   });
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = form;
   const code = useWatch({ control, name: "code" });
-
-  // POST /api/enquiries still requires a residence number, so the home form stops at validation (task 5b).
-  const onSubmit = () => setSubmitted(true);
+  const { submit, alert, sending } = useEnquirySubmit(form, { source: "Contacts form" }, onSent);
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="relative flex flex-col gap-6 lg:gap-8">
-      <h3 className="text-h3 text-foreground">{t.formTitle}</h3>
+    <form noValidate onSubmit={submit} className="relative flex flex-col gap-6 lg:gap-8">
+      <h3 className="text-h3 text-foreground">{enquiry.formTitle}</h3>
 
-      <ContactFields idPrefix="enquiry" register={register} errors={errors} code={code} t={t} />
+      <ContactFields idPrefix="enquiry" register={register} errors={errors} code={code} t={enquiry} />
+
+      <ConsentField id="enquiry-consent" register={register} errors={errors} t={enquirySend} />
 
       <div className="flex flex-col gap-4">
-        <Button type="submit" className="w-full">
-          {t.submit}
-          <ButtonArrow />
-        </Button>
-        <p role="status" className="text-body text-foreground empty:hidden">
-          {submitted ? t.notConnected : ""}
-        </p>
+        {alert && <FormAlertMessage alert={alert} phone={t.contacts.phone} t={enquirySend} />}
+        <SubmitButton sending={sending} label={enquiry.submit} sendingLabel={enquirySend.sending} />
       </div>
-      <p className="text-caption text-muted-foreground">{t.consent}</p>
     </form>
   );
 }
