@@ -1,0 +1,56 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as argon2 from 'argon2';
+import { PrismaService } from '../prisma/prisma.service.js';
+import type { AuthenticatedAdmin, IssuedSession } from './auth.types.js';
+import type { LoginDto } from './dto/login.dto.js';
+import { LOCK_MINUTES, LoginThrottleService, plural } from './login-throttle.service.js';
+import { SessionsService } from './sessions.service.js';
+
+@Injectable()
+export class AuthService {
+  // Verifying against a throwaway hash keeps unknown emails as slow as wrong passwords.
+  private readonly timingGuardHash = argon2.hash('timing-guard-not-a-password');
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly throttle: LoginThrottleService,
+    private readonly sessions: SessionsService,
+  ) {}
+
+  async login(dto: LoginDto, ip: string): Promise<IssuedSession> {
+    await this.throttle.assertNotLocked(dto.email, ip);
+
+    const admin = await this.prisma.adminUser.findUnique({ where: { email: dto.email } });
+    const passwordHash = admin?.passwordHash ?? (await this.timingGuardHash);
+    const valid = await argon2.verify(passwordHash, dto.password);
+
+    if (!admin || !valid) {
+      const attemptsLeft = await this.throttle.registerFailure(dto.email, ip);
+      throw new UnauthorizedException({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message:
+          `Wrong email or password. ${attemptsLeft} ${plural(attemptsLeft, 'attempt')} left, ` +
+          `then sign-in pauses for ${LOCK_MINUTES} minutes.`,
+        attemptsLeft,
+      });
+    }
+
+    await this.throttle.clear(dto.email, ip);
+    return this.sessions.issue({
+      id: admin.id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role,
+    });
+  }
+
+  async profile(adminId: number): Promise<AuthenticatedAdmin> {
+    const admin = await this.prisma.adminUser.findUnique({
+      where: { id: adminId },
+      select: { id: true, email: true, name: true, role: true },
+    });
+    if (!admin) throw new UnauthorizedException('Account no longer exists');
+    return admin;
+  }
+}
