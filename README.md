@@ -58,6 +58,14 @@ refresh token is an httpOnly cookie limited to `/api/auth`. After 5 wrong
 passwords sign-in pauses for 15 minutes for that email and IP. Reservations
 last 7 days and are released automatically by a job that runs every minute.
 
+## HTTP and HTTPS
+
+`HTTPS_ENABLED` in `.env` switches on everything that needs https: the `Secure`
+flag on the refresh cookie and the HSTS header. It is `false` by default, so the
+production build works on http://localhost, for example when showing the
+project from a laptop. Set it to `true` only when the site is served over https,
+otherwise browsers drop the cookie and the session cannot be refreshed.
+
 ## Demo login
 
 - Email: `maya.collins@aurora-residence.com` (the `ADMIN_EMAIL` value)
