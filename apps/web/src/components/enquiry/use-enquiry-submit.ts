@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 import { sendEnquiry, type EnquiryPayload, type EnquirySource } from "@/lib/api/enquiries";
@@ -33,29 +33,51 @@ export function toEnquiryPayload(values: EnquiryValues, { source, residence }: T
   };
 }
 
+type SubmitCallbacks = {
+  onSent: () => void;
+  onSendingChange?: (sending: boolean) => void;
+};
+
 /**
- * Sends the form once at a time. Field errors from the API land on their fields; everything else
- * becomes one alert. The values stay in the form whatever happens.
+ * Field errors from the API land on their fields; everything else becomes one alert. The values stay
+ * in the form whatever happens.
  */
-export function useEnquirySubmit(form: UseFormReturn<EnquiryValues>, target: Target, onSent: () => void) {
+export function useEnquirySubmit(
+  form: UseFormReturn<EnquiryValues>,
+  target: Target,
+  { onSent, onSendingChange }: SubmitCallbacks,
+) {
   const [alert, setAlert] = useState<FormAlert | null>(null);
   const [sending, setSending] = useState(false);
   const inFlight = useRef(false);
+  // A response is applied only while its submission is the latest one of a mounted form,
+  // so a late answer cannot finish a form the visitor has already left.
+  const currentSubmission = useRef(0);
+
+  useEffect(() => {
+    const submissions = currentSubmission;
+    return () => {
+      submissions.current += 1;
+    };
+  }, []);
+
+  const toggleSending = (next: boolean) => {
+    inFlight.current = next;
+    setSending(next);
+    onSendingChange?.(next);
+  };
 
   const send = async (values: EnquiryValues) => {
     if (inFlight.current) return;
-    inFlight.current = true;
-    setSending(true);
+    const submission = ++currentSubmission.current;
+    toggleSending(true);
     setAlert(null);
-    try {
-      const result = await sendEnquiry(toEnquiryPayload(values, target));
-      if (result.kind === "sent") onSent();
-      else if (result.kind === "invalid") showFieldErrors(result.fields);
-      else setAlert(result);
-    } finally {
-      inFlight.current = false;
-      setSending(false);
-    }
+    const result = await sendEnquiry(toEnquiryPayload(values, target));
+    if (submission !== currentSubmission.current) return;
+    toggleSending(false);
+    if (result.kind === "sent") onSent();
+    else if (result.kind === "invalid") showFieldErrors(result.fields);
+    else setAlert(result);
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(send)(event);

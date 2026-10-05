@@ -34,7 +34,7 @@ export function EnquiryForm({ t, onSent }: EnquiryFormProps) {
     formState: { errors },
   } = form;
   const code = useWatch({ control, name: "code" });
-  const { submit, alert, sending } = useEnquirySubmit(form, { source: "Contacts form" }, onSent);
+  const { submit, alert, sending } = useEnquirySubmit(form, { source: "Contacts form" }, { onSent });
 
   return (
     <form noValidate onSubmit={submit} className="relative flex flex-col gap-6 lg:gap-8">

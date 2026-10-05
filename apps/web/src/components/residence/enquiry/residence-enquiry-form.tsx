@@ -17,12 +17,13 @@ type ResidenceEnquiryFormProps = {
   number: string;
   t: Pick<Dictionary, "enquiry" | "residenceEnquiry" | "enquirySend" | "contacts">;
   onSent: () => void;
+  onSendingChange: (sending: boolean) => void;
 };
 
 const ids = { comment: "residence-enquiry-comment", consent: "residence-enquiry-consent" };
 
 /** Same fields and checks as the home form, plus a comment; sent with the residence number. */
-export function ResidenceEnquiryForm({ number, t, onSent }: ResidenceEnquiryFormProps) {
+export function ResidenceEnquiryForm({ number, t, onSent, onSendingChange }: ResidenceEnquiryFormProps) {
   const text = t.residenceEnquiry;
   const schema = useMemo(
     () => createEnquirySchema({ ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError }),
@@ -39,7 +40,11 @@ export function ResidenceEnquiryForm({ number, t, onSent }: ResidenceEnquiryForm
     formState: { errors },
   } = form;
   const code = useWatch({ control, name: "code" });
-  const { submit, alert, sending } = useEnquirySubmit(form, { source: "Residence page", residence: number }, onSent);
+  const { submit, alert, sending } = useEnquirySubmit(
+    form,
+    { source: "Residence page", residence: number },
+    { onSent, onSendingChange },
+  );
 
   return (
     <form noValidate onSubmit={submit} className="relative flex flex-col gap-6">

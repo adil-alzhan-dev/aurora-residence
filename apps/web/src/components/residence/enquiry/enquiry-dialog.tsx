@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 
 import { EnquirySuccess } from "@/components/enquiry/enquiry-success";
 import { CloseIcon } from "@/components/icons";
@@ -25,7 +25,7 @@ type EnquiryDialogProps = {
 };
 
 const closeButton =
-  "flex size-11 items-center justify-center text-foreground transition-colors duration-200 hover:text-primary lg:-m-2.5";
+  "flex size-11 items-center justify-center text-foreground transition-colors duration-200 hover:text-primary aria-disabled:cursor-not-allowed aria-disabled:text-disabled-foreground lg:-m-2.5";
 
 /**
  * Enquiry / Modal and Enquiry / Success on desktop, M / Enquiry and M / Enquiry / Success on phones.
@@ -33,15 +33,22 @@ const closeButton =
  */
 export function EnquiryDialog({ open, onOpenChange, residence, t }: EnquiryDialogProps) {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const text = t.residenceEnquiry;
   const success = t.enquirySend.success;
   const number = { number: residence.number };
   const isReserved = residence.status === "reserved";
   const note = sent ? (isReserved ? success.reserved : success.available) : undefined;
 
+  // While a request is out the dialog stays open: closing it would drop the form and let the
+  // visitor send the same enquiry again before the first answer arrives.
   const handleOpenChange = (next: boolean) => {
+    if (!next && sending) return;
     if (!next) setSent(false);
     onOpenChange(next);
+  };
+  const keepOpenWhileSending = (event: Event | SyntheticEvent) => {
+    if (sending) event.preventDefault();
   };
 
   return (
@@ -51,6 +58,8 @@ export function EnquiryDialog({ open, onOpenChange, residence, t }: EnquiryDialo
         <Dialog.Content
           data-theme="light"
           data-lenis-prevent
+          onEscapeKeyDown={keepOpenWhileSending}
+          onInteractOutside={keepOpenWhileSending}
           className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-background text-foreground data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in lg:inset-auto lg:top-1/2 lg:left-1/2 lg:flex lg:max-h-[calc(100svh-4rem)] lg:w-[960px] lg:max-w-[calc(100vw-4rem)] lg:-translate-1/2 lg:rounded-base lg:bg-card"
         >
           <ResidenceAside residence={residence} t={t} note={note} />
@@ -59,7 +68,12 @@ export function EnquiryDialog({ open, onOpenChange, residence, t }: EnquiryDialo
             <div className="flex flex-col gap-3">
               <div className="-mx-4 flex min-h-16 items-center justify-between pr-1.5 pl-4 lg:mx-0 lg:min-h-0 lg:p-0">
                 <p className="text-overline text-primary">{sent ? success.overline : text.overline}</p>
-                <Dialog.Close className={closeButton} aria-label={text.close}>
+                <Dialog.Close
+                  className={closeButton}
+                  aria-label={text.close}
+                  aria-disabled={sending || undefined}
+                  onClick={keepOpenWhileSending}
+                >
                   <CloseIcon />
                 </Dialog.Close>
               </div>
@@ -89,7 +103,12 @@ export function EnquiryDialog({ open, onOpenChange, residence, t }: EnquiryDialo
             ) : (
               <>
                 <ResidenceCard residence={residence} t={t} />
-                <ResidenceEnquiryForm number={residence.number} t={t} onSent={() => setSent(true)} />
+                <ResidenceEnquiryForm
+                  number={residence.number}
+                  t={t}
+                  onSent={() => setSent(true)}
+                  onSendingChange={setSending}
+                />
               </>
             )}
           </div>
