@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
+import type { ResidenceStatus } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { Tx } from '../../reservations/status-change.js';
 import { ACTIVITY_SELECT, toActivityEntry } from '../activity.view.js';
@@ -108,14 +109,15 @@ export class AdminEnquiriesService {
 }
 
 /**
+ * The residence row is locked before its status is read: a sale in progress
+ * makes the link wait and then see SOLD, a link in progress makes the sale wait.
+ * Residence before enquiry is the same lock order as status-change.ts.
  * The update is conditional on the enquiry still having no residence, so of two
  * parallel links only the first succeeds and the second gets 409.
  */
 async function linkResidence(tx: Tx, id: number, number: string, actorId: number): Promise<void> {
-  const residence = await tx.residence.findUnique({
-    where: { number },
-    select: { id: true, status: true },
-  });
+  const [residence] = await tx.$queryRaw<{ id: number; status: ResidenceStatus }[]>`
+    SELECT id, status FROM "Residence" WHERE number = ${number} FOR UPDATE`;
   if (!residence) throw new BadRequestException(`Residence ${number} does not exist`);
   if (residence.status === 'SOLD') throw new ConflictException(`Residence ${number} is sold`);
 

@@ -169,4 +169,42 @@ describe('Admin enquiries without a residence (e2e)', () => {
     await http(app).patch(`/api/admin/enquiries/${id}`).send({ residenceNumber: '6.01' }).expect(401);
     expect((await card(id)).residence).toBeNull();
   });
+
+  it('never links a residence that was already sold when the link happened', async () => {
+    const residences = await prisma.residence.findMany({
+      where: { status: 'AVAILABLE', enquiries: { none: {} }, reservations: { none: {} } },
+      select: { id: true, number: true },
+      orderBy: { number: 'desc' },
+      take: 6,
+    });
+    const enquiryIds = await Promise.all(residences.map((_, index) => submit(`Race Buyer ${index}`)));
+    const sell = (number: string) =>
+      http(app).patch(`/api/admin/residences/${number}`).set(admin()).send({ status: 'SOLD' });
+
+    const results = await Promise.all(
+      residences.map(({ number }, index) => Promise.all([link(enquiryIds[index], number), sell(number)])),
+    );
+
+    for (const [index, [linked, sold]] of results.entries()) {
+      expect(sold.status).toBe(200);
+      const residenceId = residences[index].id;
+      const sale = await prisma.activityLog.findFirstOrThrow({
+        where: { type: 'STATUS_CHANGED', residenceId, toValue: 'SOLD' },
+        select: { id: true },
+      });
+      const links = await prisma.activityLog.findMany({
+        where: { type: 'ENQUIRY_RESIDENCE_LINKED', residenceId },
+        select: { id: true },
+      });
+      if (linked.status === 200) {
+        // Log ids follow insert order, and a link inserts its row while it holds the residence lock.
+        expect(links).toHaveLength(1);
+        expect(links[0].id).toBeLessThan(sale.id);
+      } else {
+        expect(linked.status).toBe(409);
+        expect((linked.body as { message: string }).message).toBe(`Residence ${residences[index].number} is sold`);
+        expect(links).toHaveLength(0);
+      }
+    }
+  });
 });
