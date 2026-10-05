@@ -20,7 +20,7 @@ import { ResidencesModule } from './residences/residences.module.js';
     // Limits are applied per route with @Throttle; this is only the fallback.
     ThrottlerModule.forRoot({
       throttlers: [{ name: 'default', ttl: MINUTE_MS, limit: 60 }],
-      errorMessage: 'Too many requests, please wait a minute and try again',
+      errorMessage: 'Too many requests. Please try again later.',
     }),
     PrismaModule,
     HealthModule,

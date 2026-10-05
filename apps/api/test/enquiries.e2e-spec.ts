@@ -110,11 +110,14 @@ describe('POST /api/enquiries (e2e)', () => {
     expect(errors.status).toBe('property status should not exist');
   });
 
-  it('allows 10 enquiries per 10 minutes from one address', async () => {
+  it('allows 10 enquiries per 10 minutes from one address, then says when to retry', async () => {
     const send = () =>
       http(app).post('/api/enquiries').set('X-Forwarded-For', '10.30.0.1').send({ ...contactsEnquiry, website: 'x' });
     for (let i = 0; i < 10; i += 1) await send().expect(201);
     const response = await send().expect(429);
-    expect(response.body).toEqual({ statusCode: 429, message: 'Too many requests, please wait a minute and try again' });
+    expect(response.body).toEqual({ statusCode: 429, message: 'Too many requests. Please try again later.' });
+    const retryAfter = Number(response.headers['retry-after']);
+    expect(retryAfter).toBeGreaterThan(540);
+    expect(retryAfter).toBeLessThanOrEqual(600);
   });
 });
