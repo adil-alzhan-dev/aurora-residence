@@ -133,6 +133,35 @@ describe('Admin enquiries without a residence (e2e)', () => {
     expect((await card(id)).residence).toBeNull();
   });
 
+  it('rejects null status and residenceNumber with a field error and changes nothing', async () => {
+    const id = await submit('Noor Haddad');
+    const before = await prisma.enquiry.findUniqueOrThrow({ where: { id } });
+    const logsBefore = await prisma.activityLog.count({ where: { enquiryId: id } });
+    const expected = { status: 'status must be NEW, IN_PROGRESS or CLOSED', residenceNumber: 'Residence number must look like 7.03' };
+
+    for (const field of ['status', 'residenceNumber'] as const) {
+      const response = await http(app)
+        .patch(`/api/admin/enquiries/${id}`)
+        .set(admin())
+        .send({ [field]: null, managerNote: 'Must not be saved' })
+        .expect(400);
+      const body = response.body as { message: string[]; errors: Record<string, string> };
+      expect(body.errors).toEqual({ [field]: expected[field] });
+      expect(body.message).toEqual([expected[field]]);
+    }
+    expect(await prisma.enquiry.findUniqueOrThrow({ where: { id } })).toEqual(before);
+    expect(await prisma.activityLog.count({ where: { enquiryId: id } })).toBe(logsBefore);
+  });
+
+  it('clears the manager note with null', async () => {
+    const id = await submit('Hana Sato');
+    const patch = (managerNote: string | null) =>
+      http(app).patch(`/api/admin/enquiries/${id}`).set(admin()).send({ managerNote }).expect(200);
+    expect(((await patch('Call after 6 pm')).body as { managerNote: string | null }).managerNote).toBe('Call after 6 pm');
+    expect(((await patch(null)).body as { managerNote: string | null }).managerNote).toBeNull();
+    expect((await prisma.enquiry.findUniqueOrThrow({ where: { id } })).managerNote).toBeNull();
+  });
+
   it('asks for at least one change and requires a token', async () => {
     const id = await submit('Elise Martin');
     const empty = await http(app).patch(`/api/admin/enquiries/${id}`).set(admin()).send({}).expect(400);
