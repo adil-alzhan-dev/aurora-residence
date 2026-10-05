@@ -19,7 +19,6 @@ type EnquirySuccessProps = {
   card?: ReactNode;
   titleAs?: ElementType;
   leadAs?: ElementType;
-  /** Text style of "Thank you": large on the phone sheet, smaller inside a page section. */
   titleClassName?: string;
 };
 

@@ -1,4 +1,3 @@
-/** Sending an enquiry from the home and residence forms: progress, errors and the success screen. */
 export const enquirySendEn = {
   enquirySend: {
     consentBefore: "I agree to the processing of my personal data for this request, as described in the ",

@@ -22,7 +22,6 @@ type ResidenceEnquiryFormProps = {
 
 const ids = { comment: "residence-enquiry-comment", consent: "residence-enquiry-consent" };
 
-/** Same fields and checks as the home form, plus a comment; sent with the residence number. */
 export function ResidenceEnquiryForm({ number, t, onSent, onSendingChange }: ResidenceEnquiryFormProps) {
   const text = t.residenceEnquiry;
   const schema = useMemo(

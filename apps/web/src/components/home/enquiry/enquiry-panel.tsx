@@ -14,7 +14,6 @@ type EnquiryPanelProps = {
   t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
 };
 
-/** The form, replaced in place by the success block once the request is stored. */
 export function EnquiryPanel({ t }: EnquiryPanelProps) {
   const [sent, setSent] = useState(false);
   const success = t.enquirySend.success;

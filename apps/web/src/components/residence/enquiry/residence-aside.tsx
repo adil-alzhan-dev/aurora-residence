@@ -10,11 +10,10 @@ import { ResidenceDrawing } from "../plan/plan-drawing";
 type ResidenceAsideProps = {
   residence: Residence;
   t: Dictionary;
-  /** Status line under the title, used on the success screen. */
   note?: string;
 };
 
-/** Dark left column of the desktop modal: plan, status, specs and price. */
+/** Desktop modal only; phones show ResidenceCard instead. */
 export function ResidenceAside({ residence, t, note }: ResidenceAsideProps) {
   const page = t.residencePage;
   const specs = [

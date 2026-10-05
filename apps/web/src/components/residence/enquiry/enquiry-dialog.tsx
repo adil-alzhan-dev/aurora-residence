@@ -27,10 +27,7 @@ type EnquiryDialogProps = {
 const closeButton =
   "flex size-11 items-center justify-center text-foreground transition-colors duration-200 hover:text-primary aria-disabled:cursor-not-allowed aria-disabled:text-disabled-foreground lg:-m-2.5";
 
-/**
- * Enquiry / Modal and Enquiry / Success on desktop, M / Enquiry and M / Enquiry / Success on phones.
- * Closing after a sent request brings the empty form back next time.
- */
+/** Enquiry / Modal and Enquiry / Success on desktop, M / Enquiry and M / Enquiry / Success on phones. */
 export function EnquiryDialog({ open, onOpenChange, residence, t }: EnquiryDialogProps) {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);

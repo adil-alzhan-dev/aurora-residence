@@ -7,7 +7,6 @@ import { sendEnquiry, type EnquiryPayload, type EnquirySource } from "@/lib/api/
 
 import { toFullPhone, type EnquiryValues } from "./enquiry-schema";
 
-/** Shown over the submit button when the request fails as a whole rather than on a field. */
 export type FormAlert = { kind: "rate-limited" } | { kind: "failed" } | { kind: "rejected"; message: string };
 
 type Target = { source: EnquirySource; residence?: string };
@@ -38,10 +37,6 @@ type SubmitCallbacks = {
   onSendingChange?: (sending: boolean) => void;
 };
 
-/**
- * Field errors from the API land on their fields; everything else becomes one alert. The values stay
- * in the form whatever happens.
- */
 export function useEnquirySubmit(
   form: UseFormReturn<EnquiryValues>,
   target: Target,

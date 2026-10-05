@@ -19,10 +19,7 @@ type EnquiryErrors = {
   consent: string;
 };
 
-/**
- * Mirrors CreateEnquiryDto in apps/api: the phone is checked as the full "+code number" string,
- * up to 25 characters with 7-15 digits.
- */
+/** Mirrors CreateEnquiryDto in apps/api. */
 export function createEnquirySchema(errors: EnquiryErrors) {
   return z
     .object({

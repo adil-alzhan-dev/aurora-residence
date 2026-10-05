@@ -16,7 +16,6 @@ type EnquiryFormProps = {
   onSent: () => void;
 };
 
-/** Call back request without a residence: the manager helps to choose one. */
 export function EnquiryForm({ t, onSent }: EnquiryFormProps) {
   const { enquiry, enquirySend } = t;
   const schema = useMemo(
