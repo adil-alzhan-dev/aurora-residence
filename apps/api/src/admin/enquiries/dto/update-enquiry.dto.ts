@@ -18,7 +18,6 @@ export class UpdateEnquiryDto {
   @MaxLength(2000)
   managerNote?: string | null;
 
-  /** Links a residence to an enquiry that came without one. */
   @ValidateIf(isSent)
   @Matches(RESIDENCE_NUMBER_PATTERN, { message: 'Residence number must look like 7.03' })
   residenceNumber?: string;
