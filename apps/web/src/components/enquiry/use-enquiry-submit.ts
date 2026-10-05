@@ -5,7 +5,7 @@ import type { UseFormReturn } from "react-hook-form";
 
 import { sendEnquiry, type EnquiryPayload, type EnquirySource } from "@/lib/api/enquiries";
 
-import type { EnquiryValues } from "./enquiry-schema";
+import { toFullPhone, type EnquiryValues } from "./enquiry-schema";
 
 /** Shown over the submit button when the request fails as a whole rather than on a field. */
 export type FormAlert = { kind: "rate-limited" } | { kind: "failed" } | { kind: "rejected"; message: string };
@@ -22,7 +22,7 @@ export function toEnquiryPayload(values: EnquiryValues, { source, residence }: T
   const comment = values.comment?.trim();
   return {
     name: values.name.trim(),
-    phone: `${values.code} ${values.phone.trim()}`,
+    phone: toFullPhone(values.code, values.phone),
     email: values.email.trim(),
     ...(comment ? { comment } : {}),
     ...(residence ? { residence } : {}),

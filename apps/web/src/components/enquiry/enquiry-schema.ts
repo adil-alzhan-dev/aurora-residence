@@ -2,9 +2,13 @@ import { z } from "zod";
 
 const MIN_PHONE_DIGITS = 7;
 const MAX_PHONE_DIGITS = 15;
+const MAX_PHONE_LENGTH = 25;
 const MAX_COMMENT_LENGTH = 2000;
 
 const countDigits = (value: string) => value.replace(/\D/g, "").length;
+
+/** The phone exactly as it goes to the API, so the length check here matches the API's limit of 25. */
+export const toFullPhone = (code: string, phone: string) => `${code} ${phone.trim().replace(/\s+/g, " ")}`;
 
 type EnquiryErrors = {
   name: string;
@@ -16,8 +20,8 @@ type EnquiryErrors = {
 };
 
 /**
- * Mirrors CreateEnquiryDto in apps/api: name 2-80, "+" code and 7-15 digits in total, valid email,
- * comment up to 2000 characters and an explicit consent tick, which the API requires.
+ * Mirrors CreateEnquiryDto in apps/api: the phone is checked as the full "+code number" string,
+ * up to 25 characters with 7-15 digits.
  */
 export function createEnquirySchema(errors: EnquiryErrors) {
   return z
@@ -38,8 +42,9 @@ export function createEnquirySchema(errors: EnquiryErrors) {
     })
     .refine(
       ({ code, phone }) => {
-        const digits = countDigits(code) + countDigits(phone);
-        return digits >= MIN_PHONE_DIGITS && digits <= MAX_PHONE_DIGITS;
+        const fullPhone = toFullPhone(code, phone);
+        const digits = countDigits(fullPhone);
+        return digits >= MIN_PHONE_DIGITS && digits <= MAX_PHONE_DIGITS && fullPhone.length <= MAX_PHONE_LENGTH;
       },
       { path: ["phone"], error: errors.phone },
     );
