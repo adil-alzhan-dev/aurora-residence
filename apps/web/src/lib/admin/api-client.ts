@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { RefreshCoordinator } from "./refresh-coordinator";
+
 export const REFRESH_PATH = "/api/auth/refresh";
 export const LOGOUT_PATH = "/api/auth/logout";
 
@@ -27,6 +29,8 @@ export class SessionExpiredError extends AdminApiError {
 type AdminApiOptions = {
   fetchImpl?: typeof fetch;
   onSessionExpired: () => void;
+  /** Shares refreshes with other tabs; gets the setter for tokens another tab obtained. */
+  coordinate?: (onToken: (token: string) => void) => RefreshCoordinator | undefined;
 };
 
 /**
@@ -34,7 +38,11 @@ type AdminApiOptions = {
  * POST /api/auth/refresh (the refresh cookie is httpOnly) and a single retry; requests
  * that fail at the same time share that refresh instead of rotating the cookie twice.
  */
-export function createAdminApi({ fetchImpl = (...args) => fetch(...args), onSessionExpired }: AdminApiOptions) {
+export function createAdminApi({
+  fetchImpl = (...args) => fetch(...args),
+  onSessionExpired,
+  coordinate,
+}: AdminApiOptions) {
   let accessToken: string | null = null;
   let refreshing: Promise<string | null> | null = null;
   let expiryReported = false;
@@ -43,6 +51,8 @@ export function createAdminApi({ fetchImpl = (...args) => fetch(...args), onSess
     accessToken = token;
     if (token) expiryReported = false;
   }
+
+  const coordinator = coordinate?.((token) => setAccessToken(token));
 
   function expire() {
     accessToken = null;
@@ -68,7 +78,7 @@ export function createAdminApi({ fetchImpl = (...args) => fetch(...args), onSess
 
   /** Resolves to the new access token, or null when there is no valid session. */
   function refresh(): Promise<string | null> {
-    refreshing ??= requestNewToken()
+    refreshing ??= (coordinator ? coordinator.refresh(requestNewToken) : requestNewToken())
       .then((token) => {
         setAccessToken(token);
         return token;
