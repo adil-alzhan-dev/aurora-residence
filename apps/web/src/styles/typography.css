@@ -154,3 +154,47 @@
     font-size: 1.125rem;
   }
 }
+
+@utility text-admin-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  letter-spacing: -0.005em;
+}
+
+@utility text-admin-section {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+@utility text-admin-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@utility text-admin-strong {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@utility text-admin-stat {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 2.5rem;
+  line-height: 3rem;
+  letter-spacing: -0.01em;
+}
+
+@utility text-admin-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
