@@ -55,7 +55,7 @@ export function EnquiryRow({ item, residence, now, t }: RowProps) {
         isClosed ? "text-muted-foreground" : "text-foreground",
       )}
     >
-      <td className={cn(cell, "pl-4 whitespace-nowrap md:w-40", strong)}>
+      <td className={cn(cell, "pl-4 whitespace-nowrap md:w-44", strong)}>
         {isNew && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
         {formatReceived(item.createdAt, now, text)}
       </td>

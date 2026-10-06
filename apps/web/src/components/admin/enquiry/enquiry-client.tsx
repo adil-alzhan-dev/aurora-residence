@@ -10,7 +10,7 @@ export function EnquiryClient({ enquiry, t }: { enquiry: EnquiryCard; t: Texts }
     { label: text.name, value: enquiry.name },
     { label: text.phone, value: <a href={`tel:${enquiry.phone.replace(/[^\d+]/g, "")}`}>{enquiry.phone}</a> },
     { label: text.email, value: <a href={`mailto:${enquiry.email}`}>{enquiry.email}</a> },
-    { label: text.locale, value: text.locales[enquiry.locale] ?? enquiry.locale },
+    { label: text.locale, value: text.locales[enquiry.locale.toLowerCase()] ?? enquiry.locale },
     { label: text.currency, value: enquiry.currency },
     { label: text.source, value: enquiry.source },
   ];
