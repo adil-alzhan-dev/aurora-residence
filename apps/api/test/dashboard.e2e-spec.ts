@@ -101,8 +101,6 @@ describe('Admin dashboard (e2e)', () => {
   });
 
   it('marks an enquiry without a residence as general and keeps residence details otherwise', async () => {
-    // Demo enquiries of "today" may carry a later clock time than now, so the new one goes after them.
-    const newest = await prisma.enquiry.findFirstOrThrow({ orderBy: { createdAt: 'desc' }, select: { createdAt: true } });
     const general = await prisma.enquiry.create({
       data: {
         name: 'Ines Duarte',
@@ -110,7 +108,6 @@ describe('Admin dashboard (e2e)', () => {
         email: 'ines@example.com',
         comment: '',
         source: 'Contacts form',
-        createdAt: new Date(newest.createdAt.getTime() + 60_000),
       },
     });
     const token = await signIn(app);
