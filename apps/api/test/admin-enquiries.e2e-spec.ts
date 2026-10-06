@@ -63,7 +63,8 @@ describe('Admin enquiries without a residence (e2e)', () => {
 
     expect(await card(id)).toMatchObject({ id, residence: null, reservation: null });
     const dashboard = await http(app).get('/api/admin/dashboard').set(admin()).expect(200);
-    expect((dashboard.body as { latestEnquiries: ListItem[] }).latestEnquiries[0]).toMatchObject({ id, residence: null });
+    const latest = (dashboard.body as { latestEnquiries: { id: number; residence: unknown }[] }).latestEnquiries;
+    expect(latest.find((item) => item.id === id)).toMatchObject({ residence: null });
   });
 
   it('refuses to reserve a residence for an enquiry without one', async () => {

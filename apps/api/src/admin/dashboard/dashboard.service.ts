@@ -2,19 +2,33 @@ import { Injectable } from '@nestjs/common';
 import type { EnquiryStatus, ResidenceStatus } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
-const EXPIRING_WITHIN_MS = 48 * 60 * 60 * 1000;
+const ENDING_SOON_MS = 48 * 60 * 60 * 1000;
+const LATEST_ENQUIRIES = 5;
+
+export interface DashboardReservation {
+  residence: string;
+  client: string | null;
+  expiresAt: Date;
+  endingSoon: boolean;
+}
+
+export interface DashboardEnquiry {
+  id: number;
+  createdAt: Date;
+  name: string;
+  email: string;
+  phone: string;
+  status: EnquiryStatus;
+  source: string;
+  residence: { number: string; bedrooms: number; areaM2: number; priceUsd: number } | null;
+}
 
 export interface Dashboard {
   residences: Record<ResidenceStatus, number> & { total: number };
-  enquiries: { total: number; newToday: number; byStatus: Record<EnquiryStatus, number> };
-  expiringReservations: { residence: string; endsAt: Date; client: string | null }[];
-  latestEnquiries: {
-    id: number;
-    name: string;
-    residence: string | null;
-    status: EnquiryStatus;
-    createdAt: Date;
-  }[];
+  enquiries: { total: number; new: number; newToday: number };
+  facade: { number: string; status: ResidenceStatus }[];
+  reservations: DashboardReservation[];
+  latestEnquiries: DashboardEnquiry[];
 }
 
 @Injectable()
@@ -23,12 +37,16 @@ export class DashboardService {
 
   async summary(now = new Date()): Promise<Dashboard> {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const [residenceGroups, enquiryGroups, newToday, expiring, latest] = await Promise.all([
-      this.prisma.residence.groupBy({ by: ['status'], _count: { _all: true } }),
-      this.prisma.enquiry.groupBy({ by: ['status'], _count: { _all: true } }),
+    const [facade, enquiryTotal, newCount, newToday, reservations, latest] = await Promise.all([
+      this.prisma.residence.findMany({
+        orderBy: [{ floor: 'asc' }, { position: 'asc' }],
+        select: { number: true, status: true },
+      }),
+      this.prisma.enquiry.count(),
+      this.prisma.enquiry.count({ where: { status: 'NEW' } }),
       this.prisma.enquiry.count({ where: { createdAt: { gte: startOfToday } } }),
       this.prisma.reservation.findMany({
-        where: { releasedAt: null, endsAt: { lte: new Date(now.getTime() + EXPIRING_WITHIN_MS) } },
+        where: { releasedAt: null },
         orderBy: { endsAt: 'asc' },
         select: {
           endsAt: true,
@@ -37,44 +55,38 @@ export class DashboardService {
         },
       }),
       this.prisma.enquiry.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 5,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: LATEST_ENQUIRIES,
         select: {
           id: true,
-          name: true,
-          status: true,
           createdAt: true,
-          residence: { select: { number: true } },
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          source: true,
+          residence: { select: { number: true, bedrooms: true, areaM2: true, priceUsd: true } },
         },
       }),
     ]);
 
-    const residences = { AVAILABLE: 0, RESERVED: 0, SOLD: 0, total: 0 };
-    for (const group of residenceGroups) {
-      residences[group.status] = group._count._all;
-      residences.total += group._count._all;
-    }
-    const byStatus = { NEW: 0, IN_PROGRESS: 0, CLOSED: 0 };
-    for (const group of enquiryGroups) byStatus[group.status] = group._count._all;
+    const residences = { AVAILABLE: 0, RESERVED: 0, SOLD: 0, total: facade.length };
+    for (const residence of facade) residences[residence.status] += 1;
+    const endingSoonBefore = now.getTime() + ENDING_SOON_MS;
 
     return {
       residences,
-      enquiries: {
-        total: byStatus.NEW + byStatus.IN_PROGRESS + byStatus.CLOSED,
-        newToday,
-        byStatus,
-      },
-      expiringReservations: expiring.map((r) => ({
-        residence: r.residence.number,
-        endsAt: r.endsAt,
-        client: r.enquiry?.name ?? null,
+      enquiries: { total: enquiryTotal, new: newCount, newToday },
+      facade,
+      reservations: reservations.map((reservation) => ({
+        residence: reservation.residence.number,
+        client: reservation.enquiry?.name ?? null,
+        expiresAt: reservation.endsAt,
+        endingSoon: reservation.endsAt.getTime() <= endingSoonBefore,
       })),
-      latestEnquiries: latest.map((e) => ({
-        id: e.id,
-        name: e.name,
-        residence: e.residence?.number ?? null,
-        status: e.status,
-        createdAt: e.createdAt,
+      latestEnquiries: latest.map(({ residence, ...enquiry }) => ({
+        ...enquiry,
+        residence: residence && { ...residence, areaM2: residence.areaM2.toNumber() },
       })),
     };
   }
