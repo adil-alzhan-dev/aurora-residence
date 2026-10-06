@@ -1,3 +1,4 @@
+import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { INestApplication } from '@nestjs/common';
 import WebSocket, { type ClientOptions } from 'ws';
@@ -7,7 +8,7 @@ export const ALLOWED_ORIGIN = 'http://localhost';
 /** Starts the app on a random local port and returns the live socket URL. */
 export async function listenForLive(app: INestApplication): Promise<string> {
   await app.listen(0, '127.0.0.1');
-  const { port } = app.getHttpServer().address() as AddressInfo;
+  const { port } = (app.getHttpServer() as Server).address() as AddressInfo;
   return `ws://127.0.0.1:${port}/socket`;
 }
 
