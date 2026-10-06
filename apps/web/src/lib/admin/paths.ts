@@ -29,7 +29,10 @@ export function safeNextPath(raw: string | null | undefined): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-/** The router decodes the path and ignores a trailing slash, so "/admin/%6Cogin/" is the sign-in page too. */
+/**
+ * The router decodes the path, collapses repeated slashes and ignores a trailing one,
+ * so "/admin//%6Cogin/" is the sign-in page too.
+ */
 function isLoginPath(pathname: string) {
   let decoded: string;
   try {
@@ -37,7 +40,7 @@ function isLoginPath(pathname: string) {
   } catch {
     return false;
   }
-  return decoded.replace(/\/+$/, "") === ADMIN_LOGIN;
+  return decoded.replace(/\/{2,}/g, "/").replace(/\/+$/, "") === ADMIN_LOGIN;
 }
 
 export function loginHref(next?: string) {

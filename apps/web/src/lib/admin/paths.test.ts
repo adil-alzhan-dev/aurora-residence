@@ -92,6 +92,33 @@ describe("safeNextPath against encoded and look-alike separators", () => {
   );
 });
 
+describe("safeNextPath against repeated slashes before the sign-in page", () => {
+  it.each([
+    "/admin//login",
+    "/admin///login/?next=/admin",
+    "/admin//%6Cogin",
+    "/admin//%2Flogin",
+    "/admin/%2F/login",
+    "/admin/%2F%2Flogin/",
+    "/admin//%2F/%6Cogin//",
+    "/admin/./%2Flogin",
+  ])("falls back to the dashboard for %j", (raw) => {
+    expect(safeNextPath(raw)).toBe("/admin");
+  });
+
+  it.each([
+    ["/admin//enquiries", "/admin//enquiries"],
+    ["/admin//login-history", "/admin//login-history"],
+    ["/admin/residences//7.03", "/admin/residences//7.03"],
+  ])("keeps the other admin page %j", (raw, expected) => {
+    expect(safeNextPath(raw)).toBe(expected);
+  });
+
+  it("leaves the sign-in page out of loginHref", () => {
+    expect(loginHref("/admin//login")).toBe("/admin/login");
+  });
+});
+
 describe("loginHref", () => {
   it("adds the page to return to", () => {
     expect(loginHref("/admin/enquiries")).toBe("/admin/login?next=%2Fadmin%2Fenquiries");
