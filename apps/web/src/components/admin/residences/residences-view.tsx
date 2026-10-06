@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 import { DashboardError } from "@/components/admin/dashboard/dashboard-states";
+import { RowStatusControl } from "@/components/admin/residence/status-change-dialog";
 import type { AdminDictionary } from "@/content/en-admin";
 import { FLOOR_COUNT, RESIDENCES_PER_FLOOR } from "@/lib/building";
 import { useAdminResidences } from "@/lib/admin/queries";
@@ -16,7 +17,6 @@ import {
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { ResidenceStatusBadge } from "./residence-row";
 import { ResidencesFilters } from "./residences-filters";
 import { ResidencesTable } from "./residences-table";
 
@@ -106,7 +106,7 @@ export function ResidencesView({ t }: { t: AdminDictionary }) {
         <ResidencesTable
           items={items}
           t={text}
-          renderStatus={(residence) => <ResidenceStatusBadge status={residence.status} statuses={t.facade.statuses} />}
+          renderStatus={(residence) => <RowStatusControl residence={residence} t={t} />}
         />
       )}
     </>
