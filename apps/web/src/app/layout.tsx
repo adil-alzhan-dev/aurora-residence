@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import localFont from "next/font/local";
-import { Suspense } from "react";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader, SiteHeaderWithView } from "@/components/layout/site-header";
-import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { getDictionary } from "@/content";
 
 import "./globals.css";
@@ -44,14 +40,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${cormorant.variable} ${manrope.variable} ${liningDigits.variable}`}>
-      <body>
-        <SmoothScroll />
-        <Suspense fallback={<SiteHeader t={t} />}>
-          <SiteHeaderWithView t={t} />
-        </Suspense>
-        <main id="main">{children}</main>
-        <SiteFooter t={t} />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
