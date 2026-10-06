@@ -5,7 +5,7 @@ import { LoginForm } from "./login-form";
 
 export function LoginScreen({ t, next }: { t: AdminDictionary; next: string | null }) {
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center bg-background px-4 pt-12 pb-28">
+    <div className="relative flex min-h-svh flex-col items-center justify-center bg-background px-4 py-28">
       <main
         aria-labelledby="login-title"
         className="flex w-full max-w-[456px] flex-col items-start gap-6 rounded-base border border-border bg-card p-6 sm:p-12"
