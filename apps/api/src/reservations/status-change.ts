@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 
@@ -16,6 +16,17 @@ export interface StatusChange {
   /** Enquiry for a new reservation, or of a reservation the caller already closed. */
   enquiryId?: number | null;
   now: Date;
+}
+
+/**
+ * Reads the residence and locks its row until the transaction ends, so the status
+ * checked by the caller is still the status when the change is written.
+ */
+export async function lockResidence(tx: Tx, number: string): Promise<StatusChange['residence']> {
+  const [residence] = await tx.$queryRaw<StatusChange['residence'][]>`
+    SELECT id, number, status FROM "Residence" WHERE number = ${number} FOR UPDATE`;
+  if (!residence) throw new NotFoundException(`Residence ${number} not found`);
+  return residence;
 }
 
 /**

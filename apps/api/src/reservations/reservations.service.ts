@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { applyStatusChange, defaultStatusNote, type Tx } from './status-change.js';
+import { applyStatusChange, defaultStatusNote, lockResidence, type Tx } from './status-change.js';
 
 const EXPIRED_NOTE = 'Reservation ended after 7 days without a deal';
 
@@ -40,12 +40,8 @@ export class ReservationsService {
 
   async reserve(number: string, enquiryId: number, actorId: number, note?: string) {
     await this.prisma.$transaction(async (tx) => {
-      const residence = await loadResidence(tx, number);
-      if (residence.status !== 'AVAILABLE') {
-        throw new ConflictException(
-          `Residence ${number} is ${residence.status.toLowerCase()}, only an available residence can be reserved`,
-        );
-      }
+      const residence = await lockResidence(tx, number);
+      if (residence.status !== 'AVAILABLE') throw notAvailable(number, residence.status);
       await this.changeStatus(tx, { number, to: 'RESERVED', actorId, enquiryId, note });
     });
     return this.state(number);
@@ -53,7 +49,7 @@ export class ReservationsService {
 
   async release(number: string, actorId: number, note?: string) {
     await this.prisma.$transaction(async (tx) => {
-      const residence = await loadResidence(tx, number);
+      const residence = await lockResidence(tx, number);
       if (residence.status !== 'RESERVED') {
         throw new ConflictException(`Residence ${number} has no active reservation`);
       }
@@ -70,12 +66,12 @@ export class ReservationsService {
           'use POST /api/admin/residences/:number/reserve',
       );
     }
-    const residence = await loadResidence(tx, request.number);
-    if (residence.status === request.to) return;
-    if (request.to === 'RESERVED' && residence.status !== 'AVAILABLE') {
-      throw new ConflictException(
-        `Residence ${request.number} is ${residence.status.toLowerCase()}, only an available residence can be reserved`,
-      );
+    const residence = await lockResidence(tx, request.number);
+    if (request.to === 'RESERVED') {
+      // No "already reserved" shortcut: someone else's reservation must never look like ours.
+      if (residence.status !== 'AVAILABLE') throw notAvailable(request.number, residence.status);
+    } else if (residence.status === request.to) {
+      return;
     }
     const enquiry =
       request.to === 'RESERVED' && request.enquiryId !== undefined
@@ -163,13 +159,10 @@ export class ReservationsService {
   }
 }
 
-async function loadResidence(tx: Tx, number: string) {
-  const residence = await tx.residence.findUnique({
-    where: { number },
-    select: { id: true, number: true, status: true },
-  });
-  if (!residence) throw new NotFoundException(`Residence ${number} not found`);
-  return residence;
+function notAvailable(number: string, status: ResidenceStatus): ConflictException {
+  return new ConflictException(
+    `Residence ${number} is ${status.toLowerCase()}, only an available residence can be reserved`,
+  );
 }
 
 async function findEnquiryForReservation(
