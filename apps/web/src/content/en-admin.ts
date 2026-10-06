@@ -44,11 +44,6 @@ export const adminEn = {
     ADMIN: "Administrator",
     MANAGER: "Sales manager",
   },
-  placeholder: {
-    title: "Coming in task 6c",
-    text: "The enquiries screen is not built yet. New enquiries are already counted on the dashboard, and reservations will be made from an enquiry here.",
-    back: "Back to dashboard",
-  },
   states: {
     loadFailed: "Could not load the data. Check the connection and try again.",
     retry: "Try again",
