@@ -16,7 +16,7 @@ export function EnquiryClient({ enquiry, t }: { enquiry: EnquiryCard; t: Texts }
   ];
   return (
     <AdminCard id="enquiry-client" title={text.title} className="gap-4">
-      <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
+      <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 md:grid-cols-[repeat(3,minmax(0,196px))]">
         {fields.map((field) => (
           <div key={field.label} className="flex min-w-0 flex-col gap-1">
             <dt className="text-label text-muted-foreground">{field.label}</dt>

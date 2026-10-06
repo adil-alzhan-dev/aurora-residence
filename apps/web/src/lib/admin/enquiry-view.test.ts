@@ -41,7 +41,7 @@ describe("enquiry heading line", () => {
 describe("enquiry activity", () => {
   it("writes status changes with the manager's words", () => {
     const line = activityLine(entry({ type: "ENQUIRY_STATUS_CHANGED", from: "NEW", to: "IN_PROGRESS" }), texts);
-    expect(line).toEqual({ text: "Status changed: New → In progress", note: null });
+    expect(line).toEqual({ text: "Status changed: New  →  In progress", note: null });
   });
 
   it("names the residence of a reservation", () => {
@@ -49,7 +49,7 @@ describe("enquiry activity", () => {
       entry({ type: "STATUS_CHANGED", residence: "7.03", from: "AVAILABLE", to: "RESERVED", note: "Reserved for 7 days" }),
       texts,
     );
-    expect(line).toEqual({ text: "Residence 7.03: Available → Reserved", note: "Reserved for 7 days" });
+    expect(line).toEqual({ text: "Residence 7.03: Available  →  Reserved", note: "Reserved for 7 days" });
   });
 
   it("keeps the note text out of a note entry and shows the received text", () => {

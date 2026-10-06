@@ -31,7 +31,7 @@ function ResidenceSummary({ residence, t }: { residence: Residence; t: AdminDict
         <h3 className="text-admin-section text-foreground">{fillTemplate(text.name, { number: residence.number })}</h3>
         <ResidenceStatusBadge status={residence.status} statuses={t.facade.statuses} />
       </div>
-      <p className="text-admin-body text-muted-foreground">
+      <p className="text-admin-body whitespace-pre-wrap text-muted-foreground">
         {fillTemplate(text.specs, {
           floor,
           bedrooms: bedroomsLabel(residence.bedrooms, t.residence),

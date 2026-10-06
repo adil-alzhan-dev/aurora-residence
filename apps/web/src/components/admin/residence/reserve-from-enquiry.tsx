@@ -6,8 +6,9 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { ChevronDownIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatDayTime, formatReceived } from "@/lib/admin/dashboard-view";
+import { formatDayTime } from "@/lib/admin/dashboard-view";
 import type { useReserveResidence } from "@/lib/admin/enquiry-queries";
+import { receivedWhen } from "@/lib/admin/enquiry-view";
 import { useResidenceEnquiries } from "@/lib/admin/queries";
 import { reservableEnquiries, reservationEnd } from "@/lib/admin/reservation-rules";
 import type { ResidenceCard } from "@/lib/admin/schemas";
@@ -59,7 +60,7 @@ export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps)
             >
               {options.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {fillTemplate(text.enquiryOption, { name: item.name, received: formatReceived(item.createdAt, now, t.enquiries) })}
+                  {fillTemplate(text.enquiryOption, { name: item.name, received: receivedWhen(item.createdAt, now, t.enquiry) })}
                 </option>
               ))}
             </select>

@@ -29,7 +29,7 @@ export function EnquiryActivity({ activity, now, t }: ActivityProps) {
                   {formatReceived(entry.at, now, t.enquiries)}
                 </time>
                 <div className="col-span-2 row-start-2 flex flex-col sm:col-span-1 sm:row-start-auto">
-                  <span className="text-admin-body text-foreground">{line.text}</span>
+                  <span className="text-admin-body whitespace-pre-wrap text-foreground">{line.text}</span>
                   {line.note && <span className="text-admin-caption text-muted-foreground">{line.note}</span>}
                 </div>
                 <span className="col-start-2 row-start-1 text-admin-caption whitespace-nowrap text-muted-foreground sm:col-start-auto sm:row-start-auto">
