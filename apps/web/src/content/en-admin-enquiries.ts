@@ -33,7 +33,7 @@ export const enquiryEn = {
   receivedOn: "on {date} at {time}",
   fromResidencePage: "from the page of residence {number}",
   aboutResidence: "about residence {number}",
-  general: "General enquiry, no residence chosen",
+  general: "as a general enquiry, no residence chosen",
   client: {
     title: "Client",
     name: "Name",
