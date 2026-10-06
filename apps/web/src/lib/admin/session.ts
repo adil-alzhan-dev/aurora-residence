@@ -9,5 +9,5 @@ function currentPath() {
 /** One client per browser tab: the access token is kept in memory and is gone after a reload. */
 export const adminApi = createAdminApi({
   onSessionExpired: () => window.location.replace(loginHref(currentPath())),
-  coordinate: (onToken) => (typeof window === "undefined" ? undefined : browserRefreshCoordinator(onToken)),
+  coordinator: typeof window === "undefined" ? null : browserRefreshCoordinator(),
 });

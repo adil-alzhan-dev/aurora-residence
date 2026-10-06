@@ -5,7 +5,7 @@ import type { RefreshCoordinator } from "./refresh-coordinator";
 export const REFRESH_PATH = "/api/auth/refresh";
 export const LOGOUT_PATH = "/api/auth/logout";
 
-const REQUEST_TIMEOUT_MS = 15_000;
+export const REQUEST_TIMEOUT_MS = 15_000;
 
 const sessionSchema = z.object({ accessToken: z.string().min(1) });
 
@@ -35,8 +35,8 @@ export class SessionExpiredError extends AdminApiError {
 type AdminApiOptions = {
   fetchImpl?: typeof fetch;
   onSessionExpired: () => void;
-  /** Shares refreshes with other tabs; gets the setter for tokens another tab obtained. */
-  coordinate?: (onToken: (token: string) => void) => RefreshCoordinator | undefined;
+  /** Keeps refreshes of several tabs from rotating the shared cookie at the same time. */
+  coordinator?: RefreshCoordinator | null;
 };
 
 /**
@@ -47,18 +47,18 @@ type AdminApiOptions = {
 export function createAdminApi({
   fetchImpl = (...args) => fetch(...args),
   onSessionExpired,
-  coordinate,
+  coordinator = null,
 }: AdminApiOptions) {
   let accessToken: string | null = null;
   let refreshing: Promise<string | null> | null = null;
   let expiryReported = false;
+  /** Bumped on logout, so a refresh that was already in flight cannot bring the session back. */
+  let sessionGeneration = 0;
 
   function setAccessToken(token: string | null) {
     accessToken = token;
     if (token) expiryReported = false;
   }
-
-  const coordinator = coordinate?.((token) => setAccessToken(token));
 
   function expire() {
     accessToken = null;
@@ -84,8 +84,10 @@ export function createAdminApi({
 
   /** Resolves to the new access token, or null when there is no valid session. */
   function refresh(): Promise<string | null> {
+    const generation = sessionGeneration;
     refreshing ??= (coordinator ? coordinator.refresh(requestNewToken) : requestNewToken())
       .then((token) => {
+        if (generation !== sessionGeneration) return null;
         setAccessToken(token);
         return token;
       })
@@ -162,6 +164,7 @@ export function createAdminApi({
   }
 
   async function logout() {
+    sessionGeneration += 1;
     try {
       await send(LOGOUT_PATH, { method: "POST" }, accessToken);
     } finally {
