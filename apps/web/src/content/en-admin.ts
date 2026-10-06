@@ -129,6 +129,7 @@ export const adminEn = {
     bedroomsMany: "{count} bedrooms",
     studio: "Studio",
     area: "{area} m²",
+    penthouse: "Penthouse, incl. terrace",
     viewOnSite: "View on site",
     viewOnSiteLabel: "View residence {number} on the site, opens in a new tab",
     planLabel: "Plan of residence {number}",

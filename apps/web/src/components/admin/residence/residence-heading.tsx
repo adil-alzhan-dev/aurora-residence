@@ -38,6 +38,7 @@ export function ResidenceHeading({ residence, t, statuses }: HeadingProps) {
     bedroomsLabel(residence.bedrooms, t),
     fillTemplate(t.area, { area: formatArea(residence.areaM2) }),
     `${t.sides[residence.side] ?? residence.side}, ${residence.view.toLowerCase()}`,
+    ...(residence.isPenthouse ? [t.penthouse] : []),
   ];
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
