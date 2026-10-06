@@ -164,6 +164,21 @@ describe("refresh shared between tabs without Web Locks", () => {
     expect(second.onSessionExpired).not.toHaveBeenCalled();
   });
 
+  it("two tabs waiting on an announced refresh both keep their session", async () => {
+    const { tab, refreshCalls } = browser({ withLocks: false, timings: [500, 20, 20] });
+    const [first, ...waiting] = [tab(), tab(), tab()];
+
+    const firstToken = first.api.refresh();
+    await vi.advanceTimersByTimeAsync(1);
+    const waitingTokens = waiting.map((current) => current.api.refresh());
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    expect(await firstToken).toBe("access-1");
+    expect((await Promise.all(waitingTokens)).sort()).toEqual(["access-2", "access-3"]);
+    expect(refreshCalls()).toBeLessThanOrEqual(4);
+    for (const current of waiting) expect(current.onSessionExpired).not.toHaveBeenCalled();
+  });
+
   it("refreshes on its own once a tab that vanished mid-refresh runs out of time", async () => {
     const { tab, refreshCalls } = browser({ withLocks: false, timings: ["hang", 20] });
     const vanished = tab();
