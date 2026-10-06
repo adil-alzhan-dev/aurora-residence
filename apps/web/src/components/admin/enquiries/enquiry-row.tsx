@@ -55,11 +55,14 @@ export function EnquiryRow({ item, residence, now, t }: RowProps) {
         isClosed ? "text-muted-foreground" : "text-foreground",
       )}
     >
-      <td className={cn(cell, "pl-4 whitespace-nowrap md:w-44", strong)}>
-        {isNew && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
+      <td className={cn(cell, "hidden pl-4 whitespace-nowrap sm:table-cell md:w-44", strong)}>
         {formatReceived(item.createdAt, now, text)}
       </td>
-      <th scope="row" className={cn(cell, "min-w-0 text-left font-normal md:w-70")}>
+      <th scope="row" className={cn(cell, "min-w-0 pl-4 text-left font-normal sm:pl-0 md:w-70")}>
+        {isNew && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
+        <span className={cn("block text-admin-caption sm:hidden", isNew ? "text-foreground" : "text-muted-foreground")}>
+          {formatReceived(item.createdAt, now, text)}
+        </span>
         <Link
           href={adminHref.enquiry(item.id)}
           aria-label={fillTemplate(text.openLabel, { name: item.name })}
@@ -67,7 +70,7 @@ export function EnquiryRow({ item, residence, now, t }: RowProps) {
         >
           {item.name}
         </Link>
-        <span className="block text-admin-caption break-all text-muted-foreground">{item.email}</span>
+        <span className="block text-admin-caption [overflow-wrap:anywhere] text-muted-foreground">{item.email}</span>
         <span className="block text-admin-caption text-muted-foreground md:hidden">{item.phone}</span>
         <span className="block text-admin-caption text-muted-foreground lg:hidden">
           {item.residence ? fillTemplate(text.residence, { number: item.residence }) : text.general}
@@ -77,7 +80,7 @@ export function EnquiryRow({ item, residence, now, t }: RowProps) {
       <td className={cn(cell, "hidden lg:table-cell lg:w-50")}>
         <ResidenceText item={item} residence={residence} t={t} />
       </td>
-      <td className={cn(cell, "md:w-44")}>
+      <td className={cn(cell, "whitespace-nowrap md:w-44")}>
         <EnquiryStatusBadge status={item.status} label={text.statuses[item.status]} />
       </td>
       <td aria-hidden="true" className={cn(cell, "hidden sm:table-cell")}>

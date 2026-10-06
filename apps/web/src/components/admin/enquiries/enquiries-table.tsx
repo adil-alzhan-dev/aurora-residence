@@ -27,10 +27,10 @@ export function EnquiriesTable({ items, residences, page, total, now, t }: Table
         </caption>
         <thead className="border-b border-border bg-background">
           <tr>
-            <th scope="col" className={cn(head, "pl-4")}>
+            <th scope="col" className={cn(head, "hidden pl-4 sm:table-cell")}>
               {columns.received}
             </th>
-            <th scope="col" className={head}>
+            <th scope="col" className={cn(head, "pl-4 sm:pl-0")}>
               {columns.client}
             </th>
             <th scope="col" className={cn(head, "hidden md:table-cell")}>
