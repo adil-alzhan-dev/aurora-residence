@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import type { AdminDictionary } from "@/content/en-admin";
+import { useEnquiryCard } from "@/lib/admin/enquiry-queries";
 import { useMe } from "@/lib/admin/queries";
 
 import { activeNavKey } from "./admin-nav";
@@ -44,14 +45,22 @@ function CurrentManager({ t }: { t: AdminDictionary }) {
   );
 }
 
+/** Reads the card the page already loads, so the name costs no extra request. */
+function EnquiryCrumb({ id }: { id: number }) {
+  const { data } = useEnquiryCard(id);
+  return data ? <span>{`\u00a0/\u00a0${data.name}`}</span> : null;
+}
+
 export function AdminTopbar({ t }: { t: AdminDictionary }) {
   const pathname = usePathname();
   const residence = /^\/admin\/residences\/(\d{1,2}\.\d{2})$/.exec(pathname)?.[1];
+  const enquiryId = /^\/admin\/enquiries\/([1-9]\d{0,8})$/.exec(pathname)?.[1];
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 lg:h-18 lg:px-8">
-      <p className="text-admin-caption text-muted-foreground">
+      <p className="min-w-0 truncate text-admin-caption text-muted-foreground">
         {t.nav[activeNavKey(pathname)]}
         {residence && <span>{`\u00a0/\u00a0${residence}`}</span>}
+        {enquiryId && <EnquiryCrumb id={Number(enquiryId)} />}
       </p>
       <CurrentManager t={t} />
     </header>
