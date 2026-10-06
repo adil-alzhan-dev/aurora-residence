@@ -101,7 +101,6 @@ export const enquiryEn = {
     confirmTitle: "Link residence {number} to this enquiry?",
     confirmText: "The enquiry stops being General. The status of {number} on the site does not change.",
     confirm: "Link",
-    linked: "Residence {number} is linked to the enquiry.",
   },
   cancel: "Cancel",
   errors: {

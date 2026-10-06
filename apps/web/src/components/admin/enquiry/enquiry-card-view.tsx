@@ -13,6 +13,7 @@ import { BackToEnquiries, EnquiryHeading } from "./enquiry-heading";
 import { EnquiryReserve } from "./enquiry-reserve";
 import { EnquiryResidenceCard } from "./enquiry-residence-card";
 import { EnquiryStatusCard } from "./enquiry-status-card";
+import { LinkResidenceForm } from "./link-residence-form";
 import { ManagerNoteCard } from "./manager-note-card";
 
 function CardSkeleton({ label }: { label: string }) {
@@ -78,6 +79,7 @@ export function EnquiryCardView({ id, t }: { id: number | null; t: AdminDictiona
             enquiry={enquiry}
             t={t}
             reserve={<EnquiryReserve enquiry={enquiry} t={t.enquiry} />}
+            link={<LinkResidenceForm enquiryId={enquiry.id} t={t.enquiry} />}
           />
         </div>
       </div>
