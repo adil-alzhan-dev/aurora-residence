@@ -86,3 +86,33 @@ describe("EnquiryDialog while a request is out", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });
+
+describe("EnquiryProvider after a live update", () => {
+  const tree = (status: typeof residence.status, price = residence.priceUsd) => (
+    <EnquiryProvider residence={{ ...residence, status, priceUsd: price }} t={t}>
+      <RequestButton>Request this residence</RequestButton>
+    </EnquiryProvider>
+  );
+
+  it("keeps the open form and what was typed when the residence is reserved or repriced", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const { rerender } = render(tree("available"));
+    await user.click(screen.getByRole("button", { name: "Request this residence" }));
+    await user.type(screen.getByLabelText(t.residenceEnquiry.nameLabel), "Elena Marsh");
+
+    rerender(tree("reserved", 222_000));
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect((screen.getByLabelText(t.residenceEnquiry.nameLabel) as HTMLInputElement).value).toBe("Elena Marsh");
+  });
+
+  it("closes the form when the residence is sold and does not reopen it later", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    const { rerender } = render(tree("available"));
+    await user.click(screen.getByRole("button", { name: "Request this residence" }));
+
+    rerender(tree("sold"));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    rerender(tree("available"));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});

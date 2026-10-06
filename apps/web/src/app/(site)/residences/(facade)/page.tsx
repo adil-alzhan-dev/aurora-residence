@@ -55,6 +55,7 @@ export default async function ResidencesPage({ searchParams }: PageProps<"/resid
             summaries={facade.summaries}
             cells={facade.cells}
             initialFloor={facade.initialFloor}
+            filtersKey={JSON.stringify(filters)}
             noMatches={facade.result?.matching === 0}
             t={t}
           />

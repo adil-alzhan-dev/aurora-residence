@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from "react";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { getDictionary } from "@/content";
 
+import { LiveRefresh } from "./live-refresh";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader, SiteHeaderWithView } from "./site-header";
 
@@ -13,6 +14,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <SmoothScroll />
+      <LiveRefresh />
       <Suspense fallback={<SiteHeader t={t} />}>
         <SiteHeaderWithView t={t} />
       </Suspense>

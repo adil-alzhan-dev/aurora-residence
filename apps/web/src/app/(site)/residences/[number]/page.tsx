@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
 
 import { RevealSection } from "@/components/motion/reveal-section";
 import { EnquiryProvider } from "@/components/residence/enquiry/enquiry-context";
@@ -61,11 +60,9 @@ export default async function ResidencePage({ params }: PageProps<"/residences/[
   const layout = layoutOf(residence.position, residence.isPenthouse);
   if (!layout) notFound();
   const sold = residence.status === "sold";
-  const withEnquiry = (children: ReactNode) =>
-    sold ? children : <EnquiryProvider residence={residence} t={t}>{children}</EnquiryProvider>;
-
-  return withEnquiry(
-    <>
+  // The same tree for every status, so a live refresh never remounts the page or drops an open form.
+  return (
+    <EnquiryProvider residence={residence} t={t}>
       <RevealSection data-theme="light" threshold={0} className="bg-background pt-(--header-height)">
         <ResidenceBreadcrumbs number={number} floor={floor} t={text} />
         <div className="flex flex-col pb-12 lg:container-page lg:grid lg:grid-cols-[minmax(0,760fr)_minmax(0,456fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-8 lg:pb-32">
@@ -97,6 +94,6 @@ export default async function ResidencePage({ params }: PageProps<"/residences/[
         <SimilarResidences residences={similar} t={t} />
       </div>
       {!sold && <StickyRequestBar residence={residence} t={text} />}
-    </>,
+    </EnquiryProvider>
   );
 }

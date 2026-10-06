@@ -16,9 +16,13 @@ type EnquiryProviderProps = {
   children: ReactNode;
 };
 
-/** One enquiry form per page: every "Request this residence" button opens it with the residence filled in. */
+/**
+ * One enquiry form per page: every "Request this residence" button opens it with the residence filled in.
+ * A residence sold while the form is open closes it, as the page then offers no request at all.
+ */
 export function EnquiryProvider({ residence, t, children }: EnquiryProviderProps) {
   const [open, setOpen] = useState(false);
+  if (open && residence.status === "sold") setOpen(false);
   return (
     <OpenEnquiryContext value={() => setOpen(true)}>
       {children}

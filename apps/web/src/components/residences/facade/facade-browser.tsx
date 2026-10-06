@@ -19,16 +19,18 @@ type FacadeBrowserProps = {
   summaries: FloorSummary[] | null;
   cells: FloorCell[];
   initialFloor: number;
+  /** Changes only with the filters; a live update may move initialFloor but keeps the visitor's floor. */
+  filtersKey: string;
   noMatches: boolean;
   t: StageText & Pick<Dictionary, "status">;
 };
 
-export function FacadeBrowser({ summaries, cells, initialFloor, noMatches, t }: FacadeBrowserProps) {
+export function FacadeBrowser({ summaries, cells, initialFloor, filtersKey, noMatches, t }: FacadeBrowserProps) {
   const [active, setActive] = useState(initialFloor);
-  const [shownInitial, setShownInitial] = useState(initialFloor);
+  const [shownFilters, setShownFilters] = useState(filtersKey);
   // A new filter can move the preferred floor; follow it, but keep the visitor's choice otherwise.
-  if (initialFloor !== shownInitial) {
-    setShownInitial(initialFloor);
+  if (filtersKey !== shownFilters) {
+    setShownFilters(filtersKey);
     setActive(initialFloor);
   }
 
