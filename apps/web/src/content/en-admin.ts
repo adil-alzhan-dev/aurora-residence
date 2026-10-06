@@ -40,6 +40,10 @@ export const adminEn = {
     logout: "Log out",
     loggingOut: "Logging out",
   },
+  live: {
+    open: "Live: changes reach the site instantly",
+    offline: "Offline: reconnecting",
+  },
   roles: {
     ADMIN: "Administrator",
     MANAGER: "Sales manager",
@@ -153,7 +157,7 @@ export const adminEn = {
     sides: { NORTH: "North", SOUTH: "South", WEST: "West", EAST: "East" } as Record<string, string>,
     priceStatus: {
       title: "Price and status",
-      lead: "Saved changes reach the site at once.",
+      lead: "Saved changes reach every open tab of the site instantly.",
       price: "Price, USD",
       priceInvalid: "Enter whole dollars from $10 000 to $10 000 000.",
       status: "Status",

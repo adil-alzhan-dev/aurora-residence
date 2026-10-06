@@ -7,6 +7,7 @@ import { useEnquiryCard } from "@/lib/admin/enquiry-queries";
 import { useMe } from "@/lib/admin/queries";
 
 import { activeNavKey } from "./admin-nav";
+import { LiveIndicator } from "./live-indicator";
 
 function initials(name: string) {
   return name
@@ -62,7 +63,10 @@ export function AdminTopbar({ t }: { t: AdminDictionary }) {
         {residence && <span>{`\u00a0/\u00a0${residence}`}</span>}
         {enquiryId && <EnquiryCrumb id={Number(enquiryId)} />}
       </p>
-      <CurrentManager t={t} />
+      <div className="flex shrink-0 items-center gap-4 md:gap-6">
+        <LiveIndicator t={t.live} />
+        <CurrentManager t={t} />
+      </div>
     </header>
   );
 }
