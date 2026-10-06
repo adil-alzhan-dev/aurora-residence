@@ -8,6 +8,7 @@ const t = getAdminDictionary();
 
 export const metadata: Metadata = {
   title: t.meta.title,
+  robots: { index: false, follow: false, nocache: true },
 };
 
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
