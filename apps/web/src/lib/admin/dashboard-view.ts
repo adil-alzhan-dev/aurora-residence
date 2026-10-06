@@ -15,9 +15,12 @@ export function calendarDaysLeft(endsAt: Date, now: Date) {
 const timeFormat = new Intl.DateTimeFormat("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const shortDateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 const longDateFormat = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" });
+const dayFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 export const formatShortDate = (date: Date) => shortDateFormat.format(date);
 export const formatLongDate = (date: Date) => longDateFormat.format(date);
+export const formatDay = (date: Date) => dayFormat.format(date);
+export const formatDayTime = (date: Date) => `${dayFormat.format(date)}, ${timeFormat.format(date)}`;
 
 export function formatReceived(date: Date, now: Date, t: AdminDictionary["enquiries"]) {
   const time = timeFormat.format(date);

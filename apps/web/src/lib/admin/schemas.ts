@@ -52,3 +52,27 @@ export const dashboardSchema = z.object({
 });
 
 export type DashboardSummary = z.infer<typeof dashboardSchema>;
+
+export const adminResidenceSchema = z.object({
+  number: z.string(),
+  floor: z.number().int(),
+  position: z.number().int(),
+  bedrooms: z.number().int(),
+  areaM2: z.number(),
+  isPenthouse: z.boolean(),
+  priceUsd: z.number(),
+  status: residenceStatus,
+  side: z.string(),
+  view: z.string(),
+  statusChangedAt: z.coerce.date(),
+  reservedUntil: z.coerce.date().nullable(),
+});
+
+export type AdminResidence = z.infer<typeof adminResidenceSchema>;
+
+export const residenceListSchema = z.object({
+  items: z.array(adminResidenceSchema),
+  counts: z.object({ AVAILABLE: z.number(), RESERVED: z.number(), SOLD: z.number() }),
+});
+
+export type ResidenceList = z.infer<typeof residenceListSchema>;

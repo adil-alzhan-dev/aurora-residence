@@ -4,6 +4,7 @@ export const ADMIN_LOGIN = "/admin/login";
 export const adminHref = {
   dashboard: ADMIN_HOME,
   residences: "/admin/residences",
+  residence: (number: string) => `/admin/residences/${number}`,
   enquiries: "/admin/enquiries",
   enquiry: (id: number) => `/admin/enquiries/${id}`,
 };

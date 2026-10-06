@@ -17,7 +17,7 @@ export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: Admin
       id="dashboard-reservations"
       title={t.title}
       lead={t.lead}
-      action={{ href: `${adminHref.residences}?status=RESERVED`, label: t.all }}
+      action={{ href: `${adminHref.residences}?status=reserved`, label: t.all }}
       className="min-w-0 flex-1 gap-3 p-6"
       headerClassName="max-sm:flex-col max-sm:items-start"
     >

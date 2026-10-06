@@ -61,3 +61,12 @@ export function AlertIcon(props: IconProps) {
     </AdminIcon>
   );
 }
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <AdminIcon size={16} {...props}>
+      <circle cx="7" cy="7" r="4.6" />
+      <path d="M10.5 10.5L14 14" />
+    </AdminIcon>
+  );
+}
