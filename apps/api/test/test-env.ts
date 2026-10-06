@@ -26,6 +26,7 @@ export function applyTestEnv(): string {
     ADMIN_EMAIL: TEST_ADMIN.email,
     ADMIN_NAME: TEST_ADMIN.name,
     ADMIN_PASSWORD: TEST_ADMIN.password,
+    WS_ALLOWED_ORIGINS: 'http://localhost',
     NODE_ENV: 'test',
   });
   return url;

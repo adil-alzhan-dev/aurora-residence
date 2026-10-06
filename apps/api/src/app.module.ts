@@ -9,6 +9,7 @@ import { MINUTE_MS } from './common/throttle.js';
 import { EnquiriesModule } from './enquiries/enquiries.module.js';
 import { FloorsModule } from './floors/floors.module.js';
 import { HealthModule } from './health/health.module.js';
+import { LiveModule } from './live/live.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RatesModule } from './rates/rates.module.js';
 import { ReservationsModule } from './reservations/reservations.module.js';
@@ -24,6 +25,7 @@ import { ResidencesModule } from './residences/residences.module.js';
     }),
     PrismaModule,
     HealthModule,
+    LiveModule,
     AuthModule,
     ResidencesModule,
     FloorsModule,

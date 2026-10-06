@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { WsAdapter } from '@nestjs/platform-ws';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { isHttpsEnabled } from './common/env.js';
@@ -18,6 +19,8 @@ export function configureApp(app: NestExpressApplication): void {
     }),
   );
   app.use(cookieParser());
+  // The live socket only pushes to clients, so incoming frames are never parsed.
+  app.useWebSocketAdapter(new WsAdapter(app, { messageParser: () => undefined }));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

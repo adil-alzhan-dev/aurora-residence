@@ -131,8 +131,9 @@ API and the web app stay on the internal Compose network.
    }
    ```
 
-4. In `.env` set `HTTPS_ENABLED=true` and strong values for every secret, then
-   start:
+4. In `.env` set `HTTPS_ENABLED=true`, `WS_ALLOWED_ORIGINS` to the site address
+   (for example `https://aurora.example.com`) and strong values for every
+   secret, then start:
 
    ```bash
    docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build

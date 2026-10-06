@@ -31,6 +31,7 @@ services:
       ADMIN_NAME: ${ADMIN_NAME}
       TZ: ${TZ:-UTC}
       HTTPS_ENABLED: ${HTTPS_ENABLED:-false}
+      WS_ALLOWED_ORIGINS: ${WS_ALLOWED_ORIGINS:-http://localhost}
       API_PORT: 4000
     depends_on:
       postgres:
