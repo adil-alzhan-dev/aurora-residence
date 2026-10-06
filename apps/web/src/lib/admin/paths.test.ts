@@ -27,6 +27,71 @@ describe("safeNextPath", () => {
   });
 });
 
+const SITE = "https://aurora.example";
+
+/** Where the browser would actually go if router.replace got this value. */
+function landing(target: string) {
+  const url = new URL(target, `${SITE}/admin/login`);
+  return { origin: url.origin, pathname: url.pathname };
+}
+
+describe("safeNextPath against encoded and look-alike separators", () => {
+  it.each([
+    "/%2F%2Fevil.example",
+    "/%2f%2fevil.example/admin",
+    "%2F%2Fevil.example",
+    "/%5C%5Cevil.example",
+    "/%5Cevil.example",
+    "/%2F%5Cevil.example",
+    "/admin/%2e%2e/residences",
+    "/admin/%2E%2E/%2E%2E/evil.example",
+    "/admin/.%2e/residences",
+    "/admin/%2e./residences",
+    "/%252F%252Fevil.example",
+    "/%25252F%25252Fevil.example",
+    "/\u2215\u2215evil.example",
+    "\u2215\u2215evil.example",
+    "/\uFF0F\uFF0Fevil.example",
+    "\uFF0F\uFF0Fevil.example",
+    "/\u29F8evil.example",
+    "/\uFE68evil.example",
+    "\uFF3C\uFF3Cevil.example",
+    "/\t/evil.example",
+    "/\n/evil.example",
+    "/\r/evil.example/admin",
+    "/ /evil.example",
+  ])("falls back to the dashboard for %j", (raw) => {
+    expect(safeNextPath(raw)).toBe("/admin");
+  });
+
+  it.each([
+    "/admin/%2F%2Fevil.example",
+    "/admin/%5C%5Cevil.example",
+    "/admin/..%2F..%2Fevil.example",
+    "/admin/%252e%252e/%252e%252e/evil.example",
+    "/admin/%252F%252Fevil.example",
+    "/admin/\u2215\u2215evil.example",
+    "/admin/\uFF0F\uFF0Fevil.example",
+    "/admin/\u29F8\uFE68evil.example",
+    "/admin//evil.example",
+    "/admin/residences?next=//evil.example#//evil.example",
+  ])("keeps %j on this site inside /admin", (raw) => {
+    const target = safeNextPath(raw);
+    const { origin, pathname } = landing(target);
+
+    expect(origin).toBe(SITE);
+    expect(pathname === "/admin" || pathname.startsWith("/admin/")).toBe(true);
+    expect(target.startsWith("//")).toBe(false);
+  });
+
+  it.each(["/admin/login/", "/admin/login//", "/admin/%6Cogin", "/admin/login%2F", "/admin/./login"])(
+    "does not return to the sign-in page through %j",
+    (raw) => {
+      expect(safeNextPath(raw)).toBe("/admin");
+    },
+  );
+});
+
 describe("loginHref", () => {
   it("adds the page to return to", () => {
     expect(loginHref("/admin/enquiries")).toBe("/admin/login?next=%2Fadmin%2Fenquiries");

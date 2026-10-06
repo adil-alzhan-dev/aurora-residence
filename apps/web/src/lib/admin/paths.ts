@@ -25,8 +25,19 @@ export function safeNextPath(raw: string | null | undefined): string {
   }
   if (url.origin !== PROBE_ORIGIN) return ADMIN_HOME;
   const isAdmin = url.pathname === ADMIN_HOME || url.pathname.startsWith(`${ADMIN_HOME}/`);
-  if (!isAdmin || url.pathname === ADMIN_LOGIN) return ADMIN_HOME;
+  if (!isAdmin || isLoginPath(url.pathname)) return ADMIN_HOME;
   return `${url.pathname}${url.search}${url.hash}`;
+}
+
+/** The router decodes the path and ignores a trailing slash, so "/admin/%6Cogin/" is the sign-in page too. */
+function isLoginPath(pathname: string) {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return false;
+  }
+  return decoded.replace(/\/+$/, "") === ADMIN_LOGIN;
 }
 
 export function loginHref(next?: string) {
