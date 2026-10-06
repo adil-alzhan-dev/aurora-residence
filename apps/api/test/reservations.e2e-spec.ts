@@ -169,6 +169,29 @@ describe('Reservations (e2e)', () => {
     });
   });
 
+  it('rejects null status and priceUsd on PATCH with a field error and changes nothing', async () => {
+    const before = await prisma.residence.findUniqueOrThrow({ where: { number: '6.02' } });
+    const logsBefore = await prisma.activityLog.count({ where: { residenceId: before.id } });
+    const cases = [
+      { body: { status: null, priceUsd: 120_000 }, field: 'status', message: 'status can be AVAILABLE or SOLD here' },
+      { body: { priceUsd: null, status: 'SOLD' }, field: 'priceUsd', message: 'priceUsd must be a whole number of dollars' },
+    ];
+
+    for (const { body, field, message } of cases) {
+      const response = await http(app)
+        .patch('/api/admin/residences/6.02')
+        .set(admin())
+        .send({ ...body, note: 'Must not be saved' })
+        .expect(400);
+      const errors = (response.body as { errors: Record<string, string> }).errors;
+      expect(Object.keys(errors)).toEqual([field]);
+      expect(errors[field]).toContain(message);
+    }
+    expect(await prisma.residence.findUniqueOrThrow({ where: { number: '6.02' } })).toEqual(before);
+    expect(await prisma.activityLog.count({ where: { residenceId: before.id } })).toBe(logsBefore);
+    expect(await activeReservations('6.02')).toBe(0);
+  });
+
   it('returns expired reservations to Available on behalf of System', async () => {
     const id = await enquiryId('Daniel Okafor');
     await http(app).post('/api/admin/residences/6.05/reserve').set(admin()).send({ enquiryId: id }).expect(201);
