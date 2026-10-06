@@ -57,7 +57,7 @@ export function ResidenceCardView({ number, t }: { number: string; t: AdminDicti
           <ResidenceHistory history={residence.history} t={text.history} statuses={t.facade.statuses} />
         </div>
         <div className="flex flex-col gap-6 xl:w-100 xl:shrink-0">
-          <ReservationCard residence={residence} t={t} />
+          <ReservationCard residence={residence} now={now} t={t} />
           <ResidenceEnquiries number={residence.number} now={now} t={t} />
         </div>
       </div>

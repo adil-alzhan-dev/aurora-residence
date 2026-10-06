@@ -10,6 +10,7 @@ import { useEnquiryCard } from "@/lib/admin/enquiry-queries";
 import { EnquiryActivity } from "./enquiry-activity";
 import { EnquiryClient, EnquiryComment } from "./enquiry-client";
 import { BackToEnquiries, EnquiryHeading } from "./enquiry-heading";
+import { EnquiryReserve } from "./enquiry-reserve";
 import { EnquiryResidenceCard } from "./enquiry-residence-card";
 import { EnquiryStatusCard } from "./enquiry-status-card";
 import { ManagerNoteCard } from "./manager-note-card";
@@ -73,7 +74,11 @@ export function EnquiryCardView({ id, t }: { id: number | null; t: AdminDictiona
         </div>
         <div className="flex flex-col gap-6 xl:w-100 xl:shrink-0">
           <EnquiryStatusCard enquiry={enquiry} t={t} />
-          <EnquiryResidenceCard enquiry={enquiry} t={t} />
+          <EnquiryResidenceCard
+            enquiry={enquiry}
+            t={t}
+            reserve={<EnquiryReserve enquiry={enquiry} t={t.enquiry} />}
+          />
         </div>
       </div>
     </>

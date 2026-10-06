@@ -90,7 +90,6 @@ export const enquiryEn = {
     confirmTitle: "Reserve {number} for {client}?",
     confirmText: "The residence becomes Reserved on the site at once. The reservation ends on {date} unless you release it or sell the residence.",
     confirmStatus: "The enquiry moves from New to In progress.",
-    reserved: "Reserved. Residence {number} is Reserved on the site until {date}.",
   },
   link: {
     lead: "The client did not choose a residence. Link one after the call to make a reservation possible.",

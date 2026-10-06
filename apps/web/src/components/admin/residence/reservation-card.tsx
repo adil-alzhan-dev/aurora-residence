@@ -14,6 +14,7 @@ import type { ResidenceCard } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 
 import { AdminCard } from "./admin-card";
+import { ReserveFromEnquiry } from "./reserve-from-enquiry";
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -24,7 +25,9 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function ReservationCard({ residence, t }: { residence: ResidenceCard; t: AdminDictionary }) {
+type ReservationCardProps = { residence: ResidenceCard; now: Date; t: AdminDictionary };
+
+export function ReservationCard({ residence, now, t }: ReservationCardProps) {
   const text = t.residence.reservation;
   const release = useReleaseReservation(residence.number);
   const [confirmClient, setConfirmClient] = useState<string | null>(null);
@@ -35,10 +38,14 @@ export function ReservationCard({ residence, t }: { residence: ResidenceCard; t:
   if (!reservation) {
     body = (
       <>
-        <p className="text-admin-body text-foreground">{text.none}</p>
-        <p className="text-admin-caption text-muted-foreground">
-          {residence.status === "SOLD" ? text.soldNote : text.fromEnquiry}
-        </p>
+        {residence.status === "AVAILABLE" ? (
+          <ReserveFromEnquiry residence={residence} now={now} t={t} />
+        ) : (
+          <>
+            <p className="text-admin-body text-foreground">{text.none}</p>
+            {residence.status === "SOLD" && <p className="text-admin-caption text-muted-foreground">{text.soldNote}</p>}
+          </>
+        )}
         {released && (
           <p role="status" className="text-admin-caption text-muted-foreground">
             {text.released}
