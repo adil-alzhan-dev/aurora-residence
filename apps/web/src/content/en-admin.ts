@@ -1,8 +1,12 @@
+import { enquiryEn, enquiryListEn } from "./en-admin-enquiries";
+
 export const adminEn = {
   meta: {
     title: "Sales admin | Aurora Residence",
     loginTitle: "Sign in | Aurora Residence admin",
     residenceTitle: "Residence {number} | Sales admin",
+    enquiriesTitle: "Enquiries | Sales admin",
+    enquiryTitle: "Enquiry | Sales admin",
   },
   common: {
     salesAdmin: "Sales admin",
@@ -240,6 +244,8 @@ export const adminEn = {
       action: "Action",
     },
   },
+  enquiryList: enquiryListEn,
+  enquiry: enquiryEn,
 };
 
 export type AdminDictionary = typeof adminEn;

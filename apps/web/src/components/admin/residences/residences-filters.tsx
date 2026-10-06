@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 
-import { SearchIcon } from "@/components/admin/admin-icons";
+import { SearchField } from "@/components/admin/search-field";
 import { ChevronDownIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
 import { floorNumbers } from "@/lib/building";
@@ -11,7 +11,6 @@ import type { AdminResidenceStatus, ResidenceList } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const SEARCH_DELAY_MS = 250;
 const box = "flex h-10 items-center gap-2 rounded-base border border-border bg-card px-3";
 
 type FiltersProps = {
@@ -22,43 +21,6 @@ type FiltersProps = {
   t: AdminDictionary["residences"];
   statuses: AdminDictionary["facade"]["statuses"];
 };
-
-function SearchField({ value, onSearch, t }: { value: string; onSearch: (search: string) => void; t: FiltersProps["t"] }) {
-  const id = useId();
-  const [draft, setDraft] = useState(value);
-  const [synced, setSynced] = useState(value);
-  if (value !== synced) {
-    setSynced(value);
-    setDraft(value);
-  }
-
-  useEffect(() => {
-    const search = cleanSearch(draft);
-    if (search === value) return;
-    const timer = setTimeout(() => onSearch(search), SEARCH_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [draft, value, onSearch]);
-
-  return (
-    <div className={cn(box, "w-full focus-within:border-primary sm:w-70")}>
-      <label htmlFor={id} className="sr-only">
-        {t.searchLabel}
-      </label>
-      <SearchIcon className="shrink-0 text-muted-foreground" />
-      <input
-        id={id}
-        type="search"
-        inputMode="decimal"
-        autoComplete="off"
-        value={draft}
-        maxLength={10}
-        placeholder={t.searchPlaceholder}
-        onChange={(event) => setDraft(event.target.value)}
-        className="min-w-0 flex-1 bg-transparent text-admin-body text-foreground outline-none placeholder:text-muted-foreground"
-      />
-    </div>
-  );
-}
 
 function FloorSelect({ value, onFloor, t }: { value: number | null; onFloor: (floor: number | null) => void; t: FiltersProps["t"] }) {
   const id = useId();
@@ -122,7 +84,15 @@ export function ResidencesFilters({ filters, counts, shown, onChange, t, statuse
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
       <div className="flex flex-col gap-3 sm:flex-row">
-        <SearchField value={filters.search} onSearch={(search) => onChange({ search })} t={t} />
+        <SearchField
+          value={filters.search}
+          onSearch={(search) => onChange({ search })}
+          clean={cleanSearch}
+          label={t.searchLabel}
+          placeholder={t.searchPlaceholder}
+          maxLength={10}
+          inputMode="decimal"
+        />
         <FloorSelect value={filters.floor} onFloor={(floor) => onChange({ floor })} t={t} />
       </div>
       <StatusTabs filters={filters} counts={counts} onChange={onChange} t={t} statuses={statuses} />

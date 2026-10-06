@@ -108,10 +108,38 @@ const enquiryListItemSchema = z.object({
   id: z.number(),
   name: z.string(),
   phone: z.string(),
+  email: z.string(),
   status: enquiryStatus,
+  source: z.string(),
+  residence: z.string().nullable(),
   createdAt: z.coerce.date(),
 });
 
 export type AdminEnquiryListItem = z.infer<typeof enquiryListItemSchema>;
 
 export const enquiryListSchema = z.object({ items: z.array(enquiryListItemSchema), total: z.number() });
+
+export type EnquiryList = z.infer<typeof enquiryListSchema>;
+
+export const enquiryCardSchema = enquiryListItemSchema.extend({
+  comment: z.string().nullable(),
+  locale: z.string(),
+  currency: z.string(),
+  managerNote: z.string().nullable(),
+  updatedAt: z.coerce.date(),
+  residence: z
+    .object({
+      number: z.string(),
+      status: residenceStatus,
+      priceUsd: z.number(),
+      bedrooms: z.number().int(),
+      areaM2: z.number(),
+      isPenthouse: z.boolean(),
+    })
+    .nullable(),
+  reservation: z.object({ startsAt: z.coerce.date(), endsAt: z.coerce.date() }).nullable(),
+  activity: z.array(activityEntrySchema.extend({ residence: z.string().nullable() })),
+});
+
+export type EnquiryCard = z.infer<typeof enquiryCardSchema>;
+export type EnquiryActivity = EnquiryCard["activity"][number];

@@ -21,10 +21,12 @@ export const adminKeys = {
   residenceList: (params: ListParams) => ["admin", "residences", "list", params] as const,
   residenceCard: (number: string) => ["admin", "residences", "card", number] as const,
   enquiries: ["admin", "enquiries"] as const,
+  enquiryList: (path: string) => ["admin", "enquiries", "list", path] as const,
+  enquiryCard: (id: number) => ["admin", "enquiries", "card", id] as const,
   residenceEnquiries: (number: string) => ["admin", "enquiries", { residence: number }] as const,
 };
 
-const residencePath = (number: string) => `/api/admin/residences/${encodeURIComponent(number)}`;
+export const residencePath = (number: string) => `/api/admin/residences/${encodeURIComponent(number)}`;
 
 export function useMe() {
   return useQuery({
@@ -64,8 +66,8 @@ export function useResidenceEnquiries(number: string) {
   });
 }
 
-/** After any change the card, the list and the dashboard ask the API again. */
-function useInvalidateResidences() {
+/** After any change the cards, the lists and the dashboard ask the API again. */
+export function useInvalidateAdminData() {
   const queryClient = useQueryClient();
   return () =>
     Promise.all([
@@ -78,7 +80,7 @@ function useInvalidateResidences() {
 export type ResidenceChange = { priceUsd?: number; status?: AdminResidenceStatus; note?: string };
 
 export function useUpdateResidence(number: string) {
-  const invalidate = useInvalidateResidences();
+  const invalidate = useInvalidateAdminData();
   return useMutation({
     mutationFn: (change: ResidenceChange) =>
       adminApi.sendJson(residencePath(number), "PATCH", change, residenceCardSchema),
@@ -87,7 +89,7 @@ export function useUpdateResidence(number: string) {
 }
 
 export function useReleaseReservation(number: string) {
-  const invalidate = useInvalidateResidences();
+  const invalidate = useInvalidateAdminData();
   return useMutation({
     mutationFn: (note?: string) =>
       adminApi.sendJson(`${residencePath(number)}/release`, "POST", note ? { note } : {}, reservationStateSchema),
