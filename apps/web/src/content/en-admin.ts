@@ -41,8 +41,8 @@ export const adminEn = {
     MANAGER: "Sales manager",
   },
   placeholder: {
-    title: "Coming in task 6b",
-    text: "This section is not built yet. The dashboard already shows live numbers.",
+    title: "Coming in task 6c",
+    text: "The enquiries screen is not built yet. New enquiries are already counted on the dashboard, and reservations will be made from an enquiry here.",
     back: "Back to dashboard",
   },
   states: {
