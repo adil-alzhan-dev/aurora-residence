@@ -37,7 +37,7 @@ export function ResidenceEnquiries({ number, now, t }: EnquiriesProps) {
               <span className="text-admin-caption text-muted-foreground">
                 {formatReceived(item.createdAt, now, t.enquiries)}
                 <span aria-hidden="true">{"  ·  "}</span>
-                {item.phone}
+                <span className="whitespace-nowrap">{item.phone}</span>
               </span>
             </div>
             <EnquiryStatusBadge status={item.status} label={t.enquiries.statuses[item.status]} />
