@@ -46,9 +46,13 @@ function CurrentManager({ t }: { t: AdminDictionary }) {
 
 export function AdminTopbar({ t }: { t: AdminDictionary }) {
   const pathname = usePathname();
+  const residence = /^\/admin\/residences\/(\d{1,2}\.\d{2})$/.exec(pathname)?.[1];
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 lg:h-18 lg:px-8">
-      <p className="text-admin-caption text-muted-foreground">{t.nav[activeNavKey(pathname)]}</p>
+      <p className="text-admin-caption text-muted-foreground">
+        {t.nav[activeNavKey(pathname)]}
+        {residence && <span>{`\u00a0/\u00a0${residence}`}</span>}
+      </p>
       <CurrentManager t={t} />
     </header>
   );

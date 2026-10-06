@@ -9,10 +9,16 @@ const REQUEST_TIMEOUT_MS = 15_000;
 
 const sessionSchema = z.object({ accessToken: z.string().min(1) });
 
+const errorBodySchema = z.object({
+  message: z.union([z.string(), z.array(z.string())]).optional(),
+  errors: z.record(z.string(), z.string()).optional(),
+});
+
 export class AdminApiError extends Error {
   constructor(
     readonly status: number,
     message = `Admin API answered ${status}`,
+    readonly fieldErrors: Record<string, string> = {},
   ) {
     super(message);
     this.name = "AdminApiError";
@@ -127,6 +133,34 @@ export function createAdminApi({
     return parsed.data;
   }
 
+  async function failure(response: Response): Promise<AdminApiError> {
+    const parsed = errorBodySchema.safeParse(await response.json().catch(() => null));
+    const message = parsed.success ? parsed.data.message : undefined;
+    return new AdminApiError(
+      response.status,
+      Array.isArray(message) ? message.join(". ") : message,
+      parsed.success ? parsed.data.errors : undefined,
+    );
+  }
+
+  /** A change sent as JSON; a refused one throws AdminApiError with the API's message. */
+  async function sendJson<Schema extends z.ZodType>(
+    path: string,
+    method: "PATCH" | "POST",
+    body: unknown,
+    schema: Schema,
+  ): Promise<z.infer<Schema>> {
+    const response = await request(path, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw await failure(response);
+    const parsed = schema.safeParse(await response.json());
+    if (!parsed.success) throw new AdminApiError(response.status, `Unexpected answer from ${path}`);
+    return parsed.data;
+  }
+
   async function logout() {
     try {
       await send(LOGOUT_PATH, { method: "POST" }, accessToken);
@@ -139,6 +173,7 @@ export function createAdminApi({
   return {
     request,
     getJson,
+    sendJson,
     refresh,
     logout,
     setAccessToken,

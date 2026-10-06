@@ -76,3 +76,42 @@ export const residenceListSchema = z.object({
 });
 
 export type ResidenceList = z.infer<typeof residenceListSchema>;
+
+const activityEntrySchema = z.object({
+  at: z.coerce.date(),
+  type: z.string(),
+  from: z.string().nullable(),
+  to: z.string().nullable(),
+  note: z.string().nullable(),
+  author: z.string(),
+});
+
+export type ActivityEntry = z.infer<typeof activityEntrySchema>;
+
+export const residenceCardSchema = adminResidenceSchema.extend({
+  reservation: z
+    .object({
+      startsAt: z.coerce.date(),
+      endsAt: z.coerce.date(),
+      enquiry: z.object({ id: z.number(), name: z.string() }).nullable(),
+      createdBy: z.string(),
+    })
+    .nullable(),
+  history: z.array(activityEntrySchema),
+});
+
+export type ResidenceCard = z.infer<typeof residenceCardSchema>;
+
+export const reservationStateSchema = z.object({ number: z.string(), status: residenceStatus });
+
+const enquiryListItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  phone: z.string(),
+  status: enquiryStatus,
+  createdAt: z.coerce.date(),
+});
+
+export type AdminEnquiryListItem = z.infer<typeof enquiryListItemSchema>;
+
+export const enquiryListSchema = z.object({ items: z.array(enquiryListItemSchema), total: z.number() });
