@@ -5,35 +5,34 @@ import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
 import { formatReceived, residenceDetails } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
-import type { AdminEnquiryListItem, AdminResidence } from "@/lib/admin/schemas";
+import type { DashboardEnquiry } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { DashboardCard } from "./dashboard-card";
 
 type LatestEnquiriesProps = {
-  items: AdminEnquiryListItem[];
+  items: DashboardEnquiry[];
   total: number;
-  residences: Map<string, AdminResidence>;
   now: Date;
   t: AdminDictionary["enquiries"];
 };
 
-function ResidenceCell({ item, residences, t }: Pick<LatestEnquiriesProps, "residences" | "t"> & { item: AdminEnquiryListItem }) {
-  const residence = item.residence ? residences.get(item.residence) : undefined;
+function ResidenceCell({ item, t }: Pick<LatestEnquiriesProps, "t"> & { item: DashboardEnquiry }) {
+  const { residence } = item;
   return (
     <div className="flex flex-col lg:w-50 lg:shrink-0">
       <span className="text-admin-body text-foreground">
-        {item.residence ? fillTemplate(t.residence, { number: item.residence }) : t.general}
+        {residence ? fillTemplate(t.residence, { number: residence.number }) : t.general}
       </span>
       <span className="text-admin-caption text-muted-foreground">
-        {item.residence ? residence && residenceDetails(residence, t) : item.source}
+        {residence ? residenceDetails(residence, t) : item.source}
       </span>
     </div>
   );
 }
 
-function EnquiryRow({ item, residences, now, t }: Omit<LatestEnquiriesProps, "items" | "total"> & { item: AdminEnquiryListItem }) {
+function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "total"> & { item: DashboardEnquiry }) {
   const isNew = item.status === "NEW";
   const strong = isNew ? "text-admin-strong" : "text-admin-body";
   return (
@@ -53,7 +52,7 @@ function EnquiryRow({ item, residences, now, t }: Omit<LatestEnquiriesProps, "it
         <span className="truncate text-admin-caption text-muted-foreground">{item.email}</span>
       </div>
       <span className="text-admin-body text-foreground lg:w-50 lg:shrink-0">{item.phone}</span>
-      <ResidenceCell item={item} residences={residences} t={t} />
+      <ResidenceCell item={item} t={t} />
       <span className="hidden lg:block lg:w-44 lg:shrink-0">
         <EnquiryStatusBadge status={item.status} label={t.statuses[item.status]} />
       </span>
@@ -69,7 +68,7 @@ function EnquiryRow({ item, residences, now, t }: Omit<LatestEnquiriesProps, "it
   );
 }
 
-export function LatestEnquiries({ items, total, residences, now, t }: LatestEnquiriesProps) {
+export function LatestEnquiries({ items, total, now, t }: LatestEnquiriesProps) {
   return (
     <DashboardCard
       id="dashboard-enquiries"
@@ -84,7 +83,7 @@ export function LatestEnquiries({ items, total, residences, now, t }: LatestEnqu
       ) : (
         <ul className="flex flex-col border-t border-border">
           {items.map((item) => (
-            <EnquiryRow key={item.id} item={item} residences={residences} now={now} t={t} />
+            <EnquiryRow key={item.id} item={item} now={now} t={t} />
           ))}
         </ul>
       )}

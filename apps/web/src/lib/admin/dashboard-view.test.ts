@@ -3,20 +3,15 @@ import { describe, expect, it } from "vitest";
 import { adminEn } from "@/content/en-admin";
 
 import { calendarDaysLeft, formatReceived, percentOf, reservationRows, residenceDetails } from "./dashboard-view";
-import type { AdminResidence } from "./schemas";
+import type { ResidenceBrief } from "./schemas";
 
 const now = new Date(2026, 9, 4, 12, 0);
 
-const residence = (overrides: Partial<AdminResidence>): AdminResidence => ({
+const residence = (overrides: Partial<ResidenceBrief>): ResidenceBrief => ({
   number: "7.03",
-  floor: 7,
-  position: 3,
   bedrooms: 2,
   areaM2: 84.2,
-  isPenthouse: false,
   priceUsd: 218_000,
-  status: "AVAILABLE",
-  reservedUntil: null,
   ...overrides,
 });
 
@@ -48,16 +43,12 @@ describe("residenceDetails", () => {
 });
 
 describe("reservationRows", () => {
-  it("lists active reservations soonest first and marks the ones the API counts as ending", () => {
+  it("keeps the API order and flags, and counts calendar days left", () => {
     const rows = reservationRows(
       [
-        residence({ number: "3.03", status: "RESERVED", reservedUntil: new Date(2026, 9, 10, 14, 5) }),
-        residence({ number: "11.03", status: "RESERVED", reservedUntil: new Date(2026, 9, 5, 10, 40) }),
-        residence({ number: "7.03" }),
-        residence({ number: "6.04", status: "SOLD" }),
+        { residence: "11.03", client: "Nora Kim", expiresAt: new Date(2026, 9, 5, 10, 40), endingSoon: true },
+        { residence: "3.03", client: null, expiresAt: new Date(2026, 9, 10, 14, 5), endingSoon: false },
       ],
-      new Map([["11.03", "Nora Kim"]]),
-      new Set(["11.03"]),
       now,
     );
 

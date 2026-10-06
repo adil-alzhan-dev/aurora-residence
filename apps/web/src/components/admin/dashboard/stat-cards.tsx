@@ -50,8 +50,8 @@ function ShareBar({ summary, label }: { summary: DashboardSummary; label: string
 
 export function StatCards({ summary, t }: { summary: DashboardSummary; t: AdminDictionary["dashboard"] }) {
   const { AVAILABLE, RESERVED, SOLD, total } = summary.residences;
-  const ending = summary.expiringReservations.length;
-  const waiting = summary.enquiries.byStatus.NEW;
+  const ending = summary.reservations.filter((reservation) => reservation.endingSoon).length;
+  const waiting = summary.enquiries.new;
 
   return (
     <ul aria-label={t.statsLabel} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

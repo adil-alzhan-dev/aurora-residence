@@ -1,6 +1,6 @@
 import { floorsTopDown } from "@/components/facade/facade-geometry";
 import type { AdminDictionary } from "@/content/en-admin";
-import type { AdminResidence, AdminResidenceStatus } from "@/lib/admin/schemas";
+import type { AdminResidenceStatus, DashboardSummary } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -16,18 +16,22 @@ const cellColor: Record<AdminResidenceStatus, string> = {
 
 const rowClass = "grid grid-cols-[24px_1fr_24px] items-center gap-1";
 
-function countByStatus(residences: AdminResidence[]) {
+type FacadeCell = DashboardSummary["facade"][number];
+
+/** The API sends the cells by floor and position, the number is "<floor>.<position>". */
+function groupByFloor(cells: FacadeCell[]) {
   const counts: Record<AdminResidenceStatus, number> = { AVAILABLE: 0, RESERVED: 0, SOLD: 0 };
-  for (const residence of residences) counts[residence.status] += 1;
-  return counts;
+  const byFloor = new Map<number, FacadeCell[]>();
+  for (const cell of cells) {
+    counts[cell.status] += 1;
+    const floor = Number(cell.number.split(".")[0]);
+    byFloor.set(floor, [...(byFloor.get(floor) ?? []), cell]);
+  }
+  return { counts, byFloor };
 }
 
-export function MiniFacade({ residences, t }: { residences: AdminResidence[]; t: AdminDictionary["facade"] }) {
-  const counts = countByStatus(residences);
-  const byFloor = new Map<number, AdminResidence[]>();
-  for (const residence of residences) {
-    byFloor.set(residence.floor, [...(byFloor.get(residence.floor) ?? []), residence]);
-  }
+export function MiniFacade({ cells: allCells, t }: { cells: FacadeCell[]; t: AdminDictionary["facade"] }) {
+  const { counts, byFloor } = groupByFloor(allCells);
 
   return (
     <DashboardCard id="dashboard-facade" title={t.title} lead={t.lead} className="gap-4 p-6 xl:w-[420px] xl:shrink-0">
@@ -38,7 +42,7 @@ export function MiniFacade({ residences, t }: { residences: AdminResidence[]; t:
         </div>
         <ul className="flex flex-col gap-1">
           {floorsTopDown.map((floor) => {
-            const cells = [...(byFloor.get(floor) ?? [])].sort((a, b) => a.position - b.position);
+            const cells = byFloor.get(floor) ?? [];
             const label = [
               fillTemplate(t.floor, { floor }),
               ...cells.map((cell) => fillTemplate(t.residence, { number: cell.number, status: t.statuses[cell.status] })),

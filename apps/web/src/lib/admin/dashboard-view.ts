@@ -1,7 +1,7 @@
 import type { AdminDictionary } from "@/content/en-admin";
 import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
 
-import type { AdminResidence } from "./schemas";
+import type { DashboardSummary, ResidenceBrief } from "./schemas";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -27,7 +27,7 @@ export function formatReceived(date: Date, now: Date, t: AdminDictionary["enquir
   return `${formatShortDate(date)}, ${time}`;
 }
 
-export function residenceDetails(residence: AdminResidence, t: AdminDictionary["enquiries"]) {
+export function residenceDetails(residence: ResidenceBrief, t: AdminDictionary["enquiries"]) {
   const bedrooms = residence.bedrooms === 0 ? t.studio : fillTemplate(t.bedrooms, { count: residence.bedrooms });
   return fillTemplate(t.details, {
     bedrooms,
@@ -44,29 +44,15 @@ export type ReservationRow = {
   endingSoon: boolean;
 };
 
-/**
- * Every active reservation, soonest first. "Ending soon" is what the API counts as ending
- * within 48 hours, so the red rows always match the number on the Reserved card.
- */
-export function reservationRows(
-  residences: AdminResidence[],
-  clients: Map<string, string | null>,
-  endingSoon: Set<string>,
-  now: Date,
-): ReservationRow[] {
-  return residences
-    .filter((residence) => residence.status === "RESERVED" && residence.reservedUntil)
-    .map((residence) => {
-      const endsAt = residence.reservedUntil as Date;
-      return {
-        number: residence.number,
-        client: clients.get(residence.number) ?? null,
-        endsAt,
-        daysLeft: calendarDaysLeft(endsAt, now),
-        endingSoon: endingSoon.has(residence.number),
-      };
-    })
-    .sort((a, b) => a.endsAt.getTime() - b.endsAt.getTime());
+/** The API sends active reservations soonest first and decides which ones end within 48 hours. */
+export function reservationRows(reservations: DashboardSummary["reservations"], now: Date): ReservationRow[] {
+  return reservations.map((reservation) => ({
+    number: reservation.residence,
+    client: reservation.client,
+    endsAt: reservation.expiresAt,
+    daysLeft: calendarDaysLeft(reservation.expiresAt, now),
+    endingSoon: reservation.endingSoon,
+  }));
 }
 
 export const percentOf = (part: number, total: number) => (total > 0 ? Math.round((part / total) * 100) : 0);
