@@ -7,21 +7,27 @@ import { ChevronDownIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
 import { formatDayTime, formatReceived } from "@/lib/admin/dashboard-view";
-import { reserveErrorText } from "@/lib/admin/enquiry-errors";
-import { useReserveResidence } from "@/lib/admin/enquiry-queries";
+import type { useReserveResidence } from "@/lib/admin/enquiry-queries";
 import { useResidenceEnquiries } from "@/lib/admin/queries";
 import { reservableEnquiries, reservationEnd } from "@/lib/admin/reservation-rules";
 import type { ResidenceCard } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 
-type ReserveProps = { residence: ResidenceCard; now: Date; t: AdminDictionary };
+type ReserveProps = {
+  residence: ResidenceCard;
+  reserve: ReturnType<typeof useReserveResidence>;
+  now: Date;
+  t: AdminDictionary;
+};
 
-/** The residence card reserves for one of its open enquiries, as on the enquiry card. */
-export function ReserveFromEnquiry({ residence, now, t }: ReserveProps) {
+/**
+ * The residence card reserves for one of its open enquiries, as on the enquiry card.
+ * The reservation card owns the request, so its refusal stays visible after this form is gone.
+ */
+export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps) {
   const text = t.residence.reservation;
   const selectId = useId();
   const { data, isError } = useResidenceEnquiries(residence.number);
-  const reserve = useReserveResidence();
   const [chosen, setChosen] = useState<number | null>(null);
   const [confirmAt, setConfirmAt] = useState<Date | null>(null);
   const options = reservableEnquiries(data?.items ?? [], residence.number, residence.status);
@@ -87,9 +93,9 @@ export function ReserveFromEnquiry({ residence, now, t }: ReserveProps) {
         pendingLabel={text.reserving}
         cancelLabel={t.residence.confirm.cancel}
         pending={reserve.isPending}
-        error={reserveErrorText(reserve.error, residence.number, t.enquiry.errors)}
+        error={null}
         onConfirm={() =>
-          reserve.mutate({ number: residence.number, enquiryId: enquiry.id }, { onSuccess: () => setConfirmAt(null) })
+          reserve.mutate({ number: residence.number, enquiryId: enquiry.id }, { onSettled: () => setConfirmAt(null) })
         }
       >
         <p>{fillTemplate(text.reserveText, { date: confirmAt ? formatDayTime(confirmAt) : "" })}</p>

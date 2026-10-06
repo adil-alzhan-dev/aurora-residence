@@ -7,6 +7,8 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
 import { changeErrorText } from "@/lib/admin/change-errors";
+import { reserveErrorText } from "@/lib/admin/enquiry-errors";
+import { useReserveResidence } from "@/lib/admin/enquiry-queries";
 import { formatDay, formatDayTime } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
 import { useReleaseReservation } from "@/lib/admin/queries";
@@ -30,6 +32,8 @@ type ReservationCardProps = { residence: ResidenceCard; now: Date; t: AdminDicti
 export function ReservationCard({ residence, now, t }: ReservationCardProps) {
   const text = t.residence.reservation;
   const release = useReleaseReservation(residence.number);
+  const reserve = useReserveResidence();
+  const reserveError = reserveErrorText(reserve.error, residence.number, t.enquiry.errors);
   const [confirmClient, setConfirmClient] = useState<string | null>(null);
   const [released, setReleased] = useState(false);
   const { reservation } = residence;
@@ -39,7 +43,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
     body = (
       <>
         {residence.status === "AVAILABLE" ? (
-          <ReserveFromEnquiry residence={residence} now={now} t={t} />
+          <ReserveFromEnquiry residence={residence} reserve={reserve} now={now} t={t} />
         ) : (
           <>
             <p className="text-admin-body text-foreground">{text.none}</p>
@@ -80,6 +84,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
           className="w-full"
           onClick={() => {
             release.reset();
+            reserve.reset();
             setConfirmClient(client);
           }}
         >
@@ -91,6 +96,11 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
 
   return (
     <AdminCard id="residence-reservation" title={text.title} lead={text.lead} className="gap-5">
+      {reserveError && (
+        <p role="alert" className="text-admin-body text-destructive">
+          {reserveError}
+        </p>
+      )}
       {body}
       <ConfirmDialog
         open={confirmClient !== null}
