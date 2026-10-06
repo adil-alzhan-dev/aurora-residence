@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
+import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { applyStatusChange, defaultStatusNote, lockResidence, type Tx } from './status-change.js';
 
@@ -36,7 +37,10 @@ export interface StatusChangeRequest {
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly live: LiveService,
+  ) {}
 
   async reserve(number: string, enquiryId: number, actorId: number, note?: string) {
     await this.prisma.$transaction(async (tx) => {
@@ -44,6 +48,7 @@ export class ReservationsService {
       if (residence.status !== 'AVAILABLE') throw notAvailable(number, residence.status);
       await this.changeStatus(tx, { number, to: 'RESERVED', actorId, enquiryId, note });
     });
+    await this.live.residenceUpdated(number);
     return this.state(number);
   }
 
@@ -55,6 +60,7 @@ export class ReservationsService {
       }
       await this.changeStatus(tx, { number, to: 'AVAILABLE', actorId, note });
     });
+    await this.live.residenceUpdated(number);
     return this.state(number);
   }
 
@@ -117,7 +123,9 @@ export class ReservationsService {
           });
           return true;
         });
-        if (done) released += 1;
+        if (!done) continue;
+        released += 1;
+        await this.live.residenceUpdated(residence.number);
       } catch (error) {
         if (!(error instanceof ConflictException)) throw error;
         this.logger.warn(`Residence ${residence.number} changed while releasing, skipped`);

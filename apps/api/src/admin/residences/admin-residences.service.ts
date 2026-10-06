@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { ResidenceStatus } from '../../generated/prisma/enums.js';
+import { LiveService } from '../../live/live.service.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ReservationsService, type ActiveReservation } from '../../reservations/reservations.service.js';
 import { PUBLIC_RESIDENCE_SELECT, toPublicResidence, type PublicResidence } from '../../residences/residence.view.js';
@@ -37,6 +38,7 @@ export class AdminResidencesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly reservations: ReservationsService,
+    private readonly live: LiveService,
   ) {}
 
   async list(query: AdminResidencesQueryDto): Promise<AdminResidenceList> {
@@ -77,14 +79,15 @@ export class AdminResidencesService {
     if (dto.priceUsd === undefined && dto.status === undefined) {
       throw new BadRequestException('Send a new priceUsd or status');
     }
-    await this.prisma.$transaction(async (tx) => {
+    const changed = await this.prisma.$transaction(async (tx) => {
       const current = await tx.residence.findUnique({
         where: { number },
         select: { id: true, priceUsd: true },
       });
       if (!current) throw new NotFoundException(`Residence ${number} not found`);
 
-      if (dto.priceUsd !== undefined && dto.priceUsd !== current.priceUsd) {
+      const priceChanged = dto.priceUsd !== undefined && dto.priceUsd !== current.priceUsd;
+      if (priceChanged) {
         await tx.residence.update({ where: { id: current.id }, data: { priceUsd: dto.priceUsd } });
         await tx.activityLog.create({
           data: {
@@ -100,7 +103,10 @@ export class AdminResidencesService {
       if (dto.status !== undefined) {
         await this.reservations.changeStatus(tx, { number, to: dto.status, actorId, note: dto.note });
       }
+      // A repeated status is a no-op in changeStatus; the extra event then is harmless.
+      return priceChanged || dto.status !== undefined;
     });
+    if (changed) await this.live.residenceUpdated(number);
     return this.card(number);
   }
 }
