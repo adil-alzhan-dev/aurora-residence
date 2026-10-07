@@ -37,7 +37,7 @@ describe("site dictionaries", () => {
   });
 
   it("have no long dashes", () => {
-    const withDash = [...enLeaves, ...ruLeaves].filter(([, value]) => typeof value === "string" && value.includes("—"));
+    const withDash = [...enLeaves, ...ruLeaves].filter(([, value]) => typeof value === "string" && value.includes("\u2014"));
     expect(withDash).toEqual([]);
   });
 
