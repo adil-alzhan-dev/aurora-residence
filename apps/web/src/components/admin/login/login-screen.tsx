@@ -1,3 +1,4 @@
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Logo } from "@/components/logo";
 import type { AdminDictionary } from "@/content/en-admin";
 
@@ -6,6 +7,12 @@ import { LoginForm } from "./login-form";
 export function LoginScreen({ t, next }: { t: AdminDictionary; next: string | null }) {
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center bg-background px-4 py-28">
+      <LocaleSwitcher
+        locale={t.locale.lang}
+        label={t.common.language}
+        languages={t.common.languages}
+        className="absolute top-4 right-4 sm:top-8 sm:right-8"
+      />
       <main
         aria-labelledby="login-title"
         className="flex w-full max-w-[456px] flex-col items-start gap-6 rounded-base border border-border bg-card p-6 sm:p-12"

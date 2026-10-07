@@ -1,12 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useOptimistic, useTransition } from "react";
-
 import { useCurrency } from "@/components/currency/currency-provider";
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Switcher } from "@/components/ui/switcher";
 import type { Dictionary } from "@/content";
-import { localeCookie, type Locale } from "@/lib/locale";
 import type { Currency } from "@/lib/money";
 
 type SettingsSwitcherProps = {
@@ -14,33 +11,9 @@ type SettingsSwitcherProps = {
   className?: string;
 };
 
-/** The server renders the page in the cookie's language, so a switch re-renders the current page in place. */
 export function LanguageSwitcher({ t, className }: SettingsSwitcherProps) {
-  const { languages } = t.settings;
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  const [locale, setOptimisticLocale] = useOptimistic(t.locale.lang);
-
-  const changeLocale = (next: Locale) => {
-    if (next === locale) return;
-    document.cookie = localeCookie(next);
-    startTransition(() => {
-      setOptimisticLocale(next);
-      router.refresh();
-    });
-  };
-
   return (
-    <Switcher<Locale>
-      label={t.a11y.language}
-      value={locale}
-      onValueChange={changeLocale}
-      className={className}
-      options={[
-        { value: "en", label: languages.en },
-        { value: "ru", label: languages.ru },
-      ]}
-    />
+    <LocaleSwitcher locale={t.locale.lang} label={t.a11y.language} languages={t.settings.languages} className={className} />
   );
 }
 

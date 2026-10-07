@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { LocaleSwitcher } from "@/components/locale-switcher";
 import type { AdminDictionary } from "@/content/en-admin";
 import { useEnquiryCard } from "@/lib/admin/enquiry-queries";
 import { useMe } from "@/lib/admin/queries";
@@ -63,8 +64,10 @@ export function AdminTopbar({ t }: { t: AdminDictionary }) {
         {residence && <span>{`\u00a0/\u00a0${residence}`}</span>}
         {enquiryId && <EnquiryCrumb id={Number(enquiryId)} />}
       </p>
-      <div className="flex shrink-0 items-center gap-4 md:gap-6">
+      <div className="flex shrink-0 items-center gap-3 md:gap-6">
         <LiveIndicator t={t.live} />
+        <LocaleSwitcher locale={t.locale.lang} label={t.common.language} languages={t.common.languages} />
+        <span aria-hidden="true" className="h-8 w-px bg-border" />
         <CurrentManager t={t} />
       </div>
     </header>

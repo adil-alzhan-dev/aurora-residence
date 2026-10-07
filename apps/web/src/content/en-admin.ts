@@ -19,6 +19,8 @@ export const adminEn = {
     salesAdmin: "Sales admin",
     home: "Aurora Residence admin, dashboard",
     checkingSession: "Checking your session",
+    language: "Language",
+    languages: { en: "EN", ru: "RU" },
     footer: "© 2026 Meridian Group. Fictional project for portfolio.",
   },
   login: {
