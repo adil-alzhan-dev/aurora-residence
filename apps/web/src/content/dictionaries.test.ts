@@ -42,7 +42,7 @@ describe("site dictionaries", () => {
   });
 
   it("keep the penthouse caption and statuses agreed for Russian", () => {
-    expect(ru.floorPage.penthouse).toBe("Пентхаус, с террасой");
+    expect(ru.floorPage.penthouse.replace("\u00a0", " ")).toBe("Пентхаус, с террасой");
     expect(ru.status).toEqual({ available: "Свободна", reserved: "Бронь", sold: "Продана" });
   });
 });

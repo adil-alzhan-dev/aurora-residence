@@ -160,7 +160,8 @@ export const residencesRu: typeof residencesEn = {
     typeNames: ["Студия", "Одна спальня", "Две спальни", "Три спальни"],
     typeArea: "{type}, {area}",
     area: "{area} м²",
-    penthouse: "Пентхаус, с террасой",
+    // No-break space keeps "с террасой" together when the caption wraps in a grid cell.
+    penthouse: "Пентхаус, с\u00a0террасой",
     residence: "Квартира {number}",
     clickToOpen: "Нажмите, чтобы открыть",
     notForSale: "Продана, недоступна",
