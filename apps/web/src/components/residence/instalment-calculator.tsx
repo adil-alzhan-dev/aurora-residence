@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ButtonArrow } from "@/components/ui/button";
 import { RangeField } from "@/components/ui/range-field";
 import { RevealSection } from "@/components/motion/reveal-section";
 import type { Dictionary } from "@/content";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { calculateInstalments, DOWN_PAYMENT, TERM_MONTHS } from "@/lib/instalment";
 
 import { RequestButton } from "./enquiry/enquiry-context";
@@ -17,6 +18,7 @@ type InstalmentCalculatorProps = {
 };
 
 export function InstalmentCalculator({ priceUsd, t }: InstalmentCalculatorProps) {
+  const { currency, formatPrice } = useCurrency();
   const text = t.instalments;
   const [percent, setPercent] = useState<number>(DOWN_PAYMENT.initial);
   const [months, setMonths] = useState<number>(TERM_MONTHS.initial);
@@ -27,7 +29,7 @@ export function InstalmentCalculator({ priceUsd, t }: InstalmentCalculatorProps)
     { label: fillTemplate(text.downPaymentRow, { percent: result.percent }), value: result.downPayment },
     { label: text.instalmentsRow, value: result.financed },
   ];
-  const disclaimer = <p className="text-caption text-muted-foreground">{text.disclaimer}</p>;
+  const disclaimer = <p className="text-caption text-muted-foreground">{fillTemplate(text.disclaimer, { currency })}</p>;
 
   return (
     <RevealSection aria-labelledby="instalments-title" className="bg-card py-12 lg:container-page lg:bg-transparent lg:pt-0 lg:pb-32">
@@ -70,7 +72,7 @@ export function InstalmentCalculator({ priceUsd, t }: InstalmentCalculatorProps)
             <div className="flex flex-col gap-2">
               <p className="text-overline text-primary lg:text-muted-foreground">{text.monthly}</p>
               <p aria-live="polite" className="text-amount text-foreground">
-                {formatUsd(result.monthly)}
+                {formatPrice(result.monthly)}
               </p>
               <p className="text-caption text-muted-foreground lg:text-body">
                 {fillTemplate(text.monthlyNote, { months: result.term })}
@@ -80,7 +82,7 @@ export function InstalmentCalculator({ priceUsd, t }: InstalmentCalculatorProps)
               {rows.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4 border-t border-border py-3 text-body lg:py-4">
                   <dt className="text-muted-foreground">{row.label}</dt>
-                  <dd className="text-foreground">{formatUsd(row.value)}</dd>
+                  <dd className="text-foreground">{formatPrice(row.value)}</dd>
                 </div>
               ))}
             </dl>

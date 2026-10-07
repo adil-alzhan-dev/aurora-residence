@@ -106,7 +106,7 @@ export const residenceEn = {
       price: "Price",
       downPaymentRow: "Down payment, {percent}%",
       instalmentsRow: "Paid in instalments",
-      disclaimer: "Indicative calculation in USD. The final schedule is fixed in the sales agreement.",
+      disclaimer: "Indicative calculation in {currency}. The final schedule is fixed in the sales agreement.",
     },
     similar: {
       overline: "Same layout, other floors",
