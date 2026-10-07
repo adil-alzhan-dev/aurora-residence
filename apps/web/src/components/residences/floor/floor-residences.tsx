@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CurrencyText } from "@/components/currency/currency-text";
 import { CurrencySwitcher } from "@/components/layout/settings-switchers";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
@@ -55,7 +56,9 @@ export function FloorResidences({ floor, residences, active, onActivate, onLeave
         <ResidenceList residences={residences} t={t} />
       </div>
 
-      <p className="pt-4 text-caption text-muted-foreground lg:pt-6">{text.note}</p>
+      <p className="pt-4 text-caption text-muted-foreground lg:pt-6">
+        <CurrencyText template={text.note} />
+      </p>
       {target && (
         <Button asChild className="mt-6 hidden w-full lg:inline-flex">
           <Link href={residenceHref(target.number)} prefetch={false}>

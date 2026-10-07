@@ -1,11 +1,14 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ArrowRightIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { residenceHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { areaText, isOpenable } from "../floor/residence-text";
@@ -22,6 +25,7 @@ const cardClass = "flex flex-col gap-4 rounded-base border border-border bg-card
 
 /** M / Residence Card: the whole card is the tap target; sold residences are shown but do not open. */
 export function ResidenceCard({ residence, t }: ResidenceCardProps) {
+  const { formatPrice } = useCurrency();
   const openable = isOpenable(residence);
   const details = [
     fillTemplate(t.list.floorOf, { floor: residence.floor, total: FLOOR_COUNT }),
@@ -49,7 +53,7 @@ export function ResidenceCard({ residence, t }: ResidenceCardProps) {
       <span aria-hidden="true" className="h-px bg-border" />
       <span className="flex min-h-11 items-center justify-between gap-3">
         <span className={cn("text-fact whitespace-nowrap", !openable && "opacity-50")}>
-          {formatUsd(residence.priceUsd)}
+          {formatPrice(residence.priceUsd)}
         </span>
         <span className="flex items-center gap-3">
           <StatusBadge status={residence.status} label={t.status[residence.status]} />

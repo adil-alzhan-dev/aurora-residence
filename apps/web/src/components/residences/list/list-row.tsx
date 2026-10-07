@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ArrowRightIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { areaText, bedroomsText, isOpenable } from "../floor/residence-text";
@@ -24,6 +27,7 @@ const cell = "py-4 align-middle";
 
 /** Row of the Residences / List frame: hover lights the row as in Figma, the whole row opens the residence. */
 export function ListRow({ residence, t }: ListRowProps) {
+  const { formatPrice } = useCurrency();
   const openable = isOpenable(residence);
 
   return (
@@ -54,7 +58,7 @@ export function ListRow({ residence, t }: ListRowProps) {
       <td className={cell}>{fillTemplate(t.floorPage.floorOf, { floor: residence.floor, total: FLOOR_COUNT })}</td>
       <td className={cell}>{bedroomsText(residence, t.floorPage)}</td>
       <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t.floorPage)}</td>
-      <td className={cn(cell, "text-body-l whitespace-nowrap")}>{formatUsd(residence.priceUsd)}</td>
+      <td className={cn(cell, "text-body-l whitespace-nowrap")}>{formatPrice(residence.priceUsd)}</td>
       <td className={cell}>
         <StatusBadge status={residence.status} label={t.status[residence.status]} />
       </td>

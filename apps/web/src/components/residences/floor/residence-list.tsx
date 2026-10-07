@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ArrowRightIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
-import { formatUsd } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 
 import { areaText, bedroomsShortText, isOpenable } from "./residence-text";
@@ -20,6 +23,7 @@ const rowClass = "flex min-h-[72px] items-center gap-4 border-b border-border py
 
 /** Mobile rows (M / Unit Row): the whole 72 px row is the tap target; sold rows are not links. */
 export function ResidenceList({ residences, t }: ResidenceListProps) {
+  const { formatPrice } = useCurrency();
   return (
     <ul>
       {residences.map((residence) => {
@@ -40,7 +44,7 @@ export function ResidenceList({ residences, t }: ResidenceListProps) {
               {residence.isPenthouse && (
                 <span className="text-caption text-muted-foreground">{t.floorPage.penthouse}</span>
               )}
-              <span className="text-caption text-muted-foreground">{formatUsd(residence.priceUsd)}</span>
+              <span className="text-caption text-muted-foreground">{formatPrice(residence.priceUsd)}</span>
             </span>
             <StatusBadge status={residence.status} label={t.status[residence.status]} className="shrink-0" />
             <ArrowRightIcon className={cn("shrink-0", !openable && "invisible")} />

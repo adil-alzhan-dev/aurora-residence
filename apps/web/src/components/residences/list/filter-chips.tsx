@@ -1,8 +1,10 @@
 "use client";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { CloseIcon } from "@/components/icons";
 import type { Dictionary } from "@/content";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
+import type { FormatPrice } from "@/lib/money";
 import type { KeptParams, ResidenceFilters } from "@/lib/residence-filters";
 
 import { useFilterNavigation } from "../filters/use-filter-navigation";
@@ -15,11 +17,11 @@ type FilterChipsProps = {
 
 type Chip = { key: keyof ResidenceFilters; label: string };
 
-function chipsFor(filters: ResidenceFilters, t: Dictionary["list"]): Chip[] {
+function chipsFor(filters: ResidenceFilters, t: Dictionary["list"], formatPrice: FormatPrice): Chip[] {
   const chips: Chip[] = [];
   if (filters.bedrooms !== null) chips.push({ key: "bedrooms", label: t.chips.bedrooms[filters.bedrooms] ?? "" });
   if (filters.maxPrice !== null) {
-    chips.push({ key: "maxPrice", label: fillTemplate(t.chips.price, { price: formatUsd(filters.maxPrice) }) });
+    chips.push({ key: "maxPrice", label: fillTemplate(t.chips.price, { price: formatPrice(filters.maxPrice) }) });
   }
   if (filters.floor !== null) chips.push({ key: "floor", label: fillTemplate(t.chips.floor, { floor: filters.floor }) });
   return chips;
@@ -28,7 +30,8 @@ function chipsFor(filters: ResidenceFilters, t: Dictionary["list"]): Chip[] {
 /** Mobile list: each active filter as a chip that removes it with one tap. */
 export function FilterChips({ filters, keep, t }: FilterChipsProps) {
   const navigation = useFilterNavigation(filters, keep);
-  const chips = chipsFor(navigation.filters, t);
+  const { formatPrice } = useCurrency();
+  const chips = chipsFor(navigation.filters, t, formatPrice);
   if (chips.length === 0) return null;
 
   return (

@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ArrowRightIcon, ChevronDownIcon } from "@/components/icons";
 import type { Dictionary } from "@/content";
 import { floorHref, residencesHref } from "@/content/navigation";
 import type { FloorSummary } from "@/lib/api/floors";
 import { FLOOR_COUNT, isFloorNumber } from "@/lib/building";
-import { fillTemplate, formatUsd, padNumber } from "@/lib/format";
+import { fillTemplate, padNumber } from "@/lib/format";
 import { revealDelay } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +38,7 @@ function StepLink({ floor, label, children }: { floor: number; label: string; ch
 }
 
 export function FloorHeading({ floor, summary, neighbours, t }: FloorHeadingProps) {
+  const { formatPrice } = useCurrency();
   const position = fillTemplate(t.floorOf, { floor: padNumber(floor), total: FLOOR_COUNT });
   const summaryText = summary
     ? summary.fromPriceUsd === null
@@ -42,7 +46,7 @@ export function FloorHeading({ floor, summary, neighbours, t }: FloorHeadingProp
       : fillTemplate(t.summary, {
           available: summary.available,
           total: summary.total,
-          price: formatUsd(summary.fromPriceUsd),
+          price: formatPrice(summary.fromPriceUsd),
         })
     : null;
 

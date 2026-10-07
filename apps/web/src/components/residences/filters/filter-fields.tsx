@@ -1,10 +1,12 @@
 "use client";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { SelectField, type SelectOption } from "@/components/ui/select-field";
 import { Switcher, type SwitcherOption } from "@/components/ui/switcher";
 import type { Dictionary } from "@/content";
 import { floorNumbers } from "@/lib/building";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
+import type { FormatPrice } from "@/lib/money";
 import { bedroomOptions, maxPriceOptions, type ResidenceFilters } from "@/lib/residence-filters";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +25,14 @@ type FilterFieldsProps = {
 
 const toNumber = (value: string) => (value === ANY ? null : Number(value));
 
-function priceOptions(current: number | null, range: PriceRange | null, t: Dictionary["filters"]): SelectOption[] {
+function priceOptions(
+  current: number | null,
+  range: PriceRange | null,
+  t: Dictionary["filters"],
+  formatPrice: FormatPrice,
+): SelectOption[] {
   const label = (max: number) =>
-    range ? fillTemplate(t.priceRange, { min: formatUsd(range.min), max: formatUsd(max) }) : formatUsd(max);
+    range ? fillTemplate(t.priceRange, { min: formatPrice(range.min), max: formatPrice(max) }) : formatPrice(max);
   const limits = new Set<number>(maxPriceOptions.filter((limit) => !range || limit > range.min));
   if (current !== null) limits.add(current);
   return [
@@ -35,6 +42,7 @@ function priceOptions(current: number | null, range: PriceRange | null, t: Dicti
 }
 
 export function FilterFields({ filters, priceRange, onChange, t, idPrefix, className }: FilterFieldsProps) {
+  const { currency, formatPrice } = useCurrency();
   const bedrooms: SwitcherOption<string>[] = [
     { value: ANY, label: t.bedroomsAll },
     ...bedroomOptions.map((count) => ({ value: String(count), label: t.bedroomOptions[count] })),
@@ -60,9 +68,9 @@ export function FilterFields({ filters, priceRange, onChange, t, idPrefix, class
       </div>
       <SelectField
         id={`${idPrefix}-price`}
-        label={t.price}
+        label={fillTemplate(t.price, { currency })}
         value={filters.maxPrice === null ? ANY : String(filters.maxPrice)}
-        options={priceOptions(filters.maxPrice, priceRange, t)}
+        options={priceOptions(filters.maxPrice, priceRange, t, formatPrice)}
         onValueChange={(value) => onChange({ maxPrice: toNumber(value) })}
         className="lg:w-[280px]"
       />

@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
-import { formatUsd } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 
 import { areaText, bedroomsText, isOpenable } from "./residence-text";
@@ -21,6 +22,7 @@ const cell = "px-0 py-5 align-top text-body first:pl-4 last:pr-4";
 
 /** Desktop table: hovering a row lights the residence on the plan, the whole row opens it. */
 export function ResidenceTable({ residences, active, onActivate, onLeave, t }: ResidenceTableProps) {
+  const { formatPrice } = useCurrency();
   const columns = t.floorPage.columns;
 
   return (
@@ -89,7 +91,7 @@ export function ResidenceTable({ residences, active, onActivate, onLeave, t }: R
                 )}
               </td>
               <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t.floorPage)}</td>
-              <td className={cn(cell, "whitespace-nowrap")}>{formatUsd(residence.priceUsd)}</td>
+              <td className={cn(cell, "whitespace-nowrap")}>{formatPrice(residence.priceUsd)}</td>
               <td className={cell}>
                 <span className="flex h-[26px] items-center">
                   <StatusBadge status={residence.status} label={t.status[residence.status]} />

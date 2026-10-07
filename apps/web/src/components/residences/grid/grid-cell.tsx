@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { areaText, isOpenable, typeAreaText } from "../floor/residence-text";
@@ -30,6 +33,7 @@ const onSolid = "group-hover/cell:text-primary-foreground group-focus-visible/ce
 
 /** Chess Cell from Figma: tint by status, solid fill and a dark card on hover; sold cells are not links. */
 export function GridCell({ residence, matches, t }: GridCellProps) {
+  const { formatPrice } = useCurrency();
   const openable = isOpenable(residence);
   const info = fillTemplate(t.grid.info, {
     bedrooms: t.filters.bedroomOptions[residence.bedrooms] ?? "",
@@ -51,7 +55,7 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
         {residence.isPenthouse && <span className="block">{t.floorPage.penthouse}</span>}
         {info}
       </span>
-      <span className={cn("text-caption text-foreground", solidText)}>{formatUsd(residence.priceUsd)}</span>
+      <span className={cn("text-caption text-foreground", solidText)}>{formatPrice(residence.priceUsd)}</span>
     </>
   );
 
@@ -64,7 +68,7 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
       aria-label={fillTemplate(t.grid.cellLabel, {
         number: residence.number,
         type: typeAreaText(residence, t.floorPage),
-        price: formatUsd(residence.priceUsd),
+        price: formatPrice(residence.priceUsd),
         status: t.status[residence.status],
       })}
       className={className}
@@ -77,6 +81,7 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
 
 /** Dark card beside the hovered or focused cell, as on the Floor grid frame; the first column opens it to the right. */
 function GridTooltip({ residence, t }: { residence: Residence; t: Dictionary["floorPage"] }) {
+  const { formatPrice } = useCurrency();
   return (
     <span
       data-theme="dark"
@@ -89,7 +94,7 @@ function GridTooltip({ residence, t }: { residence: Residence; t: Dictionary["fl
       <span className="text-label text-primary">{fillTemplate(t.residence, { number: residence.number })}</span>
       <span className="text-body text-foreground">{typeAreaText(residence, t)}</span>
       {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.penthouse}</span>}
-      <span className="text-body-l text-foreground">{formatUsd(residence.priceUsd)}</span>
+      <span className="text-body-l text-foreground">{formatPrice(residence.priceUsd)}</span>
       <span className="text-caption text-muted-foreground">{t.clickToOpen}</span>
     </span>
   );

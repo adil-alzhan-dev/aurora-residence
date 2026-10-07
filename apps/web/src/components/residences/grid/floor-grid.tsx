@@ -1,3 +1,4 @@
+import { CurrencyText } from "@/components/currency/currency-text";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { fillTemplate, padNumber } from "@/lib/format";
@@ -71,7 +72,8 @@ export function FloorGrid({ residences, matching, filters, priceRange, listHref,
           </tbody>
         </table>
         <p className="text-caption text-muted-foreground">
-          {filtered ? `${t.grid.mutedNote} ${t.grid.note}` : t.grid.note}
+          {filtered && `${t.grid.mutedNote} `}
+          <CurrencyText template={t.grid.note} />
         </p>
       </div>
       <GridSummary
