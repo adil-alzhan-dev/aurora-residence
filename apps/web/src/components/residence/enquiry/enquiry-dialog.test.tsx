@@ -35,16 +35,17 @@ async function openAndSend(
       <RequestButton>Request this residence</RequestButton>
     </EnquiryProvider>
   ),
+  text = t,
 ) {
   const user = userEvent.setup({ pointerEventsCheck: 0 });
   rerender = render(ui).rerender;
   await user.click(screen.getByRole("button", { name: "Request this residence" }));
-  await user.type(screen.getByLabelText(t.residenceEnquiry.nameLabel), "Elena Marsh");
-  await user.selectOptions(screen.getByLabelText(t.enquiry.countryCode), "+1");
-  await user.type(screen.getByLabelText(t.enquiry.phone), "555 014 2271");
-  await user.type(screen.getByLabelText(t.enquiry.email), "elena.marsh@example.com");
+  await user.type(screen.getByLabelText(text.residenceEnquiry.nameLabel), "Elena Marsh");
+  await user.selectOptions(screen.getByLabelText(text.enquiry.countryCode), "+1");
+  await user.type(screen.getByLabelText(text.enquiry.phone), "555 014 2271");
+  await user.type(screen.getByLabelText(text.enquiry.email), "elena.marsh@example.com");
   await user.click(screen.getByRole("checkbox"));
-  await user.click(screen.getByRole("button", { name: t.residenceEnquiry.submit }));
+  await user.click(screen.getByRole("button", { name: text.residenceEnquiry.submit }));
   return user;
 }
 
@@ -89,6 +90,28 @@ describe("EnquiryDialog while a request is out", () => {
 
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+});
+
+describe("EnquiryDialog in Russian", () => {
+  const ru = getDictionary("ru");
+
+  it("answers a sale in Russian and sends the enquiry with locale RU", async () => {
+    const { fetchMock, answer } = deferFetch();
+    const ui = (
+      <EnquiryProvider residence={residence} t={ru}>
+        <RequestButton>Request this residence</RequestButton>
+      </EnquiryProvider>
+    );
+    await openAndSend(ui, ru);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({ locale: "RU", source: "Residence page" });
+
+    answer(json(400, { message: "Residence 7.03 is already sold, please choose another one" }));
+
+    expect(await screen.findByText(ru.enquirySend.soldRejected)).toBeTruthy();
+    expect(screen.queryByText(/already sold/)).toBeNull();
   });
 });
 

@@ -6,7 +6,7 @@ import { revealDelay } from "@/lib/motion";
 import { EnquiryPanel } from "./enquiry-panel";
 
 type EnquiryProps = {
-  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
+  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts" | "locale">;
 };
 
 type Contact = { title: string; value: string; note: string; href?: string };

@@ -24,7 +24,7 @@ function check(code: string, phone: string) {
   const values = { ...valid, code, phone };
   const result = schema.safeParse(values);
   const phoneErrors = result.success ? [] : result.error.issues.filter((issue) => issue.path[0] === "phone");
-  return { ok: result.success, phoneErrors, payloadPhone: toEnquiryPayload(values, { source: "Contacts form" }).phone };
+  return { ok: result.success, phoneErrors, payloadPhone: toEnquiryPayload(values, { source: "Contacts form", locale: "en" }).phone };
 }
 
 describe("enquiry phone", () => {

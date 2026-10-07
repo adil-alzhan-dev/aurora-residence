@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { EnquiryValues } from "./enquiry-schema";
-import { useEnquirySubmit } from "./use-enquiry-submit";
+import { toEnquiryPayload, useEnquirySubmit } from "./use-enquiry-submit";
 
 const values: EnquiryValues = {
   name: "Elena Marsh",
@@ -23,7 +23,7 @@ function renderSubmit() {
   const onSendingChange = vi.fn();
   const hook = renderHook(() => {
     const form = useForm<EnquiryValues>({ defaultValues: values });
-    return useEnquirySubmit(form, { source: "Contacts form" }, { onSent, onSendingChange });
+    return useEnquirySubmit(form, { source: "Contacts form", locale: "en" }, { onSent, onSendingChange });
   });
   return { ...hook, onSent, onSendingChange };
 }
@@ -69,5 +69,35 @@ describe("useEnquirySubmit", () => {
 
     await act(async () => answers[0](new Response(JSON.stringify({ residence: null }), { status: 201 })));
     expect(onSent).not.toHaveBeenCalled();
+  });
+
+  it("shows the form's own text for a field the API rejects in English", async () => {
+    const apiMessage = "Enter a phone number with country code, for example +1 555 010 2040";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ message: apiMessage, errors: { phone: apiMessage } }), { status: 400 })),
+    );
+    const russian = "Введите номер: от 7 до 15 цифр вместе с кодом";
+    const { result } = renderHook(() => {
+      const form = useForm<EnquiryValues>({ defaultValues: values });
+      const submit = useEnquirySubmit(form, { source: "Contacts form", locale: "ru" }, { onSent: vi.fn(), messages: { phone: russian } });
+      return { form, submit };
+    });
+
+    await act(async () => {
+      await result.current.submit.submit(submitEvent);
+    });
+    await waitFor(() => expect(result.current.form.getFieldState("phone").error?.message).toBe(russian));
+  });
+});
+
+describe("toEnquiryPayload", () => {
+  it("sends the page language and keeps the source as the API expects it", () => {
+    const payload = toEnquiryPayload(values, { source: "Residence page", residence: "7.03", locale: "ru" });
+    expect(payload).toMatchObject({ locale: "RU", source: "Residence page", residence: "7.03" });
+    expect(toEnquiryPayload(values, { source: "Contacts form", locale: "en" })).toMatchObject({
+      locale: "EN",
+      source: "Contacts form",
+    });
   });
 });

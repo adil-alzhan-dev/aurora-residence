@@ -11,7 +11,7 @@ import { residencesHref } from "@/content/navigation";
 import { EnquiryForm } from "./enquiry-form";
 
 type EnquiryPanelProps = {
-  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
+  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts" | "locale">;
 };
 
 export function EnquiryPanel({ t }: EnquiryPanelProps) {

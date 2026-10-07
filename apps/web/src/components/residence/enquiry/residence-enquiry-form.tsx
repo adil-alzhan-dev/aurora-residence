@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 type ResidenceEnquiryFormProps = {
   number: string;
-  t: Pick<Dictionary, "enquiry" | "residenceEnquiry" | "enquirySend" | "contacts">;
+  t: Pick<Dictionary, "enquiry" | "residenceEnquiry" | "enquirySend" | "contacts" | "locale">;
   onSent: () => void;
   onSendingChange: (sending: boolean) => void;
 };
@@ -24,10 +24,11 @@ const ids = { comment: "residence-enquiry-comment", consent: "residence-enquiry-
 
 export function ResidenceEnquiryForm({ number, t, onSent, onSendingChange }: ResidenceEnquiryFormProps) {
   const text = t.residenceEnquiry;
-  const schema = useMemo(
-    () => createEnquirySchema({ ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError }),
+  const messages = useMemo(
+    () => ({ ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError }),
     [t.enquiry.errors, text.errors, t.enquirySend.consentError],
   );
+  const schema = useMemo(() => createEnquirySchema(messages), [messages]);
   const form = useForm<EnquiryValues>({
     resolver: zodResolver(schema),
     mode: "onTouched",
@@ -41,8 +42,8 @@ export function ResidenceEnquiryForm({ number, t, onSent, onSendingChange }: Res
   const code = useWatch({ control, name: "code" });
   const { submit, alert, sending } = useEnquirySubmit(
     form,
-    { source: "Residence page", residence: number },
-    { onSent, onSendingChange },
+    { source: "Residence page", residence: number, locale: t.locale.lang },
+    { onSent, onSendingChange, messages },
   );
 
   return (

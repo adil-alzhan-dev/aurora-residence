@@ -4,12 +4,13 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 import { sendEnquiry, type EnquiryPayload, type EnquirySource } from "@/lib/api/enquiries";
+import type { Locale } from "@/lib/locale";
 
 import { toFullPhone, type EnquiryValues } from "./enquiry-schema";
 
 export type FormAlert = { kind: "rate-limited" } | { kind: "failed" } | { kind: "rejected"; message: string };
 
-type Target = { source: EnquirySource; residence?: string };
+type Target = { source: EnquirySource; residence?: string; locale: Locale };
 
 const FIELDS_WITH_ERRORS = ["name", "phone", "email", "comment", "consent"] as const;
 
@@ -17,7 +18,7 @@ type FieldWithError = (typeof FIELDS_WITH_ERRORS)[number];
 
 const isFieldWithError = (key: string): key is FieldWithError => FIELDS_WITH_ERRORS.some((field) => field === key);
 
-export function toEnquiryPayload(values: EnquiryValues, { source, residence }: Target): EnquiryPayload {
+export function toEnquiryPayload(values: EnquiryValues, { source, residence, locale }: Target): EnquiryPayload {
   const comment = values.comment?.trim();
   return {
     name: values.name.trim(),
@@ -28,19 +29,21 @@ export function toEnquiryPayload(values: EnquiryValues, { source, residence }: T
     source,
     consent: true,
     website: values.website ?? "",
-    locale: "EN",
+    locale: locale === "ru" ? "RU" : "EN",
   };
 }
 
-type SubmitCallbacks = {
+type SubmitOptions = {
   onSent: () => void;
   onSendingChange?: (sending: boolean) => void;
+  /** The form's own texts for API field errors, which come in English. */
+  messages?: Partial<Record<FieldWithError, string>>;
 };
 
 export function useEnquirySubmit(
   form: UseFormReturn<EnquiryValues>,
   target: Target,
-  { onSent, onSendingChange }: SubmitCallbacks,
+  { onSent, onSendingChange, messages = {} }: SubmitOptions,
 ) {
   const [alert, setAlert] = useState<FormAlert | null>(null);
   const [sending, setSending] = useState(false);
@@ -84,7 +87,7 @@ export function useEnquirySubmit(
       return;
     }
     known.forEach(([field, message], index) => {
-      form.setError(field, { type: "server", message }, { shouldFocus: index === 0 });
+      form.setError(field, { type: "server", message: messages[field] ?? message }, { shouldFocus: index === 0 });
     });
   }
 

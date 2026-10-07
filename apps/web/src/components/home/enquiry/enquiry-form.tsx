@@ -12,16 +12,17 @@ import { useEnquirySubmit } from "@/components/enquiry/use-enquiry-submit";
 import type { Dictionary } from "@/content";
 
 type EnquiryFormProps = {
-  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts">;
+  t: Pick<Dictionary, "enquiry" | "enquirySend" | "contacts" | "locale">;
   onSent: () => void;
 };
 
 export function EnquiryForm({ t, onSent }: EnquiryFormProps) {
   const { enquiry, enquirySend } = t;
-  const schema = useMemo(
-    () => createEnquirySchema({ ...enquiry.errors, consent: enquirySend.consentError }),
+  const messages = useMemo(
+    () => ({ ...enquiry.errors, consent: enquirySend.consentError }),
     [enquiry.errors, enquirySend.consentError],
   );
+  const schema = useMemo(() => createEnquirySchema(messages), [messages]);
   const form = useForm<EnquiryValues>({
     resolver: zodResolver(schema),
     mode: "onTouched",
@@ -33,7 +34,11 @@ export function EnquiryForm({ t, onSent }: EnquiryFormProps) {
     formState: { errors },
   } = form;
   const code = useWatch({ control, name: "code" });
-  const { submit, alert, sending } = useEnquirySubmit(form, { source: "Contacts form" }, { onSent });
+  const { submit, alert, sending } = useEnquirySubmit(
+    form,
+    { source: "Contacts form", locale: t.locale.lang },
+    { onSent, messages },
+  );
 
   return (
     <form noValidate onSubmit={submit} className="relative flex flex-col gap-6 lg:gap-8">

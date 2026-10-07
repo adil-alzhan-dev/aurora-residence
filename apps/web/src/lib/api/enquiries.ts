@@ -16,7 +16,7 @@ export type EnquiryPayload = {
   source: EnquirySource;
   consent: true;
   website: string;
-  locale: "EN";
+  locale: "EN" | "RU";
 };
 
 export type EnquiryResult =
