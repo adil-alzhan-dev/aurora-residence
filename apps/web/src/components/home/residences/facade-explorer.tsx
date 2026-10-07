@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useRef } from "react";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { FacadeOverlay } from "@/components/facade/facade-overlay";
 import { FacadeRender } from "@/components/facade/facade-render";
 import { floorCenter, houseRightPercent, toPercentY } from "@/components/facade/facade-geometry";
@@ -26,6 +27,7 @@ type FacadeExplorerProps = {
 
 export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
   const picker = t.residencePicker;
+  const { formatPrice } = useCurrency();
   const stageRef = useRef<HTMLDivElement>(null);
   const { active, settled, select } = useFloorDemo(stageRef, DEMO_FLOOR);
   const taps = useFloorTaps({ active, settled, select });
@@ -35,7 +37,7 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
   const showTooltip = settled && active !== null;
 
   const floorLabel = (floor: number) => {
-    const info = describeFloor(floor, byFloor.get(floor), picker);
+    const info = describeFloor(floor, byFloor.get(floor), picker, formatPrice);
     return [info.title, info.availability, info.price, picker.openPlan].filter(Boolean).join(", ");
   };
 

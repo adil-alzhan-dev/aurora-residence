@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ChevronDownIcon } from "@/components/icons";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
@@ -7,7 +8,7 @@ import { floorHref } from "@/content/navigation";
 import type { FloorSummary } from "@/lib/api/floors";
 import type { ResidenceStatus } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export type FloorCell = {
@@ -43,6 +44,7 @@ type FloorPanelProps = {
 
 /** Mobile bottom panel from Figma: the selected floor, its numbers, six residences and the way in. */
 export function FloorPanel({ floor, summary, cells, onStep, t }: FloorPanelProps) {
+  const { formatPrice } = useCurrency();
   const text = t.residences;
   const factValue = "text-body-l text-foreground";
 
@@ -97,7 +99,7 @@ export function FloorPanel({ floor, summary, cells, onStep, t }: FloorPanelProps
             <dd className={factValue}>
               {summary.fromPriceUsd === null
                 ? t.residencePicker.soldOut
-                : fillTemplate(t.residencePicker.fromPrice, { price: formatUsd(summary.fromPriceUsd) })}
+                : fillTemplate(t.residencePicker.fromPrice, { price: formatPrice(summary.fromPriceUsd) })}
             </dd>
           </div>
         </dl>

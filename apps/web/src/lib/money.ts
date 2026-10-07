@@ -7,6 +7,8 @@ export const DEFAULT_CURRENCY: Currency = "USD";
 /** Units of each currency one US dollar buys, as stored in CurrencyRate. */
 export type CurrencyRates = Partial<Record<Currency, number>>;
 
+export type FormatPrice = (amountUsd: number) => string;
+
 export type MoneySettings = {
   currency: Currency;
   rates: CurrencyRates;

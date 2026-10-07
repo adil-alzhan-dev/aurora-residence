@@ -1,6 +1,8 @@
+import { useCurrency } from "@/components/currency/currency-provider";
 import type { Dictionary } from "@/content";
 import type { FloorSummary } from "@/lib/api/floors";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
+import type { FormatPrice } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type PickerText = Dictionary["residencePicker"];
@@ -12,7 +14,12 @@ type FloorTooltipProps = {
   className?: string;
 };
 
-export function describeFloor(floor: number, summary: FloorSummary | undefined, t: PickerText) {
+export function describeFloor(
+  floor: number,
+  summary: FloorSummary | undefined,
+  t: PickerText,
+  formatPrice: FormatPrice,
+) {
   const title = fillTemplate(t.floor, { floor });
   if (!summary) return { title, availability: t.noData, price: null, soldOut: false, known: false };
   const soldOut = summary.available === 0;
@@ -27,7 +34,7 @@ export function describeFloor(floor: number, summary: FloorSummary | undefined, 
     availability,
     price:
       !soldOut && summary.fromPriceUsd !== null
-        ? fillTemplate(t.fromPrice, { price: formatUsd(summary.fromPriceUsd) })
+        ? fillTemplate(t.fromPrice, { price: formatPrice(summary.fromPriceUsd) })
         : null,
     soldOut,
     known: true,
@@ -35,7 +42,8 @@ export function describeFloor(floor: number, summary: FloorSummary | undefined, 
 }
 
 export function FloorTooltip({ floor, summary, t, className }: FloorTooltipProps) {
-  const info = describeFloor(floor, summary, t);
+  const { formatPrice } = useCurrency();
+  const info = describeFloor(floor, summary, t, formatPrice);
   return (
     <div
       data-theme="dark"
