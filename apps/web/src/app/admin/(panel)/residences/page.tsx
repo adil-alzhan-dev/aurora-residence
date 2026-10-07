@@ -1,11 +1,10 @@
 import { Suspense } from "react";
 
 import { ResidencesView } from "@/components/admin/residences/residences-view";
-import { getAdminDictionary } from "@/content/en-admin";
+import { getAdminDictionary } from "@/lib/locale-server";
 
-const t = getAdminDictionary();
-
-export default function AdminResidencesPage() {
+export default async function AdminResidencesPage() {
+  const t = await getAdminDictionary();
   return (
     <Suspense>
       <ResidencesView t={t} />

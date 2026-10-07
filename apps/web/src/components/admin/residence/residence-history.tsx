@@ -1,8 +1,7 @@
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ResidenceStatusBadge } from "@/components/admin/residences/residence-row";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatDayTime } from "@/lib/admin/dashboard-view";
 import type { ActivityEntry, AdminResidenceStatus } from "@/lib/admin/schemas";
-import { formatUsd } from "@/lib/format";
 
 import { AdminCard } from "./admin-card";
 
@@ -12,6 +11,7 @@ const isStatus = (value: string | null): value is AdminResidenceStatus => value 
 type Statuses = AdminDictionary["facade"]["statuses"];
 
 function Change({ entry, statuses }: { entry: ActivityEntry; statuses: Statuses }) {
+  const format = useAdminFormat();
   const arrow = (
     <span aria-hidden="true" className="text-admin-body text-muted-foreground">
       →
@@ -20,9 +20,9 @@ function Change({ entry, statuses }: { entry: ActivityEntry; statuses: Statuses 
   if (entry.type === "PRICE_CHANGED") {
     return (
       <span className="flex flex-wrap items-center gap-2 text-admin-strong text-foreground">
-        {entry.from && <span>{formatUsd(Number(entry.from))}</span>}
+        {entry.from && <span>{format.price(Number(entry.from))}</span>}
         {entry.from && arrow}
-        <span>{formatUsd(Number(entry.to))}</span>
+        <span>{format.price(Number(entry.to))}</span>
       </span>
     );
   }
@@ -39,6 +39,7 @@ type HistoryProps = { history: ActivityEntry[]; t: AdminDictionary["residence"][
 
 /** Only status and price changes: enquiry events belong to the enquiry screen. */
 export function ResidenceHistory({ history, t, statuses }: HistoryProps) {
+  const format = useAdminFormat();
   const entries = history.filter((entry) => entry.type === "STATUS_CHANGED" || entry.type === "PRICE_CHANGED");
   return (
     <AdminCard id="residence-history" title={t.title} className="gap-3">
@@ -52,7 +53,7 @@ export function ResidenceHistory({ history, t, statuses }: HistoryProps) {
               className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 border-t border-border py-3 md:flex"
             >
               <time dateTime={entry.at.toISOString()} className="text-admin-caption text-muted-foreground md:w-37.5 md:shrink-0">
-                {formatDayTime(entry.at)}
+                {format.dayTime(entry.at)}
               </time>
               <span className="text-admin-caption text-muted-foreground md:order-last md:shrink-0">{entry.author}</span>
               <span className="col-span-2 md:w-65 md:shrink-0">

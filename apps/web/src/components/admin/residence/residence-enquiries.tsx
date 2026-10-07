@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import type { AdminDictionary } from "@/content/en-admin";
 import { formatReceived } from "@/lib/admin/dashboard-view";
@@ -16,6 +17,7 @@ type EnquiriesProps = { number: string; now: Date; t: AdminDictionary };
 export function ResidenceEnquiries({ number, now, t }: EnquiriesProps) {
   const { data, isError } = useResidenceEnquiries(number);
   const text = t.residence.enquiries;
+  const format = useAdminFormat();
 
   let body;
   if (isError && !data) body = <p className="text-admin-body text-muted-foreground">{text.failed}</p>;
@@ -35,7 +37,7 @@ export function ResidenceEnquiries({ number, now, t }: EnquiriesProps) {
                 {item.name}
               </Link>
               <span className="text-admin-caption text-muted-foreground">
-                {formatReceived(item.createdAt, now, t.enquiries)}
+                {formatReceived(item.createdAt, now, t.enquiries, format)}
                 <span aria-hidden="true">{"  ·  "}</span>
                 <span className="whitespace-nowrap">{item.phone}</span>
               </span>

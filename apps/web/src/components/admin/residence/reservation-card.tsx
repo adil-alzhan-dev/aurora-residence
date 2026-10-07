@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
 import { changeErrorText } from "@/lib/admin/change-errors";
 import { reserveErrorText } from "@/lib/admin/enquiry-errors";
 import { useReserveResidence } from "@/lib/admin/enquiry-queries";
-import { formatDay, formatDayTime } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
 import { useReleaseReservation } from "@/lib/admin/queries";
 import type { ResidenceCard } from "@/lib/admin/schemas";
@@ -32,6 +32,7 @@ type ReservationCardProps = { residence: ResidenceCard; now: Date; t: AdminDicti
 export function ReservationCard({ residence, now, t }: ReservationCardProps) {
   const text = t.residence.reservation;
   const release = useReleaseReservation(residence.number);
+  const format = useAdminFormat();
   const reserve = useReserveResidence();
   const reserveError = reserveErrorText(reserve.error, residence.number, t.enquiry.errors);
   const [confirmClient, setConfirmClient] = useState<string | null>(null);
@@ -72,11 +73,11 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
             )}
           </Field>
           <Field label={text.ends}>
-            <time dateTime={reservation.endsAt.toISOString()}>{formatDayTime(reservation.endsAt)}</time>
+            <time dateTime={reservation.endsAt.toISOString()}>{format.dayTime(reservation.endsAt)}</time>
           </Field>
         </dl>
         <p className="text-admin-caption text-muted-foreground">
-          {fillTemplate(text.reservedBy, { author: reservation.createdBy, date: formatDay(reservation.startsAt) })}
+          {fillTemplate(text.reservedBy, { author: reservation.createdBy, date: format.day(reservation.startsAt) })}
         </p>
         <Button
           type="button"

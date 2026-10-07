@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatLongDate, reservationRows } from "@/lib/admin/dashboard-view";
+import { reservationRows } from "@/lib/admin/dashboard-view";
 import { useDashboardSummary } from "@/lib/admin/queries";
 import { fillTemplate } from "@/lib/format";
 
@@ -16,13 +17,17 @@ import { StatCards } from "./stat-cards";
 export function DashboardView({ t }: { t: AdminDictionary }) {
   const { data: summary, isError, refetch } = useDashboardSummary();
   const [now] = useState(() => new Date());
+  const format = useAdminFormat();
 
   const heading = (
     <div className="flex flex-col gap-1">
       <h1 className="text-admin-title text-foreground">{t.dashboard.title}</h1>
       {summary && (
         <p className="text-admin-body text-muted-foreground">
-          {fillTemplate(t.dashboard.subtitle, { date: formatLongDate(now), total: summary.residences.total })}
+          {fillTemplate(t.dashboard.subtitle, {
+            date: format.longDate(now),
+            residences: format.count(summary.residences.total, t.dashboard.residences),
+          })}
         </p>
       )}
     </div>

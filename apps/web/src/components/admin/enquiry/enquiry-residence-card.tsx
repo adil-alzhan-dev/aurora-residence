@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { AdminCard } from "@/components/admin/residence/admin-card";
 import { bedroomsLabel } from "@/components/admin/residence/residence-heading";
 import { ResidenceStatusBadge } from "@/components/admin/residences/residence-row";
@@ -9,13 +10,14 @@ import { ResidenceDrawing } from "@/components/residence/plan/plan-drawing";
 import type { AdminDictionary } from "@/content/en-admin";
 import { adminHref } from "@/lib/admin/paths";
 import type { EnquiryCard } from "@/lib/admin/schemas";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
 type Residence = NonNullable<EnquiryCard["residence"]>;
 
 function ResidenceSummary({ residence, t }: { residence: Residence; t: AdminDictionary }) {
   const [floor, position] = residence.number.split(".").map(Number);
   const text = t.enquiry.residence;
+  const format = useAdminFormat();
   return (
     <>
       <div
@@ -34,9 +36,9 @@ function ResidenceSummary({ residence, t }: { residence: Residence; t: AdminDict
       <p className="text-admin-body whitespace-pre-wrap text-muted-foreground">
         {fillTemplate(text.specs, {
           floor,
-          bedrooms: bedroomsLabel(residence.bedrooms, t.residence),
-          area: formatArea(residence.areaM2),
-          price: formatUsd(residence.priceUsd),
+          bedrooms: bedroomsLabel(residence.bedrooms, t.residence, format),
+          area: format.decimal(residence.areaM2),
+          price: format.price(residence.priceUsd),
         })}
       </p>
       {residence.isPenthouse && <p className="text-admin-caption text-muted-foreground">{t.residence.penthouse}</p>}

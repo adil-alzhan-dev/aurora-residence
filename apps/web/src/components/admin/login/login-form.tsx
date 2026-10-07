@@ -8,8 +8,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { AlertIcon } from "@/components/admin/admin-icons";
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
+import type { AdminFormat } from "@/lib/admin/admin-format";
 import { signIn, type LoginResult } from "@/lib/admin/login";
 import { safeNextPath } from "@/lib/admin/paths";
 import { adminApi } from "@/lib/admin/session";
@@ -27,15 +29,13 @@ const loginSchema = (t: AdminDictionary["login"]) =>
 
 type Problem = Exclude<LoginResult, { kind: "signed-in" }>;
 
-function problemText(problem: Problem, t: AdminDictionary["login"]) {
+function problemText(problem: Problem, t: AdminDictionary["login"], format: AdminFormat) {
   switch (problem.kind) {
-    case "wrong-credentials": {
-      const count = problem.attemptsLeft;
-      return fillTemplate(t.wrongCredentials, { count, attempts: count === 1 ? t.attemptOne : t.attemptMany });
-    }
+    case "wrong-credentials":
+      return fillTemplate(t.wrongCredentials, { attempts: format.count(problem.attemptsLeft, t.attempts) });
     case "paused": {
-      const count = Math.ceil(problem.retryAfterSeconds / 60);
-      return fillTemplate(t.paused, { count, minutes: count === 1 ? t.minuteOne : t.minuteMany });
+      const minutes = Math.ceil(problem.retryAfterSeconds / 60);
+      return fillTemplate(t.paused, { minutes: format.count(minutes, t.minutes) });
     }
     default:
       return t.failed;
@@ -43,6 +43,7 @@ function problemText(problem: Problem, t: AdminDictionary["login"]) {
 }
 
 export function LoginForm({ t, next }: { t: AdminDictionary["login"]; next: string | null }) {
+  const format = useAdminFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -83,7 +84,7 @@ export function LoginForm({ t, next }: { t: AdminDictionary["login"]; next: stri
 
   const { errors, isSubmitting } = formState;
   const wrongCredentials = problem?.kind === "wrong-credentials";
-  const message = errors.email?.message ?? errors.password?.message ?? (problem && problemText(problem, t));
+  const message = errors.email?.message ?? errors.password?.message ?? (problem && problemText(problem, t, format));
   const paused = pauseSeconds !== null;
 
   return (

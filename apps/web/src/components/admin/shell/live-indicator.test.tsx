@@ -2,12 +2,12 @@
 import { act, render, screen } from "@testing-library/react";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { getAdminDictionary } from "@/content/en-admin";
+import { adminEn } from "@/content/en-admin";
 import { useLiveEvents } from "@/lib/live/use-live";
 
 import { LiveIndicator } from "./live-indicator";
 
-const t = getAdminDictionary();
+const t = adminEn;
 
 class FakeSocket {
   static all: FakeSocket[] = [];

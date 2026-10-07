@@ -5,6 +5,8 @@ import { useState, type ReactNode } from "react";
 
 import { SessionExpiredError } from "@/lib/admin/api-client";
 
+import { AdminLocaleProvider } from "./admin-locale";
+
 function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -18,7 +20,12 @@ function createQueryClient() {
   });
 }
 
-export function AdminProviders({ children }: { children: ReactNode }) {
+/** A language switch re-renders the admin from the server; the query cache and the session stay. */
+export function AdminProviders({ intl, children }: { intl: string; children: ReactNode }) {
   const [queryClient] = useState(createQueryClient);
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AdminLocaleProvider intl={intl}>{children}</AdminLocaleProvider>
+    </QueryClientProvider>
+  );
 }

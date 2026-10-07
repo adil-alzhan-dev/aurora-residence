@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { DashboardError } from "@/components/admin/dashboard/dashboard-states";
 import type { AdminDictionary } from "@/content/en-admin";
 import {
@@ -14,7 +15,6 @@ import {
 import { useAdminEnquiries, useEnquiryCounts } from "@/lib/admin/enquiry-queries";
 import { useAdminResidences } from "@/lib/admin/queries";
 import type { ResidenceBrief } from "@/lib/admin/schemas";
-import { fillTemplate } from "@/lib/format";
 
 import { EnquiriesFilters } from "./enquiries-filters";
 import { EnquiriesPager, EnquiriesTable } from "./enquiries-table";
@@ -35,12 +35,13 @@ function useResidenceBriefs() {
 function Heading({ t }: { t: AdminDictionary["enquiryList"] }) {
   const counts = useEnquiryCounts(NO_ENQUIRY_FILTERS);
   const total = counts?.ALL;
+  const format = useAdminFormat();
   return (
     <div className="flex flex-col gap-1">
       <h1 className="text-admin-title text-foreground">{t.title}</h1>
       {total !== undefined && (
         <p className="text-admin-body text-muted-foreground">
-          {total === 1 ? t.leadOne : fillTemplate(t.lead, { total })}
+          {format.count(total, t.lead)}
         </p>
       )}
     </div>

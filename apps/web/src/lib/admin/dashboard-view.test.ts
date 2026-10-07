@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { adminEn } from "@/content/en-admin";
 
+import { adminFormat } from "./admin-format";
 import { calendarDaysLeft, formatReceived, percentOf, reservationRows, residenceDetails } from "./dashboard-view";
 import type { ResidenceBrief } from "./schemas";
 
 const now = new Date(2026, 9, 4, 12, 0);
+const en = adminFormat("en-US");
 
 const residence = (overrides: Partial<ResidenceBrief>): ResidenceBrief => ({
   number: "7.03",
@@ -27,16 +29,16 @@ describe("formatReceived", () => {
   const t = adminEn.enquiries;
 
   it("says today and yesterday, then the date", () => {
-    expect(formatReceived(new Date(2026, 9, 4, 11, 48), now, t)).toBe("Today, 11:48");
-    expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, t)).toBe("Yesterday, 18:40");
-    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, t)).toBe("Oct 2, 09:05");
+    expect(formatReceived(new Date(2026, 9, 4, 11, 48), now, t, en)).toBe("Today, 11:48");
+    expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, t, en)).toBe("Yesterday, 18:40");
+    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, t, en)).toBe("Oct 2, 09:05");
   });
 });
 
 describe("residenceDetails", () => {
   it("shows bedrooms, area and price, a studio by name", () => {
-    expect(residenceDetails(residence({}), adminEn.enquiries)).toBe("2 bd, 84.2 m², $218\u00a0000");
-    expect(residenceDetails(residence({ bedrooms: 0, areaM2: 38.2, priceUsd: 95_000 }), adminEn.enquiries)).toBe(
+    expect(residenceDetails(residence({}), adminEn.enquiries, en)).toBe("2 bd, 84.2 m², $218\u00a0000");
+    expect(residenceDetails(residence({ bedrooms: 0, areaM2: 38.2, priceUsd: 95_000 }), adminEn.enquiries, en)).toBe(
       "Studio, 38.2 m², $95\u00a0000",
     );
   });

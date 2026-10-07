@@ -1,17 +1,19 @@
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatShortDate, type ReservationRow } from "@/lib/admin/dashboard-view";
+import type { AdminFormat } from "@/lib/admin/admin-format";
+import { type ReservationRow } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { DashboardCard } from "./dashboard-card";
 
-function daysLeftText(row: ReservationRow, t: AdminDictionary["reservations"]) {
-  if (row.daysLeft <= 0) return t.endsToday;
-  return row.daysLeft === 1 ? t.dayOne : fillTemplate(t.dayMany, { count: row.daysLeft });
+function daysLeftText(row: ReservationRow, t: AdminDictionary["reservations"], format: AdminFormat) {
+  return row.daysLeft <= 0 ? t.endsToday : format.count(row.daysLeft, t.daysLeft);
 }
 
 export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: AdminDictionary["reservations"] }) {
+  const format = useAdminFormat();
   return (
     <DashboardCard
       id="dashboard-reservations"
@@ -32,7 +34,7 @@ export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: Admin
                 {row.client ?? t.noClient}
               </span>
               <span className="hidden w-35 shrink-0 text-admin-body text-muted-foreground md:block">
-                {fillTemplate(t.ends, { date: formatShortDate(row.endsAt) })}
+                {fillTemplate(t.ends, { date: format.shortDate(row.endsAt) })}
               </span>
               <span
                 className={cn(
@@ -40,7 +42,7 @@ export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: Admin
                   row.endingSoon ? "text-admin-strong text-destructive" : "text-admin-caption text-muted-foreground",
                 )}
               >
-                {daysLeftText(row, t)}
+                {daysLeftText(row, t, format)}
               </span>
             </li>
           ))}

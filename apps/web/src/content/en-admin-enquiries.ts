@@ -1,8 +1,12 @@
+import { pluralForms } from "@/lib/plural";
+
 /** Enquiry list and enquiry card texts, part of the admin dictionary in en-admin.ts. */
 export const enquiryListEn = {
   title: "Enquiries",
-  lead: "{total} enquiries from the site. Call new ones within one working day; an enquiry never reserves a residence.",
-  leadOne: "1 enquiry from the site. Call new ones within one working day; an enquiry never reserves a residence.",
+  lead: pluralForms(
+    "{count} enquiry from the site. Call new ones within one working day; an enquiry never reserves a residence.",
+    "{count} enquiries from the site. Call new ones within one working day; an enquiry never reserves a residence.",
+  ),
   searchLabel: "Search enquiries by name, phone or email",
   searchPlaceholder: "Search by name, phone or email",
   statusFilter: "Filter by status",

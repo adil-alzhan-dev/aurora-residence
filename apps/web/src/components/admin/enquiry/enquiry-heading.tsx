@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
@@ -20,13 +21,14 @@ export function BackToEnquiries({ label }: { label: string }) {
 }
 
 export function EnquiryHeading({ enquiry, now, t }: { enquiry: EnquiryCard; now: Date; t: AdminDictionary }) {
+  const format = useAdminFormat();
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-4">
         <h1 className="text-admin-title break-words text-foreground">{enquiry.name}</h1>
         <EnquiryStatusBadge status={enquiry.status} label={t.enquiries.statuses[enquiry.status]} />
       </div>
-      <p className="text-admin-body text-muted-foreground">{receivedLine(enquiry, now, t.enquiry)}</p>
+      <p className="text-admin-body text-muted-foreground">{receivedLine(enquiry, now, t.enquiry, format)}</p>
     </div>
   );
 }

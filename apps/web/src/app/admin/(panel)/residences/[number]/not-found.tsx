@@ -1,8 +1,6 @@
 import { ResidenceNotFound } from "@/components/admin/residence/residence-not-found";
-import { getAdminDictionary } from "@/content/en-admin";
+import { getAdminDictionary } from "@/lib/locale-server";
 
-const t = getAdminDictionary();
-
-export default function AdminResidenceNotFound() {
-  return <ResidenceNotFound t={t.residence} />;
+export default async function AdminResidenceNotFound() {
+  return <ResidenceNotFound t={(await getAdminDictionary()).residence} />;
 }

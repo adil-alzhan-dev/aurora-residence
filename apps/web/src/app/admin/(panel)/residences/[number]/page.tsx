@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 
 import { ResidenceCardView } from "@/components/admin/residence/residence-card-view";
-import { getAdminDictionary } from "@/content/en-admin";
 import { parseResidenceParam } from "@/lib/building";
 import { fillTemplate } from "@/lib/format";
-
-const t = getAdminDictionary();
+import { getAdminDictionary } from "@/lib/locale-server";
 
 export async function generateMetadata({ params }: PageProps<"/admin/residences/[number]">): Promise<Metadata> {
   const { number } = parseResidenceParam((await params).number);
+  const t = await getAdminDictionary();
   return { title: fillTemplate(t.meta.residenceTitle, { number }) };
 }
 
@@ -18,5 +17,5 @@ export async function generateMetadata({ params }: PageProps<"/admin/residences/
  */
 export default async function AdminResidencePage({ params }: PageProps<"/admin/residences/[number]">) {
   const { number } = parseResidenceParam((await params).number);
-  return <ResidenceCardView number={number} t={t} />;
+  return <ResidenceCardView number={number} t={await getAdminDictionary()} />;
 }

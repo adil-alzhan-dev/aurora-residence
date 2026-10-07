@@ -1,6 +1,13 @@
+import type { Locale } from "@/lib/locale";
+import { pluralForms } from "@/lib/plural";
+
 import { enquiryEn, enquiryListEn } from "./en-admin-enquiries";
 
 export const adminEn = {
+  locale: {
+    lang: "en" as Locale,
+    intl: "en-US",
+  },
   meta: {
     title: "Sales admin | Aurora Residence",
     loginTitle: "Sign in | Aurora Residence admin",
@@ -24,12 +31,10 @@ export const adminEn = {
     forgot: "Forgot password? Ask the site administrator.",
     emailInvalid: "Enter a valid email address",
     passwordRequired: "Enter your password",
-    wrongCredentials: "Wrong email or password. {count} {attempts} left, then sign-in pauses for 15 minutes.",
-    attemptOne: "attempt",
-    attemptMany: "attempts",
-    paused: "Too many failed attempts. Sign-in is paused, try again in {count} {minutes}.",
-    minuteOne: "minute",
-    minuteMany: "minutes",
+    wrongCredentials: "Wrong email or password. {attempts} left, then sign-in pauses for 15 minutes.",
+    attempts: pluralForms("{count} attempt", "{count} attempts"),
+    paused: "Too many failed attempts. Sign-in is paused, try again in {minutes}.",
+    minutes: pluralForms("{count} minute", "{count} minutes"),
     failed: "Could not reach the server. Check the connection and try again.",
   },
   nav: {
@@ -55,18 +60,18 @@ export const adminEn = {
   },
   dashboard: {
     title: "Dashboard",
-    subtitle: "{date}. Aurora Residence, {total} residences.",
+    subtitle: "{date}. Aurora Residence, {residences}.",
+    residences: pluralForms("{count} residence", "{count} residences"),
     statsLabel: "Residence and enquiry totals",
     available: "Available",
     reserved: "Reserved",
     sold: "Sold",
     newToday: "New enquiries today",
     ofTotal: "of {total} residences",
-    endingSoonOne: "1 reservation ends within 2 days",
-    endingSoonMany: "{count} reservations end within 2 days",
+    endingSoon: pluralForms("{count} reservation ends within 2 days", "{count} reservations end within 2 days"),
     noneEndingSoon: "None end within 2 days",
     shareOfHouse: "{percent}% of the house",
-    waitingForCall: "{count} still waiting for a call",
+    waitingForCall: pluralForms("{count} still waiting for a call", "{count} still waiting for a call"),
     shareLabel: "Available {available}, reserved {reserved}, sold {sold}",
   },
   facade: {
@@ -85,8 +90,7 @@ export const adminEn = {
     empty: "No active reservations right now.",
     ends: "Ends {date}",
     endsToday: "Ends today",
-    dayOne: "1 day left",
-    dayMany: "{count} days left",
+    daysLeft: pluralForms("{count} day left", "{count} days left"),
     noClient: "No enquiry",
   },
   residences: {
@@ -128,8 +132,7 @@ export const adminEn = {
     back: "All residences",
     title: "Residence {number}",
     summary: "Floor {floor} of {floors}",
-    bedroomsOne: "1 bedroom",
-    bedroomsMany: "{count} bedrooms",
+    bedrooms: pluralForms("{count} bedroom", "{count} bedrooms"),
     studio: "Studio",
     area: "{area} m²",
     penthouse: "Penthouse, incl. terrace",
@@ -235,6 +238,7 @@ export const adminEn = {
     empty: "No enquiries yet. New ones appear here as soon as they arrive.",
     today: "Today, {time}",
     yesterday: "Yesterday, {time}",
+    earlier: "{date}, {time}",
     residence: "Residence {number}",
     general: "General",
     studio: "Studio",
@@ -257,7 +261,3 @@ export const adminEn = {
 };
 
 export type AdminDictionary = typeof adminEn;
-
-export function getAdminDictionary(): AdminDictionary {
-  return adminEn;
-}

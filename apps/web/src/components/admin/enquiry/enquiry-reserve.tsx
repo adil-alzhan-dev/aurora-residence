@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatDayTime } from "@/lib/admin/dashboard-view";
 import { reserveErrorText } from "@/lib/admin/enquiry-errors";
 import { useReserveResidence } from "@/lib/admin/enquiry-queries";
 import { reservationEnd, reserveState } from "@/lib/admin/reservation-rules";
@@ -18,6 +18,7 @@ import { fillTemplate } from "@/lib/format";
  */
 export function EnquiryReserve({ enquiry, t }: { enquiry: EnquiryCard; t: AdminDictionary["enquiry"] }) {
   const reserve = useReserveResidence();
+  const format = useAdminFormat();
   const [endsAt, setEndsAt] = useState<Date | null>(null);
   const state = reserveState(enquiry);
   const number = enquiry.residence?.number ?? "";
@@ -32,7 +33,7 @@ export function EnquiryReserve({ enquiry, t }: { enquiry: EnquiryCard; t: AdminD
   if (state.kind === "general") return null;
   if (state.kind !== "can-reserve") {
     const reason = {
-      "reserved-here": fillTemplate(text.reservedHere, { date: state.kind === "reserved-here" ? formatDayTime(state.endsAt) : "" }),
+      "reserved-here": fillTemplate(text.reservedHere, { date: state.kind === "reserved-here" ? format.dayTime(state.endsAt) : "" }),
       "reserved-else": fillTemplate(text.reservedElse, { number }),
       sold: fillTemplate(text.sold, { number }),
       closed: text.closed,
@@ -73,7 +74,7 @@ export function EnquiryReserve({ enquiry, t }: { enquiry: EnquiryCard; t: AdminD
         error={null}
         onConfirm={() => reserve.mutate({ number, enquiryId: enquiry.id }, { onSettled: () => setEndsAt(null) })}
       >
-        <p>{fillTemplate(text.confirmText, { date: endsAt ? formatDayTime(endsAt) : "" })}</p>
+        <p>{fillTemplate(text.confirmText, { date: endsAt ? format.dayTime(endsAt) : "" })}</p>
         {enquiry.status === "NEW" && <p className="text-muted-foreground">{text.confirmStatus}</p>}
       </ConfirmDialog>
     </>

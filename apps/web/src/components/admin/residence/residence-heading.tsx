@@ -1,17 +1,18 @@
 import Link from "next/link";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ResidenceStatusBadge } from "@/components/admin/residences/residence-row";
 import { ArrowRightIcon } from "@/components/icons";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
+import type { AdminFormat } from "@/lib/admin/admin-format";
 import { adminHref } from "@/lib/admin/paths";
 import type { ResidenceCard } from "@/lib/admin/schemas";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
-export function bedroomsLabel(bedrooms: number, t: AdminDictionary["residence"]) {
-  if (bedrooms === 0) return t.studio;
-  return bedrooms === 1 ? t.bedroomsOne : fillTemplate(t.bedroomsMany, { count: bedrooms });
+export function bedroomsLabel(bedrooms: number, t: AdminDictionary["residence"], format: AdminFormat) {
+  return bedrooms === 0 ? t.studio : format.count(bedrooms, t.bedrooms);
 }
 
 export function BackToResidences({ label }: { label: string }) {
@@ -33,10 +34,11 @@ type HeadingProps = {
 };
 
 export function ResidenceHeading({ residence, t, statuses }: HeadingProps) {
+  const format = useAdminFormat();
   const summary = [
     fillTemplate(t.summary, { floor: residence.floor, floors: FLOOR_COUNT }),
-    bedroomsLabel(residence.bedrooms, t),
-    fillTemplate(t.area, { area: formatArea(residence.areaM2) }),
+    bedroomsLabel(residence.bedrooms, t, format),
+    fillTemplate(t.area, { area: format.decimal(residence.areaM2) }),
     `${t.sides[residence.side] ?? residence.side}, ${residence.view.toLowerCase()}`,
     ...(residence.isPenthouse ? [t.penthouse] : []),
   ];

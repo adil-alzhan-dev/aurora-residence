@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import type { AdminDictionary } from "@/content/en-admin";
 import { percentOf } from "@/lib/admin/dashboard-view";
 import type { DashboardSummary } from "@/lib/admin/schemas";
@@ -52,6 +53,7 @@ export function StatCards({ summary, t }: { summary: DashboardSummary; t: AdminD
   const { AVAILABLE, RESERVED, SOLD, total } = summary.residences;
   const ending = summary.reservations.filter((reservation) => reservation.endingSoon).length;
   const waiting = summary.enquiries.new;
+  const format = useAdminFormat();
 
   return (
     <ul aria-label={t.statsLabel} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -70,13 +72,7 @@ export function StatCards({ summary, t }: { summary: DashboardSummary; t: AdminD
         label={t.reserved}
         value={RESERVED}
         dotClass="bg-status-reserved"
-        note={
-          ending === 0
-            ? t.noneEndingSoon
-            : ending === 1
-              ? t.endingSoonOne
-              : fillTemplate(t.endingSoonMany, { count: ending })
-        }
+        note={ending === 0 ? t.noneEndingSoon : format.count(ending, t.endingSoon)}
         noteClass={ending > 0 ? "text-destructive" : undefined}
       />
       <StatCard
@@ -89,7 +85,7 @@ export function StatCards({ summary, t }: { summary: DashboardSummary; t: AdminD
         label={t.newToday}
         value={summary.enquiries.newToday}
         dotClass="bg-primary"
-        note={fillTemplate(t.waitingForCall, { count: waiting })}
+        note={format.count(waiting, t.waitingForCall)}
       />
     </ul>
   );

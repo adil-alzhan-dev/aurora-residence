@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { AdminCard } from "@/components/admin/residence/admin-card";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
@@ -23,6 +24,7 @@ export function ManagerNoteCard({ enquiry, now, t }: NoteCardProps) {
   const fieldId = useId();
   const errorId = useId();
   const update = useUpdateEnquiry(enquiry.id);
+  const format = useAdminFormat();
   const [saved, setSaved] = useState(false);
   const schema = z.object({ note: z.string().max(NOTE_MAX, text.tooLong) });
   const form = useForm<z.infer<typeof schema>>({
@@ -72,7 +74,7 @@ export function ManagerNoteCard({ enquiry, now, t }: NoteCardProps) {
             {saved
               ? text.saved
               : lastSave
-                ? fillTemplate(text.lastSaved, { when: receivedWhen(lastSave.at, now, t), author: lastSave.author })
+                ? fillTemplate(text.lastSaved, { when: receivedWhen(lastSave.at, now, t, format), author: lastSave.author })
                 : text.never}
           </p>
           <Button type="submit" variant="secondary" disabled={update.isPending}>

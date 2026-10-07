@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { getDictionary } from "@/content";
+import { getAdminDictionaryFor } from "@/content/admin";
 
 import { LOCALE_COOKIE, parseLocale } from "./locale";
 
@@ -9,3 +10,5 @@ import { LOCALE_COOKIE, parseLocale } from "./locale";
 export const getLocale = cache(async () => parseLocale((await cookies()).get(LOCALE_COOKIE)?.value));
 
 export const getSiteDictionary = cache(async () => getDictionary(await getLocale()));
+
+export const getAdminDictionary = cache(async () => getAdminDictionaryFor(await getLocale()));

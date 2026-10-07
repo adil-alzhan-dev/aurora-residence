@@ -2,11 +2,10 @@ import type { ReactNode } from "react";
 
 import { AuthGate } from "@/components/admin/auth-gate";
 import { AdminShell } from "@/components/admin/shell/admin-shell";
-import { getAdminDictionary } from "@/content/en-admin";
+import { getAdminDictionary } from "@/lib/locale-server";
 
-const t = getAdminDictionary();
-
-export default function AdminPanelLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function AdminPanelLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const t = await getAdminDictionary();
   return (
     <AuthGate checkingLabel={t.common.checkingSession}>
       <AdminShell t={t}>{children}</AdminShell>

@@ -1,19 +1,21 @@
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ResidenceDrawing } from "@/components/residence/plan/plan-drawing";
 import type { AdminDictionary } from "@/content/en-admin";
 import type { ResidenceCard } from "@/lib/admin/schemas";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea, padNumber } from "@/lib/format";
+import { fillTemplate, padNumber } from "@/lib/format";
 import { layoutOf } from "@/lib/residence-layouts";
 
 export function ResidenceOverview({ residence, t }: { residence: ResidenceCard; t: AdminDictionary["residence"] }) {
   const { specs } = t;
+  const format = useAdminFormat();
   const layout = layoutOf(residence.position, residence.isPenthouse);
   const rows = [
     { label: specs.floor, value: fillTemplate(specs.floorValue, { floor: residence.floor, floors: FLOOR_COUNT }) },
     { label: specs.bedrooms, value: residence.bedrooms === 0 ? t.studio : String(residence.bedrooms) },
-    { label: specs.area, value: fillTemplate(t.area, { area: formatArea(residence.areaM2) }) },
+    { label: specs.area, value: fillTemplate(t.area, { area: format.decimal(residence.areaM2) }) },
     { label: specs.layout, value: `.${padNumber(residence.position)}, ${t.places[residence.position] ?? ""}` },
-    ...(layout ? [{ label: specs.ceiling, value: fillTemplate(specs.ceilingValue, { height: layout.ceilingM.toFixed(1) }) }] : []),
+    ...(layout ? [{ label: specs.ceiling, value: fillTemplate(specs.ceilingValue, { height: format.decimal(layout.ceilingM) }) }] : []),
     { label: specs.view, value: residence.view },
   ];
 

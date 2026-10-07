@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { EnquiriesView } from "@/components/admin/enquiries/enquiries-view";
-import { getAdminDictionary } from "@/content/en-admin";
+import { getAdminDictionary } from "@/lib/locale-server";
 
-const t = getAdminDictionary();
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getAdminDictionary()).meta.enquiriesTitle };
+}
 
-export const metadata: Metadata = { title: t.meta.enquiriesTitle };
-
-export default function AdminEnquiriesPage() {
+export default async function AdminEnquiriesPage() {
+  const t = await getAdminDictionary();
   return (
     <Suspense>
       <EnquiriesView t={t} />

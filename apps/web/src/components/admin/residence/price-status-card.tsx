@@ -2,6 +2,7 @@
 
 import { useId, useState, type FormEvent } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { StatusSelect } from "@/components/admin/status-select";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import type { AdminDictionary } from "@/content/en-admin";
 import { changeErrorText, parsePrice } from "@/lib/admin/change-errors";
 import { useUpdateResidence, type ResidenceChange } from "@/lib/admin/queries";
 import type { ResidenceCard } from "@/lib/admin/schemas";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { AdminCard } from "./admin-card";
@@ -22,17 +23,18 @@ export function PriceStatusCard({ residence, t }: Props) {
   const priceId = useId();
   const messageId = useId();
   const update = useUpdateResidence(residence.number);
+  const format = useAdminFormat();
 
   const server = `${residence.priceUsd}:${residence.status}`;
   const [synced, setSynced] = useState(server);
-  const [priceText, setPriceText] = useState(formatUsd(residence.priceUsd));
+  const [priceText, setPriceText] = useState(format.price(residence.priceUsd));
   const [status, setStatus] = useState(residence.status);
   const [priceError, setPriceError] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [change, setChange] = useState<ResidenceChange | null>(null);
   if (server !== synced) {
     setSynced(server);
-    setPriceText(formatUsd(residence.priceUsd));
+    setPriceText(format.price(residence.priceUsd));
     setStatus(residence.status);
   }
 
@@ -67,7 +69,7 @@ export function PriceStatusCard({ residence, t }: Props) {
   }
 
   function cancel() {
-    setPriceText(formatUsd(residence.priceUsd));
+    setPriceText(format.price(residence.priceUsd));
     setStatus(residence.status);
     setPriceError(false);
     setMessage(null);
@@ -92,7 +94,7 @@ export function PriceStatusCard({ residence, t }: Props) {
               onChange={(event) => setPriceText(event.target.value)}
               onBlur={() => {
                 const price = parsePrice(priceText);
-                if (price !== null) setPriceText(formatUsd(price));
+                if (price !== null) setPriceText(format.price(price));
               }}
               className={cn(
                 "border-b bg-transparent py-3 text-body text-foreground outline-none transition-colors duration-200 hover:border-foreground focus:border-primary",
@@ -145,7 +147,7 @@ export function PriceStatusCard({ residence, t }: Props) {
       >
         {change?.priceUsd !== undefined && (
           <p>
-            {fillTemplate(confirmText.price, { from: formatUsd(residence.priceUsd), to: formatUsd(change.priceUsd) })}
+            {fillTemplate(confirmText.price, { from: format.price(residence.priceUsd), to: format.price(change.priceUsd) })}
           </p>
         )}
         {change?.status && (

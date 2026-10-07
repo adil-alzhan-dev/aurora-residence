@@ -2,11 +2,11 @@
 
 import { useId, useState } from "react";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { ChevronDownIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
-import { formatDayTime } from "@/lib/admin/dashboard-view";
 import type { useReserveResidence } from "@/lib/admin/enquiry-queries";
 import { receivedWhen } from "@/lib/admin/enquiry-view";
 import { useResidenceEnquiries } from "@/lib/admin/queries";
@@ -28,6 +28,7 @@ type ReserveProps = {
 export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps) {
   const text = t.residence.reservation;
   const selectId = useId();
+  const format = useAdminFormat();
   const { data, isError } = useResidenceEnquiries(residence.number);
   const [chosen, setChosen] = useState<number | null>(null);
   const [confirmAt, setConfirmAt] = useState<Date | null>(null);
@@ -60,7 +61,7 @@ export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps)
             >
               {options.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {fillTemplate(text.enquiryOption, { name: item.name, received: receivedWhen(item.createdAt, now, t.enquiry) })}
+                  {fillTemplate(text.enquiryOption, { name: item.name, received: receivedWhen(item.createdAt, now, t.enquiry, format) })}
                 </option>
               ))}
             </select>
@@ -70,7 +71,7 @@ export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps)
         <div className="flex flex-col gap-2">
           <span className="text-label text-muted-foreground">{text.ends}</span>
           <span className="border-b border-border py-3 text-body text-foreground">
-            {formatDayTime(reservationEnd(now))}
+            {format.dayTime(reservationEnd(now))}
           </span>
         </div>
       </div>
@@ -99,7 +100,7 @@ export function ReserveFromEnquiry({ residence, reserve, now, t }: ReserveProps)
           reserve.mutate({ number: residence.number, enquiryId: enquiry.id }, { onSettled: () => setConfirmAt(null) })
         }
       >
-        <p>{fillTemplate(text.reserveText, { date: confirmAt ? formatDayTime(confirmAt) : "" })}</p>
+        <p>{fillTemplate(text.reserveText, { date: confirmAt ? format.dayTime(confirmAt) : "" })}</p>
         {enquiry.status === "NEW" && <p className="text-muted-foreground">{text.reserveStatus}</p>}
       </ConfirmDialog>
     </>

@@ -1,8 +1,6 @@
 import { DashboardView } from "@/components/admin/dashboard/dashboard-view";
-import { getAdminDictionary } from "@/content/en-admin";
+import { getAdminDictionary } from "@/lib/locale-server";
 
-const t = getAdminDictionary();
-
-export default function AdminDashboardPage() {
-  return <DashboardView t={t} />;
+export default async function AdminDashboardPage() {
+  return <DashboardView t={await getAdminDictionary()} />;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
@@ -20,19 +21,21 @@ type LatestEnquiriesProps = {
 
 function ResidenceCell({ item, t }: Pick<LatestEnquiriesProps, "t"> & { item: DashboardEnquiry }) {
   const { residence } = item;
+  const format = useAdminFormat();
   return (
     <div className="flex flex-col lg:w-50 lg:shrink-0">
       <span className="text-admin-body text-foreground">
         {residence ? fillTemplate(t.residence, { number: residence.number }) : t.general}
       </span>
       <span className="text-admin-caption text-muted-foreground">
-        {residence ? residenceDetails(residence, t) : item.source}
+        {residence ? residenceDetails(residence, t, format) : item.source}
       </span>
     </div>
   );
 }
 
 function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "total"> & { item: DashboardEnquiry }) {
+  const format = useAdminFormat();
   const isNew = item.status === "NEW";
   const strong = isNew ? "text-admin-strong" : "text-admin-body";
   return (
@@ -43,7 +46,7 @@ function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "tota
       )}
     >
       {isNew && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
-      <span className={cn("text-foreground lg:w-40 lg:shrink-0", strong)}>{formatReceived(item.createdAt, now, t)}</span>
+      <span className={cn("text-foreground lg:w-40 lg:shrink-0", strong)}>{formatReceived(item.createdAt, now, t, format)}</span>
       <span className="justify-self-end lg:order-last lg:hidden">
         <EnquiryStatusBadge status={item.status} label={t.statuses[item.status]} />
       </span>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
@@ -20,6 +21,7 @@ const cell = "py-3 pr-4 align-middle";
 
 function ResidenceText({ item, residence, t }: Omit<RowProps, "now">) {
   const text = t.enquiries;
+  const format = useAdminFormat();
   if (!item.residence) {
     return (
       <>
@@ -33,7 +35,7 @@ function ResidenceText({ item, residence, t }: Omit<RowProps, "now">) {
       <span className="block text-admin-body">{fillTemplate(text.residence, { number: item.residence })}</span>
       {residence && (
         <span className="block text-admin-caption whitespace-nowrap text-muted-foreground">
-          {residenceDetails(residence, text)}
+          {residenceDetails(residence, text, format)}
         </span>
       )}
     </>
@@ -43,6 +45,7 @@ function ResidenceText({ item, residence, t }: Omit<RowProps, "now">) {
 /** The client name link covers the whole row, so a click or Enter anywhere opens the enquiry. */
 export function EnquiryRow({ item, residence, now, t }: RowProps) {
   const text = t.enquiries;
+  const format = useAdminFormat();
   const isNew = item.status === "NEW";
   const isClosed = item.status === "CLOSED";
   const strong = isNew ? "text-admin-strong" : "text-admin-body";
@@ -56,12 +59,12 @@ export function EnquiryRow({ item, residence, now, t }: RowProps) {
       )}
     >
       <td className={cn(cell, "hidden pl-4 whitespace-nowrap sm:table-cell md:w-44", strong)}>
-        {formatReceived(item.createdAt, now, text)}
+        {formatReceived(item.createdAt, now, text, format)}
       </td>
       <th scope="row" className={cn(cell, "min-w-0 pl-4 text-left font-normal sm:pl-0 md:w-70")}>
         {isNew && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
         <span className={cn("block text-admin-caption sm:hidden", isNew ? "text-foreground" : "text-muted-foreground")}>
-          {formatReceived(item.createdAt, now, text)}
+          {formatReceived(item.createdAt, now, text, format)}
         </span>
         <Link
           href={adminHref.enquiry(item.id)}

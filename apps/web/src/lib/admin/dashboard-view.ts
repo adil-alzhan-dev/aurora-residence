@@ -1,6 +1,7 @@
 import type { AdminDictionary } from "@/content/en-admin";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
+import type { AdminFormat } from "./admin-format";
 import type { DashboardSummary, ResidenceBrief } from "./schemas";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -12,30 +13,21 @@ export function calendarDaysLeft(endsAt: Date, now: Date) {
   return Math.round((startOfDay(endsAt) - startOfDay(now)) / DAY_MS);
 }
 
-const timeFormat = new Intl.DateTimeFormat("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-const shortDateFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
-const longDateFormat = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" });
-const dayFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
-
-export const formatShortDate = (date: Date) => shortDateFormat.format(date);
-export const formatLongDate = (date: Date) => longDateFormat.format(date);
-export const formatDay = (date: Date) => dayFormat.format(date);
-export const formatDayTime = (date: Date) => `${dayFormat.format(date)}, ${timeFormat.format(date)}`;
-
-export function formatReceived(date: Date, now: Date, t: AdminDictionary["enquiries"]) {
-  const time = timeFormat.format(date);
+/** "Today, 11:48", "Yesterday, 18:40" or "Oct 2, 16:22" in the list columns. */
+export function formatReceived(date: Date, now: Date, t: AdminDictionary["enquiries"], format: AdminFormat) {
+  const time = format.time(date);
   const days = calendarDaysLeft(now, date);
   if (days === 0) return fillTemplate(t.today, { time });
   if (days === 1) return fillTemplate(t.yesterday, { time });
-  return `${formatShortDate(date)}, ${time}`;
+  return fillTemplate(t.earlier, { date: format.shortDate(date), time });
 }
 
-export function residenceDetails(residence: ResidenceBrief, t: AdminDictionary["enquiries"]) {
+export function residenceDetails(residence: ResidenceBrief, t: AdminDictionary["enquiries"], format: AdminFormat) {
   const bedrooms = residence.bedrooms === 0 ? t.studio : fillTemplate(t.bedrooms, { count: residence.bedrooms });
   return fillTemplate(t.details, {
     bedrooms,
-    area: formatArea(residence.areaM2),
-    price: formatUsd(residence.priceUsd),
+    area: format.decimal(residence.areaM2),
+    price: format.price(residence.priceUsd),
   });
 }
 
