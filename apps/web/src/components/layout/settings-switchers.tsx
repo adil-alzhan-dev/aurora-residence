@@ -1,7 +1,9 @@
 "use client";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { Switcher } from "@/components/ui/switcher";
 import type { Dictionary } from "@/content";
+import type { Currency } from "@/lib/money";
 
 type SettingsSwitcherProps = {
   t: Dictionary;
@@ -25,15 +27,17 @@ export function LanguageSwitcher({ t, className }: SettingsSwitcherProps) {
 
 export function CurrencySwitcher({ t, className }: SettingsSwitcherProps) {
   const { currencies } = t.settings;
+  const { currency, setCurrency } = useCurrency();
   return (
-    <Switcher
+    <Switcher<Currency>
       label={t.a11y.currency}
-      defaultValue="usd"
+      value={currency}
+      onValueChange={setCurrency}
       className={className}
       options={[
-        { value: "usd", label: currencies.usd },
-        { value: "eur", label: currencies.eur },
-        { value: "kzt", label: currencies.kzt },
+        { value: "USD", label: currencies.usd },
+        { value: "EUR", label: currencies.eur },
+        { value: "KZT", label: currencies.kzt },
       ]}
     />
   );
