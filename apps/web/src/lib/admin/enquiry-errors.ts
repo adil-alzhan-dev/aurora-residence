@@ -2,10 +2,9 @@ import type { AdminDictionary } from "@/content/en-admin";
 import { fillTemplate } from "@/lib/format";
 
 import { AdminApiError, SessionExpiredError } from "./api-client";
+import { apiMessageText } from "./api-texts";
 
 type Texts = AdminDictionary["enquiry"]["errors"];
-
-const withStop = (message: string) => (/[.!?]$/.test(message) ? message : `${message}.`);
 
 /** null when there is nothing to show: no error, or the sign-in page is already on its way. */
 function apiError(error: unknown): AdminApiError | "network" | null {
@@ -24,13 +23,18 @@ export function enquiryChangeErrorText(error: unknown, t: Texts): string | null 
 }
 
 /** A refused reservation: 409 means the residence is no longer available, 400 a wrong enquiry. */
-export function reserveErrorText(error: unknown, number: string, t: Texts): string | null {
+export function reserveErrorText(
+  error: unknown,
+  number: string,
+  t: Texts,
+  api: AdminDictionary["messages"]["api"],
+): string | null {
   const failure = apiError(error);
   if (!failure) return null;
   if (failure === "network") return t.failed;
   if (failure.status === 409) return fillTemplate(t.reserveConflict, { number });
   if (failure.status === 400 || failure.status === 404) {
-    const detail = failure.message.startsWith("Admin API answered") ? "" : withStop(failure.message);
+    const detail = apiMessageText(failure.message, api) ?? "";
     return fillTemplate(t.reserveRejected, { detail }).trim();
   }
   return t.failed;

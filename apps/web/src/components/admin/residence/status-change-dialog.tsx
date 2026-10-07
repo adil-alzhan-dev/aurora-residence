@@ -55,7 +55,7 @@ export function RowStatusControl({ residence, t }: { residence: ResidenceLike; t
         cancelLabel={text.confirm.cancel}
         note={{ label: text.confirm.note, placeholder: text.confirm.notePlaceholder }}
         pending={update.isPending}
-        error={changeErrorText(update.error, text)}
+        error={changeErrorText(update.error, text, t.messages.api)}
         onConfirm={(note) =>
           target && update.mutate({ status: target, note: note || undefined }, { onSuccess: () => setTarget(null) })
         }

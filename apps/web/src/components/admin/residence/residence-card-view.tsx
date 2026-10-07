@@ -54,7 +54,7 @@ export function ResidenceCardView({ number, t }: { number: string; t: AdminDicti
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <ResidenceOverview residence={residence} t={text} />
           <PriceStatusCard residence={residence} t={t} />
-          <ResidenceHistory history={residence.history} t={text.history} statuses={t.facade.statuses} />
+          <ResidenceHistory history={residence.history} t={text.history} statuses={t.facade.statuses} messages={t.messages} />
         </div>
         <div className="flex flex-col gap-6 xl:w-100 xl:shrink-0">
           <ReservationCard residence={residence} now={now} t={t} />

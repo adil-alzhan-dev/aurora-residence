@@ -1,6 +1,7 @@
 import { useAdminFormat } from "@/components/admin/admin-locale";
 import { AdminCard } from "@/components/admin/residence/admin-card";
 import type { AdminDictionary } from "@/content/en-admin";
+import { authorText } from "@/lib/admin/api-texts";
 import { formatReceived } from "@/lib/admin/dashboard-view";
 import { activityLine } from "@/lib/admin/enquiry-view";
 import type { EnquiryActivity as Entry } from "@/lib/admin/schemas";
@@ -13,6 +14,7 @@ export function EnquiryActivity({ activity, now, t }: ActivityProps) {
     activity: t.enquiry.activity,
     enquiryStatuses: t.enquiries.statuses,
     residenceStatuses: t.facade.statuses,
+    messages: t.messages,
   };
   return (
     <AdminCard id="enquiry-activity" title={t.enquiry.activity.title} className="gap-3">
@@ -35,7 +37,7 @@ export function EnquiryActivity({ activity, now, t }: ActivityProps) {
                   {line.note && <span className="text-admin-caption text-muted-foreground">{line.note}</span>}
                 </div>
                 <span className="col-start-2 row-start-1 text-admin-caption whitespace-nowrap text-muted-foreground sm:col-start-auto sm:row-start-auto">
-                  {entry.author}
+                  {authorText(entry.author, t.messages)}
                 </span>
               </li>
             );

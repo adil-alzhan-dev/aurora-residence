@@ -6,6 +6,8 @@ import { FLOOR_COUNT } from "@/lib/building";
 import { fillTemplate, padNumber } from "@/lib/format";
 import { layoutOf } from "@/lib/residence-layouts";
 
+import { viewText } from "./residence-heading";
+
 export function ResidenceOverview({ residence, t }: { residence: ResidenceCard; t: AdminDictionary["residence"] }) {
   const { specs } = t;
   const format = useAdminFormat();
@@ -16,7 +18,7 @@ export function ResidenceOverview({ residence, t }: { residence: ResidenceCard; 
     { label: specs.area, value: fillTemplate(t.area, { area: format.decimal(residence.areaM2) }) },
     { label: specs.layout, value: `.${padNumber(residence.position)}, ${t.places[residence.position] ?? ""}` },
     ...(layout ? [{ label: specs.ceiling, value: fillTemplate(specs.ceilingValue, { height: format.decimal(layout.ceilingM) }) }] : []),
-    { label: specs.view, value: residence.view },
+    { label: specs.view, value: viewText(residence.view, t) },
   ];
 
   return (

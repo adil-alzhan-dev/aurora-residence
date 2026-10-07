@@ -4,6 +4,7 @@ import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
+import { sourceText } from "@/lib/admin/api-texts";
 import { formatReceived, residenceDetails } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
 import type { DashboardEnquiry } from "@/lib/admin/schemas";
@@ -17,9 +18,10 @@ type LatestEnquiriesProps = {
   total: number;
   now: Date;
   t: AdminDictionary["enquiries"];
+  sources: AdminDictionary["messages"];
 };
 
-function ResidenceCell({ item, t }: Pick<LatestEnquiriesProps, "t"> & { item: DashboardEnquiry }) {
+function ResidenceCell({ item, t, sources }: Pick<LatestEnquiriesProps, "t" | "sources"> & { item: DashboardEnquiry }) {
   const { residence } = item;
   const format = useAdminFormat();
   return (
@@ -28,13 +30,13 @@ function ResidenceCell({ item, t }: Pick<LatestEnquiriesProps, "t"> & { item: Da
         {residence ? fillTemplate(t.residence, { number: residence.number }) : t.general}
       </span>
       <span className="text-admin-caption text-muted-foreground">
-        {residence ? residenceDetails(residence, t, format) : item.source}
+        {residence ? residenceDetails(residence, t, format) : sourceText(item.source, sources)}
       </span>
     </div>
   );
 }
 
-function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "total"> & { item: DashboardEnquiry }) {
+function EnquiryRow({ item, now, t, sources }: Omit<LatestEnquiriesProps, "items" | "total"> & { item: DashboardEnquiry }) {
   const format = useAdminFormat();
   const isNew = item.status === "NEW";
   const strong = isNew ? "text-admin-strong" : "text-admin-body";
@@ -55,7 +57,7 @@ function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "tota
         <span className="truncate text-admin-caption text-muted-foreground">{item.email}</span>
       </div>
       <span className="text-admin-body text-foreground lg:w-50 lg:shrink-0">{item.phone}</span>
-      <ResidenceCell item={item} t={t} />
+      <ResidenceCell item={item} t={t} sources={sources} />
       <span className="hidden lg:block lg:w-44 lg:shrink-0">
         <EnquiryStatusBadge status={item.status} label={t.statuses[item.status]} />
       </span>
@@ -71,7 +73,7 @@ function EnquiryRow({ item, now, t }: Omit<LatestEnquiriesProps, "items" | "tota
   );
 }
 
-export function LatestEnquiries({ items, total, now, t }: LatestEnquiriesProps) {
+export function LatestEnquiries({ items, total, now, t, sources }: LatestEnquiriesProps) {
   return (
     <DashboardCard
       id="dashboard-enquiries"
@@ -86,7 +88,7 @@ export function LatestEnquiries({ items, total, now, t }: LatestEnquiriesProps) 
       ) : (
         <ul className="flex flex-col border-t border-border">
           {items.map((item) => (
-            <EnquiryRow key={item.id} item={item} now={now} t={t} />
+            <EnquiryRow key={item.id} item={item} now={now} t={t} sources={sources} />
           ))}
         </ul>
       )}

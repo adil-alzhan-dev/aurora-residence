@@ -4,6 +4,7 @@ import { useAdminFormat } from "@/components/admin/admin-locale";
 import { EnquiryStatusBadge } from "@/components/admin/enquiry-status-badge";
 import { ArrowRightIcon } from "@/components/icons";
 import type { AdminDictionary } from "@/content/en-admin";
+import { sourceText } from "@/lib/admin/api-texts";
 import { formatReceived, residenceDetails } from "@/lib/admin/dashboard-view";
 import { adminHref } from "@/lib/admin/paths";
 import type { AdminEnquiryListItem, ResidenceBrief } from "@/lib/admin/schemas";
@@ -26,7 +27,7 @@ function ResidenceText({ item, residence, t }: Omit<RowProps, "now">) {
     return (
       <>
         <span className="block text-admin-body">{text.general}</span>
-        <span className="block text-admin-caption text-muted-foreground">{item.source}</span>
+        <span className="block text-admin-caption text-muted-foreground">{sourceText(item.source, t.messages)}</span>
       </>
     );
   }

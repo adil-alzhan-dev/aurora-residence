@@ -1,16 +1,17 @@
 import type { AdminDictionary } from "@/content/en-admin";
 
 import { AdminApiError, SessionExpiredError } from "./api-client";
+import { apiMessageText } from "./api-texts";
 
 type Texts = AdminDictionary["residence"];
 
 /** Plain words for a refused change: 409 means the residence changed under us, 400 a wrong value. */
-export function changeErrorText(error: unknown, t: Texts): string | null {
+export function changeErrorText(error: unknown, t: Texts, api: AdminDictionary["messages"]["api"]): string | null {
   if (!error || error instanceof SessionExpiredError) return null;
   if (!(error instanceof AdminApiError)) return t.errors.failed;
   if (error.status === 409) {
-    const detail = error.message.startsWith("Admin API answered") ? "" : ` ${error.message}.`;
-    return `${t.errors.conflict}${detail}`;
+    const detail = apiMessageText(error.message, api);
+    return detail ? `${t.errors.conflict} ${detail}` : t.errors.conflict;
   }
   if (error.status === 400) return error.fieldErrors.priceUsd ? t.priceStatus.priceInvalid : t.errors.rejected;
   return t.errors.failed;

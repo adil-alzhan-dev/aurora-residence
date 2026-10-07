@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { adminEn } from "@/content/en-admin";
+import { adminRu } from "@/content/ru-admin";
 
 import { AdminApiError, SessionExpiredError } from "./api-client";
 import { enquiryChangeErrorText, linkErrorText, reserveErrorText } from "./enquiry-errors";
 
 const t = adminEn.enquiry.errors;
+const api = adminEn.messages.api;
 
 describe("enquiry change errors", () => {
   it("says what a refused change means", () => {
@@ -23,22 +25,29 @@ describe("enquiry change errors", () => {
 describe("reservation errors", () => {
   it("turns 409 into plain words about the residence", () => {
     const error = new AdminApiError(409, "Residence 7.03 is reserved, only an available residence can be reserved");
-    expect(reserveErrorText(error, "7.03", t)).toBe(
+    expect(reserveErrorText(error, "7.03", t, api)).toBe(
       "Residence 7.03 cannot be reserved: it is no longer available, someone reserved or sold it a moment ago. The card now shows the current state.",
     );
   });
 
-  it("passes on why the API refused the enquiry", () => {
+  it("passes on a known reason in the reader's words and hides an unknown one", () => {
     const error = new AdminApiError(400, "Enquiry 12 is closed, reopen it before reserving");
-    expect(reserveErrorText(error, "7.03", t)).toBe(
-      "This enquiry cannot be used for the reservation. Enquiry 12 is closed, reopen it before reserving.",
+    expect(reserveErrorText(error, "7.03", t, api)).toBe(
+      "This enquiry cannot be used for the reservation. The enquiry is closed: set it back to In progress first.",
     );
-    expect(reserveErrorText(new AdminApiError(400), "7.03", t)).toBe("This enquiry cannot be used for the reservation.");
+    const other = new AdminApiError(400, "Enquiry 12 is about residence 4.06, not 7.03. Choose an enquiry for 7.03.");
+    expect(reserveErrorText(other, "7.03", adminRu.enquiry.errors, adminRu.messages.api)).toBe(
+      "Эту заявку нельзя использовать для брони. Заявка о квартире 4.06, а не о 7.03.",
+    );
+    expect(reserveErrorText(new AdminApiError(400, "Unknown words"), "7.03", t, api)).toBe(
+      "This enquiry cannot be used for the reservation.",
+    );
+    expect(reserveErrorText(new AdminApiError(400), "7.03", t, api)).toBe("This enquiry cannot be used for the reservation.");
   });
 
   it("falls back to a connection problem", () => {
-    expect(reserveErrorText(new AdminApiError(500), "7.03", t)).toBe(t.failed);
-    expect(reserveErrorText(new SessionExpiredError(), "7.03", t)).toBeNull();
+    expect(reserveErrorText(new AdminApiError(500), "7.03", t, api)).toBe(t.failed);
+    expect(reserveErrorText(new SessionExpiredError(), "7.03", t, api)).toBeNull();
   });
 });
 

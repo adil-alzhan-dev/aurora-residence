@@ -68,7 +68,7 @@ export function EnquiryCardView({ id, t }: { id: number | null; t: AdminDictiona
       <EnquiryHeading enquiry={enquiry} now={now} t={t} />
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <EnquiryClient enquiry={enquiry} t={t.enquiry} />
+          <EnquiryClient enquiry={enquiry} t={t.enquiry} sources={t.messages} />
           <EnquiryComment comment={enquiry.comment} t={t.enquiry} />
           <ManagerNoteCard enquiry={enquiry} now={now} t={t.enquiry} />
           <EnquiryActivity activity={enquiry.activity} now={now} t={t} />
@@ -78,7 +78,7 @@ export function EnquiryCardView({ id, t }: { id: number | null; t: AdminDictiona
           <EnquiryResidenceCard
             enquiry={enquiry}
             t={t}
-            reserve={<EnquiryReserve enquiry={enquiry} t={t.enquiry} />}
+            reserve={<EnquiryReserve enquiry={enquiry} t={t} />}
             link={<LinkResidenceForm enquiryId={enquiry.id} t={t.enquiry} />}
           />
         </div>

@@ -16,14 +16,15 @@ import { fillTemplate } from "@/lib/format";
  * "Reserve for 7 days" when the residence is free, otherwise a plain reason why not.
  * A refusal is shown outside the dialog: after a 409 the card reloads and the button is gone.
  */
-export function EnquiryReserve({ enquiry, t }: { enquiry: EnquiryCard; t: AdminDictionary["enquiry"] }) {
+export function EnquiryReserve({ enquiry, t: dictionary }: { enquiry: EnquiryCard; t: AdminDictionary }) {
+  const t = dictionary.enquiry;
   const reserve = useReserveResidence();
   const format = useAdminFormat();
   const [endsAt, setEndsAt] = useState<Date | null>(null);
   const state = reserveState(enquiry);
   const number = enquiry.residence?.number ?? "";
   const text = t.residence;
-  const error = reserveErrorText(reserve.error, number, t.errors);
+  const error = reserveErrorText(reserve.error, number, t.errors, dictionary.messages.api);
   const errorLine = error && (
     <p role="alert" className="text-admin-body text-destructive">
       {error}

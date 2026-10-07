@@ -2,6 +2,7 @@ import type { AdminDictionary } from "@/content/en-admin";
 import { fillTemplate } from "@/lib/format";
 
 import type { AdminFormat } from "./admin-format";
+import { noteText } from "./api-texts";
 import { calendarDaysLeft } from "./dashboard-view";
 import type { EnquiryActivity, EnquiryCard } from "./schemas";
 
@@ -32,6 +33,7 @@ type ActivityTexts = {
   activity: AdminDictionary["enquiry"]["activity"];
   enquiryStatuses: AdminDictionary["enquiries"]["statuses"];
   residenceStatuses: AdminDictionary["facade"]["statuses"];
+  messages: AdminDictionary["messages"];
 };
 
 const label = (labels: Record<string, string>, value: string | null) => (value ? (labels[value] ?? value) : "");
@@ -43,16 +45,17 @@ const priceText = (value: string | null, format: AdminFormat) =>
 export function activityLine(entry: EnquiryActivity, t: ActivityTexts, format: AdminFormat): ActivityLine {
   const { activity } = t;
   const number = entry.residence ?? entry.to ?? "";
+  const note = entry.note && noteText(entry.note, { messages: t.messages, statuses: t.residenceStatuses }, format);
   switch (entry.type) {
     case "ENQUIRY_RECEIVED":
-      return { text: entry.note ?? activity.received, note: null };
+      return { text: note || activity.received, note: null };
     case "ENQUIRY_STATUS_CHANGED":
       return {
         text: fillTemplate(activity.statusChanged, {
           from: label(t.enquiryStatuses, entry.from),
           to: label(t.enquiryStatuses, entry.to),
         }),
-        note: entry.note,
+        note,
       };
     case "NOTE_ADDED":
       return { text: activity.noteAdded, note: null };
@@ -61,14 +64,14 @@ export function activityLine(entry: EnquiryActivity, t: ActivityTexts, format: A
     case "PRICE_CHANGED":
       return {
         text: fillTemplate(activity.priceChanged, { number, from: priceText(entry.from, format), to: priceText(entry.to, format) }),
-        note: entry.note,
+        note,
       };
     default: {
       const to = label(t.residenceStatuses, entry.to);
       const text = entry.from
         ? fillTemplate(activity.residenceStatus, { number, from: label(t.residenceStatuses, entry.from), to })
         : fillTemplate(activity.residenceListed, { number, to });
-      return { text, note: entry.note };
+      return { text, note };
     }
   }
 }

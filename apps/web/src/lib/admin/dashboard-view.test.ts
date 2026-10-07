@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { adminEn } from "@/content/en-admin";
+import { adminRu } from "@/content/ru-admin";
 
 import { adminFormat } from "./admin-format";
 import { calendarDaysLeft, formatReceived, percentOf, reservationRows, residenceDetails } from "./dashboard-view";
@@ -33,6 +34,13 @@ describe("formatReceived", () => {
     expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, t, en)).toBe("Yesterday, 18:40");
     expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, t, en)).toBe("Oct 2, 09:05");
   });
+
+  it("says the same in Russian", () => {
+    const ru = adminFormat("ru-RU");
+    expect(formatReceived(new Date(2026, 9, 4, 9, 2), now, adminRu.enquiries, ru)).toBe("Сегодня в 09:02");
+    expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, adminRu.enquiries, ru)).toBe("Вчера в 18:40");
+    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, adminRu.enquiries, ru)).toBe("2 окт., 09:05");
+  });
 });
 
 describe("residenceDetails", () => {
@@ -40,6 +48,9 @@ describe("residenceDetails", () => {
     expect(residenceDetails(residence({}), adminEn.enquiries, en)).toBe("2 bd, 84.2 m², $218\u00a0000");
     expect(residenceDetails(residence({ bedrooms: 0, areaM2: 38.2, priceUsd: 95_000 }), adminEn.enquiries, en)).toBe(
       "Studio, 38.2 m², $95\u00a0000",
+    );
+    expect(residenceDetails(residence({}), adminRu.enquiries, adminFormat("ru-RU"))).toBe(
+      "2 сп., 84,2 м², 218\u00a0000\u00a0$",
     );
   });
 });

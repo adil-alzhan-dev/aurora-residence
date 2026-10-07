@@ -1,6 +1,7 @@
 import { useAdminFormat } from "@/components/admin/admin-locale";
 import { ResidenceStatusBadge } from "@/components/admin/residences/residence-row";
 import type { AdminDictionary } from "@/content/en-admin";
+import { authorText, noteText } from "@/lib/admin/api-texts";
 import type { ActivityEntry, AdminResidenceStatus } from "@/lib/admin/schemas";
 
 import { AdminCard } from "./admin-card";
@@ -35,10 +36,15 @@ function Change({ entry, statuses }: { entry: ActivityEntry; statuses: Statuses 
   );
 }
 
-type HistoryProps = { history: ActivityEntry[]; t: AdminDictionary["residence"]["history"]; statuses: Statuses };
+type HistoryProps = {
+  history: ActivityEntry[];
+  t: AdminDictionary["residence"]["history"];
+  statuses: Statuses;
+  messages: AdminDictionary["messages"];
+};
 
 /** Only status and price changes: enquiry events belong to the enquiry screen. */
-export function ResidenceHistory({ history, t, statuses }: HistoryProps) {
+export function ResidenceHistory({ history, t, statuses, messages }: HistoryProps) {
   const format = useAdminFormat();
   const entries = history.filter((entry) => entry.type === "STATUS_CHANGED" || entry.type === "PRICE_CHANGED");
   return (
@@ -55,11 +61,11 @@ export function ResidenceHistory({ history, t, statuses }: HistoryProps) {
               <time dateTime={entry.at.toISOString()} className="text-admin-caption text-muted-foreground md:w-37.5 md:shrink-0">
                 {format.dayTime(entry.at)}
               </time>
-              <span className="text-admin-caption text-muted-foreground md:order-last md:shrink-0">{entry.author}</span>
+              <span className="text-admin-caption text-muted-foreground md:order-last md:shrink-0">{authorText(entry.author, messages)}</span>
               <span className="col-span-2 md:w-65 md:shrink-0">
                 <Change entry={entry} statuses={statuses} />
               </span>
-              <span className="col-span-2 text-admin-body text-foreground md:min-w-0 md:flex-1">{entry.note}</span>
+              <span className="col-span-2 text-admin-body text-foreground md:min-w-0 md:flex-1">{entry.note && noteText(entry.note, { messages, statuses }, format)}</span>
             </li>
           ))}
         </ol>

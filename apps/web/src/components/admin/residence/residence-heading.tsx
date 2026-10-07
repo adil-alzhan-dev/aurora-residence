@@ -15,6 +15,8 @@ export function bedroomsLabel(bedrooms: number, t: AdminDictionary["residence"],
   return bedrooms === 0 ? t.studio : format.count(bedrooms, t.bedrooms);
 }
 
+export const viewText = (view: string, t: AdminDictionary["residence"]) => t.views[view.toLowerCase()] ?? view;
+
 export function BackToResidences({ label }: { label: string }) {
   return (
     <Link
@@ -39,7 +41,7 @@ export function ResidenceHeading({ residence, t, statuses }: HeadingProps) {
     fillTemplate(t.summary, { floor: residence.floor, floors: FLOOR_COUNT }),
     bedroomsLabel(residence.bedrooms, t, format),
     fillTemplate(t.area, { area: format.decimal(residence.areaM2) }),
-    `${t.sides[residence.side] ?? residence.side}, ${residence.view.toLowerCase()}`,
+    `${t.sides[residence.side] ?? residence.side}, ${viewText(residence.view, t).toLowerCase()}`,
     ...(residence.isPenthouse ? [t.penthouse] : []),
   ];
   return (

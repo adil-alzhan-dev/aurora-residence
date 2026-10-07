@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
 import { changeErrorText } from "@/lib/admin/change-errors";
+import { authorText } from "@/lib/admin/api-texts";
 import { reserveErrorText } from "@/lib/admin/enquiry-errors";
 import { useReserveResidence } from "@/lib/admin/enquiry-queries";
 import { adminHref } from "@/lib/admin/paths";
@@ -34,7 +35,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
   const release = useReleaseReservation(residence.number);
   const format = useAdminFormat();
   const reserve = useReserveResidence();
-  const reserveError = reserveErrorText(reserve.error, residence.number, t.enquiry.errors);
+  const reserveError = reserveErrorText(reserve.error, residence.number, t.enquiry.errors, t.messages.api);
   const [confirmClient, setConfirmClient] = useState<string | null>(null);
   const [released, setReleased] = useState(false);
   const { reservation } = residence;
@@ -77,7 +78,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
           </Field>
         </dl>
         <p className="text-admin-caption text-muted-foreground">
-          {fillTemplate(text.reservedBy, { author: reservation.createdBy, date: format.day(reservation.startsAt) })}
+          {fillTemplate(text.reservedBy, { author: authorText(reservation.createdBy, t.messages), date: format.day(reservation.startsAt) })}
         </p>
         <Button
           type="button"
@@ -112,7 +113,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
         cancelLabel={t.residence.confirm.cancel}
         note={{ label: t.residence.confirm.note, placeholder: t.residence.confirm.notePlaceholder }}
         pending={release.isPending}
-        error={changeErrorText(release.error, t.residence)}
+        error={changeErrorText(release.error, t.residence, t.messages.api)}
         onConfirm={(note) =>
           release.mutate(note || undefined, {
             onSuccess: () => {

@@ -74,8 +74,8 @@ export function LoginForm({ t, next }: { t: AdminDictionary["login"]; next: stri
       return;
     }
     if (result.kind === "invalid") {
-      if (result.fields.email) setError("email", { message: result.fields.email });
-      if (result.fields.password) setError("password", { message: result.fields.password });
+      if (result.fields.email) setError("email", { message: t.emailInvalid });
+      if (result.fields.password) setError("password", { message: t.passwordRequired });
       return;
     }
     if (result.kind === "paused") setPauseSeconds(result.retryAfterSeconds);

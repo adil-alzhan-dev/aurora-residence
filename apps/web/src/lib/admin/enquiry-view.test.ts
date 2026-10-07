@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { adminEn } from "@/content/en-admin";
+import { adminRu } from "@/content/ru-admin";
 
 import { adminFormat } from "./admin-format";
 import { activityLine, lastNoteSave, receivedLine } from "./enquiry-view";
@@ -12,6 +13,7 @@ const texts = {
   activity: adminEn.enquiry.activity,
   enquiryStatuses: adminEn.enquiries.statuses,
   residenceStatuses: adminEn.facade.statuses,
+  messages: adminEn.messages,
 };
 const residence = { number: "7.03", status: "AVAILABLE" as const, priceUsd: 218_000, bedrooms: 2, areaM2: 84.2, isPenthouse: false };
 
@@ -70,5 +72,32 @@ describe("enquiry activity", () => {
     const activity = [entry({ type: "ENQUIRY_STATUS_CHANGED" }), newest, entry({ at: new Date(2026, 9, 3) })];
     expect(lastNoteSave(activity)).toEqual({ at: newest.at, author: "Maya Collins" });
     expect(lastNoteSave([])).toBeNull();
+  });
+});
+
+describe("enquiry card in Russian", () => {
+  const ru = adminFormat("ru-RU");
+  const ruTexts = {
+    activity: adminRu.enquiry.activity,
+    enquiryStatuses: adminRu.enquiries.statuses,
+    residenceStatuses: adminRu.facade.statuses,
+    messages: adminRu.messages,
+  };
+
+  it("writes the received line and a reservation entry in Russian", () => {
+    const card = { createdAt: new Date(2026, 9, 4, 9, 2), source: "Residence page, Send request", residence };
+    expect(receivedLine(card, now, adminRu.enquiry, ru)).toBe("Получена сегодня в 09:02 со страницы квартиры 7.03");
+    const line = activityLine(
+      entry({
+        type: "STATUS_CHANGED",
+        residence: "7.03",
+        from: "AVAILABLE",
+        to: "RESERVED",
+        note: "Reserved for 7 days, enquiry from Elena Marsh",
+      }),
+      ruTexts,
+      ru,
+    );
+    expect(line).toEqual({ text: "Квартира 7.03: Свободна  →  Бронь", note: "Бронь на 7 дней по заявке Elena Marsh" });
   });
 });

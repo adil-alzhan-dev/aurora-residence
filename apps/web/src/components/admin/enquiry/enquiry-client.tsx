@@ -1,10 +1,11 @@
 import { AdminCard } from "@/components/admin/residence/admin-card";
 import type { AdminDictionary } from "@/content/en-admin";
+import { sourceText } from "@/lib/admin/api-texts";
 import type { EnquiryCard } from "@/lib/admin/schemas";
 
 type Texts = AdminDictionary["enquiry"];
 
-export function EnquiryClient({ enquiry, t }: { enquiry: EnquiryCard; t: Texts }) {
+export function EnquiryClient({ enquiry, t, sources }: { enquiry: EnquiryCard; t: Texts; sources: AdminDictionary["messages"] }) {
   const text = t.client;
   const fields = [
     { label: text.name, value: enquiry.name },
@@ -12,7 +13,7 @@ export function EnquiryClient({ enquiry, t }: { enquiry: EnquiryCard; t: Texts }
     { label: text.email, value: <a href={`mailto:${enquiry.email}`}>{enquiry.email}</a> },
     { label: text.locale, value: text.locales[enquiry.locale.toLowerCase()] ?? enquiry.locale },
     { label: text.currency, value: enquiry.currency },
-    { label: text.source, value: enquiry.source },
+    { label: text.source, value: sourceText(enquiry.source, sources) },
   ];
   return (
     <AdminCard id="enquiry-client" title={text.title} className="gap-4">

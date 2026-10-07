@@ -58,7 +58,7 @@ export function DashboardView({ t }: { t: AdminDictionary }) {
         <MiniFacade cells={summary.facade} t={t.facade} />
         <ReservationsCard rows={reservationRows(summary.reservations, now)} t={t.reservations} />
       </div>
-      <LatestEnquiries items={summary.latestEnquiries} total={summary.enquiries.total} now={now} t={t.enquiries} />
+      <LatestEnquiries items={summary.latestEnquiries} total={summary.enquiries.total} now={now} t={t.enquiries} sources={t.messages} />
     </>
   );
 }
