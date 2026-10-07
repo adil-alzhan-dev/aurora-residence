@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/locale";
 import { pluralForms } from "@/lib/plural";
 
 import { enquiryEn, enquiryListEn } from "./en-admin-enquiries";
+import { messagesEn } from "./en-admin-messages";
 
 export const adminEn = {
   locale: {
@@ -160,6 +161,7 @@ export const adminEn = {
       6: "east end, dual aspect",
     } as Record<number, string>,
     sides: { NORTH: "North", SOUTH: "South", WEST: "West", EAST: "East" } as Record<string, string>,
+    views: { courtyard: "Courtyard", park: "Park", "park and city": "Park and city" } as Record<string, string>,
     priceStatus: {
       title: "Price and status",
       lead: "Saved changes reach every open tab of the site instantly.",
@@ -260,6 +262,7 @@ export const adminEn = {
   },
   enquiryList: enquiryListEn,
   enquiry: enquiryEn,
+  messages: messagesEn,
 };
 
 export type AdminDictionary = typeof adminEn;
