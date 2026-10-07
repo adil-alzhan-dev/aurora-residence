@@ -16,7 +16,7 @@ import { areaText, bedroomsShortText, isOpenable } from "./residence-text";
 
 type ResidenceListProps = {
   residences: Residence[];
-  t: Pick<Dictionary, "floorPage" | "status">;
+  t: Pick<Dictionary, "floorPage" | "status" | "locale">;
 };
 
 const rowClass = "flex min-h-[72px] items-center gap-4 border-b border-border py-3";
@@ -39,7 +39,7 @@ export function ResidenceList({ residences, t }: ResidenceListProps) {
               <span className="text-body text-foreground">
                 {bedroomsShortText(residence, t.floorPage)}
                 {" · "}
-                {areaText(residence, t.floorPage)}
+                {areaText(residence, t)}
               </span>
               {residence.isPenthouse && (
                 <span className="text-caption text-muted-foreground">{t.floorPage.penthouse}</span>

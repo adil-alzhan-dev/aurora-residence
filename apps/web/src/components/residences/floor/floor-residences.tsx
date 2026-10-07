@@ -8,6 +8,7 @@ import { residenceHref } from "@/content/navigation";
 import type { FloorSummary } from "@/lib/api/floors";
 import type { Residence } from "@/lib/api/residences";
 import { fillTemplate } from "@/lib/format";
+import { plural } from "@/lib/plural";
 import { revealDelay } from "@/lib/motion";
 
 import { ResidenceList } from "./residence-list";
@@ -40,7 +41,7 @@ export function FloorResidences({ floor, residences, active, onActivate, onLeave
           <p className="hidden text-overline text-muted-foreground lg:block">{text.onThisFloor}</p>
           <h2 id="floor-residences-title" className="text-h3 text-foreground">
             <span className="lg:hidden">{fillTemplate(t.residences.residencesOnFloor, { floor: floor.floor })}</span>
-            <span className="hidden lg:inline">{fillTemplate(text.residencesCount, { count: residences.length })}</span>
+            <span className="hidden lg:inline">{fillTemplate(plural(residences.length, text.residencesCount, t.locale.intl), { count: residences.length })}</span>
           </h2>
         </div>
         <p className="text-caption text-muted-foreground lg:hidden">

@@ -72,7 +72,7 @@ export default async function ResidencePage({ params }: PageProps<"/residences/[
             <ResidenceTitle residence={residence} t={t} />
           </div>
           <div data-reveal="up" className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
-            <ResidencePlan residence={residence} layout={layout} t={text} sides={t.list.sides} />
+            <ResidencePlan residence={residence} layout={layout} t={t} />
           </div>
           <div
             data-reveal="up"

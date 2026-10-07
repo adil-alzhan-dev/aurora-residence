@@ -1,3 +1,5 @@
+import { pluralForms } from "@/lib/plural";
+
 /** Texts of the residence selection pages: facade, floor grid, list, filters, floor plan. Merged into the English dictionary. */
 export const residencesEn = {
   residences: {
@@ -30,7 +32,10 @@ export const residencesEn = {
       "Live availability is not reachable right now, so the facade is shown without numbers. Please refresh in a minute or call +1 (555) 010-2040.",
   },
   grid: {
-    title: "Floor grid: {count} residences, floors from top to bottom",
+    title: pluralForms(
+      "Floor grid: {count} residence, floors from top to bottom",
+      "Floor grid: {count} residences, floors from top to bottom",
+    ),
     floor: "Floor",
     column: ".{position}  {type}",
     floorLabel: "Floor {floor}",
@@ -57,12 +62,12 @@ export const residencesEn = {
     headingShort: "{count} {noun}",
     availableCount: "{available} available",
     nouns: {
-      any: ["residence", "residences"],
+      any: pluralForms("residence", "residences"),
       byBedrooms: [
-        ["studio", "studios"],
-        ["one-bedroom residence", "one-bedroom residences"],
-        ["two-bedroom residence", "two-bedroom residences"],
-        ["three-bedroom residence", "three-bedroom residences"],
+        pluralForms("studio", "studios"),
+        pluralForms("one-bedroom residence", "one-bedroom residences"),
+        pluralForms("two-bedroom residence", "two-bedroom residences"),
+        pluralForms("three-bedroom residence", "three-bedroom residences"),
       ],
     },
     sortBy: "Sort by",
@@ -86,6 +91,7 @@ export const residencesEn = {
     residence: "Residence {number}",
     description: "{type}, {side}, {view}",
     sides: { north: "north", south: "south", east: "east", west: "west" },
+    views: { courtyard: "courtyard", park: "park", "park and city": "park and city" } as Record<string, string>,
     floorOf: "Floor {floor} of {total}",
     details: "Details",
     detailsOf: "Details of residence {number}",
@@ -134,13 +140,13 @@ export const residencesEn = {
     neighbour: "Floor {floor}: {available} available",
     floorBelow: "Floor below",
     floorAbove: "Floor above",
-    planTitle: "Floor {floor} plan, {count} residences",
+    planTitle: pluralForms("Floor {floor} plan, {count} residence", "Floor {floor} plan, {count} residences"),
     planLabel: "Plan of floor {floor}. Residences are coloured by status.",
     north: "N",
     southFacade: "South facade, park side",
     scale: "5 m",
     onThisFloor: "On this floor",
-    residencesCount: "{count} residences",
+    residencesCount: pluralForms("{count} residence", "{count} residences"),
     columns: { number: "No.", bedrooms: "Bedrooms", area: "Area", price: "Price", status: "Status" },
     studio: "Studio",
     bedroomsShort: "{count} bd",

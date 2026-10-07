@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import type { MouseEvent, PointerEvent } from "react";
 
-import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
 import { cn } from "@/lib/utils";
@@ -11,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { PlanHoverCard } from "./plan-hover-card";
 import { PLAN_HEIGHT, PLAN_WIDTH, planLines, planWalls } from "./plan-drawing";
 import { boxStyle, planUnits, planX, planY, unitCenter } from "./plan-units";
-import { areaText, isOpenable, typeAreaText } from "./residence-text";
+import { areaText, isOpenable, typeAreaText, type FloorText } from "./residence-text";
 
 export type PlanPoint = { x: number; y: number };
 
@@ -27,7 +26,7 @@ type FloorPlanProps = {
   point: PlanPoint | null;
   onActivate: (number: string, point: PlanPoint) => void;
   onLeave: () => void;
-  t: Dictionary["floorPage"];
+  t: FloorText;
 };
 
 export function FloorPlan({ residences, active, point, onActivate, onLeave, t }: FloorPlanProps) {
@@ -78,7 +77,7 @@ export function FloorPlan({ residences, active, point, onActivate, onLeave, t }:
           const label = [
             residence.number,
             typeAreaText(residence, t),
-            t[residence.status === "sold" ? "notForSale" : "clickToOpen"],
+            t.floorPage[residence.status === "sold" ? "notForSale" : "clickToOpen"],
           ];
           const hitArea = (
             <rect
@@ -131,7 +130,7 @@ export function FloorPlan({ residences, active, point, onActivate, onLeave, t }:
                 {residence.number}
               </span>
               <span className="text-caption whitespace-nowrap text-muted-foreground">{areaText(residence, t)}</span>
-              {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.penthouse}</span>}
+              {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.floorPage.penthouse}</span>}
             </span>
           </div>
         );

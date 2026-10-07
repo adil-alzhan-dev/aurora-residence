@@ -15,7 +15,7 @@ type ResidenceTableProps = {
   active: string | null;
   onActivate: (number: string) => void;
   onLeave: () => void;
-  t: Pick<Dictionary, "floorPage" | "status">;
+  t: Pick<Dictionary, "floorPage" | "status" | "locale">;
 };
 
 const cell = "px-0 py-5 align-top text-body first:pl-4 last:pr-4";
@@ -90,7 +90,7 @@ export function ResidenceTable({ residences, active, onActivate, onLeave, t }: R
                   </span>
                 )}
               </td>
-              <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t.floorPage)}</td>
+              <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t)}</td>
               <td className={cn(cell, "whitespace-nowrap")}>{formatPrice(residence.priceUsd)}</td>
               <td className={cell}>
                 <span className="flex h-[26px] items-center">

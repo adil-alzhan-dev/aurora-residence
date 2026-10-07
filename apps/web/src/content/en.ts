@@ -1,8 +1,14 @@
-import { enquirySendEn } from "./en-enquiry";
+import type { Locale } from "@/lib/locale";
+
+import { enquiryEn } from "./en-enquiry";
 import { residenceEn } from "./en-residence";
 import { residencesEn } from "./en-residences";
 
 export const en = {
+  locale: {
+    lang: "en" as Locale,
+    intl: "en-US",
+  },
   meta: {
     title: "Aurora Residence",
     description:
@@ -204,58 +210,6 @@ export const en = {
     inProgress: "In progress, {percent}%",
     planned: "Planned",
   },
-  enquiry: {
-    overline: "Private viewing",
-    title: "Visit the sales gallery",
-    lead: "Leave your details and a sales manager will call you back within one working day to arrange a viewing or send you floor plans and prices.",
-    phoneTitle: "Phone",
-    emailTitle: "Email",
-    emailNote: "Reply within a day",
-    galleryTitle: "Sales gallery",
-    galleryPlace: "At the main entrance",
-    galleryNote: "Viewings by appointment",
-    formTitle: "Request a call back",
-    name: "Name",
-    namePlaceholder: "Your name",
-    phone: "Phone",
-    countryCode: "Country code",
-    codePlaceholder: "Code",
-    phoneNumber: "Phone number",
-    email: "Email",
-    emailPlaceholder: "name@example.com",
-    website: "Website",
-    submit: "Request a call back",
-    errors: {
-      name: "Enter your name",
-      code: "Choose a country code",
-      phone: "Enter a phone number with 7 to 15 digits including the code",
-      email: "Enter a valid email address",
-    },
-    countries: [
-      ["+1", "United States, Canada"],
-      ["+44", "United Kingdom"],
-      ["+49", "Germany"],
-      ["+33", "France"],
-      ["+34", "Spain"],
-      ["+39", "Italy"],
-      ["+31", "Netherlands"],
-      ["+41", "Switzerland"],
-      ["+48", "Poland"],
-      ["+90", "Turkey"],
-      ["+971", "United Arab Emirates"],
-      ["+972", "Israel"],
-      ["+7", "Kazakhstan, Russia"],
-      ["+998", "Uzbekistan"],
-      ["+996", "Kyrgyzstan"],
-      ["+995", "Georgia"],
-      ["+374", "Armenia"],
-      ["+994", "Azerbaijan"],
-      ["+86", "China"],
-      ["+91", "India"],
-      ["+65", "Singapore"],
-      ["+61", "Australia"],
-    ] as [string, string][],
-  },
   footer: {
     tagline: "Eleven floors of quiet architecture above the park. A Meridian Group residence.",
     residencesTitle: "Residences",
@@ -274,7 +228,7 @@ export const en = {
   },
   ...residencesEn,
   ...residenceEn,
-  ...enquirySendEn,
+  ...enquiryEn,
 };
 
 export type StatItem = { value: number; suffix: string; label: string } | { text: string; label: string };

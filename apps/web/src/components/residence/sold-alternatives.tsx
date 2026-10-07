@@ -8,9 +8,9 @@ import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
 import { residenceHref, residencesViewHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
-import { bedroomsShortText } from "../residences/floor/residence-text";
+import { areaText, bedroomsShortText } from "../residences/floor/residence-text";
 
 type SoldAlternativesProps = {
   floor: number;
@@ -47,7 +47,7 @@ export function SoldAlternatives({ floor, floorResidences, similar, t }: SoldAlt
                     {fillTemplate(text.residenceShort, { number: residence.number })}
                     <span className="text-muted-foreground">
                       {"  ·  "}
-                      {bedroomsShortText(residence, t.floorPage)}, {formatArea(residence.areaM2)} m²
+                      {bedroomsShortText(residence, t.floorPage)}, {areaText(residence, t)}
                     </span>
                   </span>
                   <span className="flex items-center gap-3 whitespace-nowrap">

@@ -22,7 +22,7 @@ type ListDesktopProps = {
   filters: ResidenceFilters;
   sort: ResidenceSort;
   view: string;
-  t: Pick<Dictionary, "list" | "floorPage" | "status">;
+  t: Pick<Dictionary, "list" | "floorPage" | "status" | "locale">;
 };
 
 /** Desktop list: count and sort segments, the table, then "Show more" ten residences at a time. */
@@ -40,7 +40,7 @@ export function ListDesktop({ residences, result, filters, sort, view, t }: List
         <p aria-live="polite" className="text-body-l text-foreground">
           {fillTemplate(t.list.heading, {
             count: result.matching,
-            noun: residenceNoun(result.matching, filters.bedrooms, t.list),
+            noun: residenceNoun(result.matching, filters.bedrooms, t),
             available: result.available,
           })}
         </p>

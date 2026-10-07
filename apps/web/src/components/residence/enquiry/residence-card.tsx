@@ -5,9 +5,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
-import { bedroomsShortText } from "../../residences/floor/residence-text";
+import { areaText, bedroomsShortText } from "../../residences/floor/residence-text";
 import { ResidenceDrawing } from "../plan/plan-drawing";
 
 type ResidenceCardProps = {
@@ -32,7 +32,7 @@ export function ResidenceCard({ residence, t, note }: ResidenceCardProps) {
         <span className="text-caption whitespace-pre-wrap text-muted-foreground">
           {fillTemplate(t.residenceEnquiry.summary, {
             bedrooms: bedroomsShortText(residence, t.floorPage),
-            area: `${formatArea(residence.areaM2)} m²`,
+            area: areaText(residence, t),
             floor: residence.floor,
             total: FLOOR_COUNT,
             price: formatPrice(residence.priceUsd),

@@ -10,9 +10,10 @@ import type { Dictionary } from "@/content";
 import { residenceHref, residencesViewHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
 import { ResidenceCard } from "../residences/list/residence-card";
+import { areaText } from "../residences/floor/residence-text";
 import { capitalize, sideViewText } from "../residences/list/list-text";
 import { ResidenceDrawing } from "./plan/plan-drawing";
 
@@ -25,7 +26,7 @@ type SimilarResidencesProps = {
 function ApartmentCard({ residence, t }: { residence: Residence; t: Dictionary }) {
   const { formatPrice } = useCurrency();
   const specs = [
-    { label: t.residencePage.area, value: `${formatArea(residence.areaM2)} m²` },
+    { label: t.residencePage.area, value: areaText(residence, t) },
     { label: t.residencePage.floor, value: fillTemplate(t.residencePage.floorOf, { floor: residence.floor, total: FLOOR_COUNT }) },
     { label: t.residencePage.view, value: capitalize(sideViewText(residence, t.list)) },
   ];

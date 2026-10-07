@@ -7,10 +7,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate, formatDecimal } from "@/lib/format";
 import { calculateInstalments, DOWN_PAYMENT, TERM_MONTHS } from "@/lib/instalment";
 import { cn } from "@/lib/utils";
 
+import { areaText } from "../residences/floor/residence-text";
 import { capitalize, sideViewText } from "../residences/list/list-text";
 import { RequestButton } from "./enquiry/enquiry-context";
 
@@ -25,9 +26,9 @@ export function ResidenceSpecs({ residence, ceilingM, t }: ResidenceSummaryProps
   const specs = [
     { label: text.floor, value: fillTemplate(text.floorOf, { floor: residence.floor, total: FLOOR_COUNT }) },
     { label: text.bedrooms, value: residence.bedrooms === 0 ? t.floorPage.studio : String(residence.bedrooms) },
-    { label: text.area, value: `${formatArea(residence.areaM2)} m²` },
+    { label: text.area, value: areaText(residence, t) },
     { label: text.view, value: capitalize(sideViewText(residence, t.list)) },
-    { label: text.ceiling, value: fillTemplate(text.ceilingValue, { height: ceilingM.toFixed(1) }), mobileOnly: true },
+    { label: text.ceiling, value: fillTemplate(text.ceilingValue, { height: formatDecimal(ceilingM, t.locale.intl) }), mobileOnly: true },
   ];
 
   return (

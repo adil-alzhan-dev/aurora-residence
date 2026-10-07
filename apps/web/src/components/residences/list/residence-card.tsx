@@ -29,7 +29,7 @@ export function ResidenceCard({ residence, t }: ResidenceCardProps) {
   const openable = isOpenable(residence);
   const details = [
     fillTemplate(t.list.floorOf, { floor: residence.floor, total: FLOOR_COUNT }),
-    areaText(residence, t.floorPage),
+    areaText(residence, t),
     capitalize(sideViewText(residence, t.list)),
   ].join("  ·  ");
 

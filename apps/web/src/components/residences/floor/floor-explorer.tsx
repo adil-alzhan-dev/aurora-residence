@@ -6,6 +6,7 @@ import { ArrowRightIcon } from "@/components/icons";
 import type { Dictionary } from "@/content";
 import type { FloorDetails } from "@/lib/api/floors";
 import { fillTemplate } from "@/lib/format";
+import { plural } from "@/lib/plural";
 
 import { FloorPlan, type PlanPoint } from "./floor-plan";
 import { FloorResidences } from "./floor-residences";
@@ -42,7 +43,7 @@ export function FloorExplorer({ details, t }: FloorExplorerProps) {
       >
         <div className="flex items-center justify-between px-4 lg:h-10 lg:px-6 lg:pt-6 lg:box-content">
           <p className="text-overline text-muted-foreground">
-            {fillTemplate(text.planTitle, { floor: details.floor, count: residences.length })}
+            {fillTemplate(plural(residences.length, text.planTitle, t.locale.intl), { floor: details.floor, count: residences.length })}
           </p>
           <p className="flex items-center gap-1 text-caption text-muted-foreground lg:gap-2 lg:text-label lg:text-foreground">
             <ArrowRightIcon className="-rotate-90 text-foreground" />
@@ -56,7 +57,7 @@ export function FloorExplorer({ details, t }: FloorExplorerProps) {
             point={point}
             onActivate={activate}
             onLeave={clear}
-            t={text}
+            t={t}
           />
         </div>
         <div className="flex items-center justify-between px-4 lg:mx-[15px] lg:mt-6 lg:mb-6 lg:px-0 lg:pr-[9px] lg:pl-2">

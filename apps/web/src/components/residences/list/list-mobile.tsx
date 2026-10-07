@@ -26,7 +26,7 @@ type ListMobileProps = {
   sort: ResidenceSort;
   view: string;
   keep: KeptParams;
-  t: Pick<Dictionary, "list" | "floorPage" | "status" | "filters">;
+  t: Pick<Dictionary, "list" | "floorPage" | "status" | "filters" | "locale">;
 };
 
 /** M / Residences / List: filters, chips and sort on top, then cards six at a time. No hover states. */
@@ -51,7 +51,7 @@ export function ListMobile({ residences, result, filters, priceRange, sort, view
           <p className="text-body-l text-foreground">
             {fillTemplate(t.list.headingShort, {
               count: result.matching,
-              noun: residenceNoun(result.matching, filters.bedrooms, t.list),
+              noun: residenceNoun(result.matching, filters.bedrooms, t),
             })}
           </p>
           <p className="text-caption whitespace-nowrap text-muted-foreground">

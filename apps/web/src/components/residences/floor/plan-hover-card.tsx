@@ -1,15 +1,14 @@
 import { useCurrency } from "@/components/currency/currency-provider";
-import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { fillTemplate } from "@/lib/format";
 
 import { planX, planY } from "./plan-units";
-import { isOpenable, typeAreaText } from "./residence-text";
+import { isOpenable, typeAreaText, type FloorText } from "./residence-text";
 
 type PlanHoverCardProps = {
   residence: Residence;
   point: { x: number; y: number };
-  t: Dictionary["floorPage"];
+  t: FloorText;
 };
 
 /** Dark card above the pointer, as on the Floor 7 frame; desktop only, phones open the residence on tap. */
@@ -30,11 +29,11 @@ export function PlanHoverCard({ residence, point, t }: PlanHoverCardProps) {
         className="pointer-events-none absolute z-10 hidden w-max -translate-x-1/2 -translate-y-[calc(100%+17px)] animate-fade-in flex-col gap-1 rounded-base bg-card px-6 py-4 lg:flex"
         style={style}
       >
-        <p className="text-label text-primary">{fillTemplate(t.residence, { number: residence.number })}</p>
+        <p className="text-label text-primary">{fillTemplate(t.floorPage.residence, { number: residence.number })}</p>
         <p className="text-body text-foreground">{typeAreaText(residence, t)}</p>
-        {residence.isPenthouse && <p className="text-caption text-muted-foreground">{t.penthouse}</p>}
+        {residence.isPenthouse && <p className="text-caption text-muted-foreground">{t.floorPage.penthouse}</p>}
         <p className="text-body-l text-foreground">{formatPrice(residence.priceUsd)}</p>
-        <p className="text-caption text-muted-foreground">{isOpenable(residence) ? t.clickToOpen : t.notForSale}</p>
+        <p className="text-caption text-muted-foreground">{isOpenable(residence) ? t.floorPage.clickToOpen : t.floorPage.notForSale}</p>
       </div>
     </>
   );

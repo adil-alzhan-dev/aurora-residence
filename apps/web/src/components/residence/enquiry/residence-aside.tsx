@@ -3,8 +3,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
+import { areaText } from "../../residences/floor/residence-text";
 import { capitalize, sideViewText } from "../../residences/list/list-text";
 import { ResidenceDrawing } from "../plan/plan-drawing";
 
@@ -20,7 +21,7 @@ export function ResidenceAside({ residence, t, note }: ResidenceAsideProps) {
   const page = t.residencePage;
   const specs = [
     { label: page.bedrooms, value: residence.bedrooms === 0 ? t.floorPage.studio : String(residence.bedrooms) },
-    { label: page.area, value: `${formatArea(residence.areaM2)} m²` },
+    { label: page.area, value: areaText(residence, t) },
     { label: page.floor, value: fillTemplate(page.floorOf, { floor: residence.floor, total: FLOOR_COUNT }) },
     { label: page.view, value: capitalize(sideViewText(residence, t.list)) },
   ];

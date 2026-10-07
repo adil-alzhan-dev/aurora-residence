@@ -1,9 +1,12 @@
 import { ArrowRightIcon } from "@/components/icons";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate, formatDecimal } from "@/lib/format";
 import type { Room } from "@/lib/residence-layouts";
 import { cn } from "@/lib/utils";
+
+import { areaLabel } from "../../residences/floor/residence-text";
+import { viewText } from "../../residences/list/list-text";
 
 import { PlanDimensions } from "./plan-dimensions";
 import { planAspect, ResidenceDrawing, wallPad } from "./plan-drawing";
@@ -12,16 +15,16 @@ import { planGeometry, toPlan } from "./plan-geometry";
 type ResidencePlanProps = {
   residence: Residence;
   layout: { rooms: Room[]; widthM: number; depthM: number; ceilingM: number; terraceM2: number | null };
-  t: Dictionary["residencePage"];
-  sides: Dictionary["list"]["sides"];
+  t: Pick<Dictionary, "residencePage" | "list" | "floorPage" | "locale">;
 };
-
-const areaText = (areaM2: number) => `${formatArea(areaM2)} m²`;
 
 const COMPACT_WIDTH_M = 12;
 const SMALL_ROOM_M2 = 8;
 
-export function ResidencePlan({ residence, layout, t, sides }: ResidencePlanProps) {
+export function ResidencePlan({ residence, layout, t: dictionary }: ResidencePlanProps) {
+  const t = dictionary.residencePage;
+  const areaText = (areaM2: number) => areaLabel(areaM2, dictionary);
+  const metres = (value: number) => fillTemplate(t.plan.dimension, { value: formatDecimal(value, dictionary.locale.intl) });
   const geometry = planGeometry[residence.position];
   if (!geometry) return null;
   const pad = wallPad(geometry);
@@ -99,12 +102,16 @@ export function ResidencePlan({ residence, layout, t, sides }: ResidencePlanProp
             {t.plan.entrance}
             <ArrowRightIcon className={cn("text-foreground", entranceOnTop ? "rotate-90" : "-rotate-90")} />
           </p>
-          <PlanDimensions width={layout.widthM} depth={layout.depthM} padPercent={toPercent({ x: 0, y: 0 })} />
+          <PlanDimensions
+            width={metres(layout.widthM)}
+            depth={metres(layout.depthM)}
+            padPercent={toPercent({ x: 0, y: 0 })}
+          />
         </div>
       </div>
 
       <div className="flex flex-col gap-1 px-4 text-caption text-muted-foreground lg:flex-row lg:items-center lg:justify-between lg:px-0">
-        <p>{fillTemplate(t.plan.windows, { side: sides[residence.side], view: residence.view.toLowerCase() })}</p>
+        <p>{fillTemplate(t.plan.windows, { side: dictionary.list.sides[residence.side], view: viewText(residence, dictionary.list) })}</p>
         {smallRooms.length > 0 && (
           <p className="lg:hidden">
             {smallRooms.map((room) => `${t.rooms[room.name]} ${areaText(room.areaM2)}`).join("  ·  ")}
@@ -113,7 +120,7 @@ export function ResidencePlan({ residence, layout, t, sides }: ResidencePlanProp
         {layout.terraceM2 !== null && (
           <p>{fillTemplate(t.plan.terrace, { area: areaText(layout.terraceM2) })}</p>
         )}
-        <p className="hidden lg:block">{fillTemplate(t.plan.ceiling, { height: layout.ceilingM.toFixed(1) })}</p>
+        <p className="hidden lg:block">{fillTemplate(t.plan.ceiling, { height: formatDecimal(layout.ceilingM, dictionary.locale.intl) })}</p>
       </div>
     </section>
   );

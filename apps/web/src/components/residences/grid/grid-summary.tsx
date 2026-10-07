@@ -19,7 +19,7 @@ type GridSummaryProps = {
   filters: ResidenceFilters;
   priceRange: PriceRange | null;
   listHref: string;
-  t: Pick<Dictionary, "grid" | "filters" | "floorPage" | "status">;
+  t: Pick<Dictionary, "grid" | "filters" | "floorPage" | "status" | "locale">;
 };
 
 const statuses: ResidenceStatus[] = ["available", "reserved", "sold"];

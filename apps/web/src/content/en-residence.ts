@@ -53,6 +53,7 @@ export const residenceEn = {
       entrance: "Entrance",
       windows: "Windows face {side}, onto the {view}",
       ceiling: "Ceiling height {height} m",
+      dimension: "{value} m",
       terrace: "Terrace {area} on the roof, not shown on the plan",
       rooms: "Rooms",
     },

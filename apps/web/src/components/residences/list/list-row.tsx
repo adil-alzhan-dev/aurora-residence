@@ -16,7 +16,7 @@ import { areaText, bedroomsText, isOpenable } from "../floor/residence-text";
 import { descriptionText } from "./list-text";
 import { MiniPlan } from "./mini-plan";
 
-export type ListRowText = Pick<Dictionary, "list" | "floorPage" | "status">;
+export type ListRowText = Pick<Dictionary, "list" | "floorPage" | "status" | "locale">;
 
 type ListRowProps = {
   residence: Residence;
@@ -57,7 +57,7 @@ export function ListRow({ residence, t }: ListRowProps) {
       </td>
       <td className={cell}>{fillTemplate(t.floorPage.floorOf, { floor: residence.floor, total: FLOOR_COUNT })}</td>
       <td className={cell}>{bedroomsText(residence, t.floorPage)}</td>
-      <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t.floorPage)}</td>
+      <td className={cn(cell, "whitespace-nowrap")}>{areaText(residence, t)}</td>
       <td className={cn(cell, "text-body-l whitespace-nowrap")}>{formatPrice(residence.priceUsd)}</td>
       <td className={cell}>
         <StatusBadge status={residence.status} label={t.status[residence.status]} />

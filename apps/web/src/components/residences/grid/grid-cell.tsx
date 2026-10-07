@@ -9,12 +9,12 @@ import type { Residence, ResidenceStatus } from "@/lib/api/residences";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-import { areaText, isOpenable, typeAreaText } from "../floor/residence-text";
+import { areaText, isOpenable, typeAreaText, type FloorText } from "../floor/residence-text";
 
 type GridCellProps = {
   residence: Residence;
   matches: boolean;
-  t: Pick<Dictionary, "grid" | "floorPage" | "filters" | "status">;
+  t: Pick<Dictionary, "grid" | "floorPage" | "filters" | "status" | "locale">;
 };
 
 const tone: Record<ResidenceStatus, { idle: string; hover: string }> = {
@@ -37,7 +37,7 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
   const openable = isOpenable(residence);
   const info = fillTemplate(t.grid.info, {
     bedrooms: t.filters.bedroomOptions[residence.bedrooms] ?? "",
-    area: areaText(residence, t.floorPage),
+    area: areaText(residence, t),
   });
   const className = cn(
     "group/cell relative flex h-full min-h-[98px] flex-col justify-center gap-1 rounded-base p-3 transition-colors duration-200",
@@ -67,20 +67,20 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
       prefetch={false}
       aria-label={fillTemplate(t.grid.cellLabel, {
         number: residence.number,
-        type: typeAreaText(residence, t.floorPage),
+        type: typeAreaText(residence, t),
         price: formatPrice(residence.priceUsd),
         status: t.status[residence.status],
       })}
       className={className}
     >
       {content}
-      <GridTooltip residence={residence} t={t.floorPage} />
+      <GridTooltip residence={residence} t={t} />
     </Link>
   );
 }
 
 /** Dark card beside the hovered or focused cell, as on the Floor grid frame; the first column opens it to the right. */
-function GridTooltip({ residence, t }: { residence: Residence; t: Dictionary["floorPage"] }) {
+function GridTooltip({ residence, t }: { residence: Residence; t: FloorText }) {
   const { formatPrice } = useCurrency();
   return (
     <span
@@ -91,11 +91,11 @@ function GridTooltip({ residence, t }: { residence: Residence; t: Dictionary["fl
         residence.position === 1 ? "left-[calc(100%+8px)]" : "right-[calc(100%+8px)]",
       )}
     >
-      <span className="text-label text-primary">{fillTemplate(t.residence, { number: residence.number })}</span>
+      <span className="text-label text-primary">{fillTemplate(t.floorPage.residence, { number: residence.number })}</span>
       <span className="text-body text-foreground">{typeAreaText(residence, t)}</span>
-      {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.penthouse}</span>}
+      {residence.isPenthouse && <span className="text-caption text-muted-foreground">{t.floorPage.penthouse}</span>}
       <span className="text-body-l text-foreground">{formatPrice(residence.priceUsd)}</span>
-      <span className="text-caption text-muted-foreground">{t.clickToOpen}</span>
+      <span className="text-caption text-muted-foreground">{t.floorPage.clickToOpen}</span>
     </span>
   );
 }

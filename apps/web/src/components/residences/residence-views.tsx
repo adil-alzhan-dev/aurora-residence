@@ -44,7 +44,7 @@ export function ResidenceViews({ view, data, filters, sort, keep, t }: Residence
 
   // A new sort or filter starts the list again from its first page.
   const listKey = `${filtersToSearch(filters)}${sort}`;
-  const listText = { list: t.list, floorPage: t.floorPage, status: t.status };
+  const listText = { list: t.list, floorPage: t.floorPage, status: t.status, locale: t.locale };
 
   return (
     <>

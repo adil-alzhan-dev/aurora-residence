@@ -2,6 +2,7 @@ import { CurrencyText } from "@/components/currency/currency-text";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { fillTemplate, padNumber } from "@/lib/format";
+import { plural } from "@/lib/plural";
 import { activeFilterCount, matchesFilters, type ResidenceFilters } from "@/lib/residence-filters";
 
 import type { PriceRange } from "../filters/filter-fields";
@@ -15,7 +16,7 @@ type FloorGridProps = {
   filters: ResidenceFilters;
   priceRange: PriceRange | null;
   listHref: string;
-  t: Pick<Dictionary, "grid" | "filters" | "floorPage" | "status">;
+  t: Pick<Dictionary, "grid" | "filters" | "floorPage" | "status" | "locale">;
 };
 
 function groupByFloor(residences: Residence[]) {
@@ -36,7 +37,7 @@ export function FloorGrid({ residences, matching, filters, priceRange, listHref,
     <div className="container-page grid gap-8 pt-16 pb-24 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="flex flex-col gap-2">
         <table className="-m-2 w-[calc(100%+1rem)] table-fixed border-separate border-spacing-2">
-          <caption className="sr-only">{fillTemplate(t.grid.title, { count: residences.length })}</caption>
+          <caption className="sr-only">{fillTemplate(plural(residences.length, t.grid.title, t.locale.intl), { count: residences.length })}</caption>
           <thead>
             <tr className="text-label text-muted-foreground">
               <th scope="col" className="w-14 pb-2 text-left font-semibold">
