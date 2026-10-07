@@ -1,10 +1,11 @@
+import { DEFAULT_LOCALE, type Locale } from "@/lib/locale";
+
 import { en, type Dictionary } from "./en";
+import { ru } from "./ru";
 
-export type Locale = "en";
+const dictionaries: Record<Locale, Dictionary> = { en, ru };
 
-const dictionaries: Record<Locale, Dictionary> = { en };
-
-export function getDictionary(locale: Locale = "en"): Dictionary {
+export function getDictionary(locale: Locale = DEFAULT_LOCALE): Dictionary {
   return dictionaries[locale];
 }
 
