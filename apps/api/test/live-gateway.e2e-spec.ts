@@ -1,3 +1,4 @@
+import type { IncomingMessage } from 'node:http';
 import type { INestApplication } from '@nestjs/common';
 import { LiveGateway, MAX_CONNECTIONS_PER_IP } from '../src/live/live.gateway.js';
 import { LiveService } from '../src/live/live.service.js';
@@ -129,6 +130,31 @@ describe('Live socket (e2e)', () => {
 
     for (let i = 0; i < MAX_CONNECTIONS_PER_IP; i += 1) await connect(fromIp(ip));
     expect(gateway.slotsInUse(ip)).toBe(MAX_CONNECTIONS_PER_IP);
+  });
+
+  it('frees the slot when TCP drops after the slot is reserved but before the upgrade', async () => {
+    const gateway = app.get(LiveGateway);
+    const ip = '203.0.113.11';
+    const withSlots = gateway as unknown as { reserveSlot(ip: string, request: IncomingMessage): boolean };
+    const reserve = withSlots.reserveSlot.bind(gateway);
+    const slotsWhenDropped: number[] = [];
+    const spy = jest.spyOn(withSlots, 'reserveSlot').mockImplementationOnce((address, request) => {
+      const reserved = reserve(address, request);
+      slotsWhenDropped.push(gateway.slotsInUse(address));
+      request.socket.destroy();
+      return reserved;
+    });
+
+    const raw = connectRaw(url, ip);
+    await within(raw.ended, 1000, 'Dropping the TCP connection');
+    spy.mockRestore();
+    expect(slotsWhenDropped).toEqual([1]);
+    expect(await Promise.race([raw.status, pause(0).then(() => 'no answer')])).toBe('no answer');
+    await waitFor(() => gateway.slotsInUse(ip) === 0 && gateway.connectionCount() === 0);
+
+    const again = await connect(fromIp(ip));
+    expect(again.socket.readyState).toBe(again.socket.OPEN);
+    expect(gateway.slotsInUse(ip)).toBe(1);
   });
 
   it('terminates clients that do not answer the ping', async () => {
