@@ -1,5 +1,6 @@
+import { randomBytes } from 'node:crypto';
 import type { Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
+import { type AddressInfo, connect } from 'node:net';
 import type { INestApplication } from '@nestjs/common';
 import WebSocket, { type ClientOptions } from 'ws';
 
@@ -45,3 +46,49 @@ export async function waitFor(check: () => boolean, timeoutMs = 2000): Promise<v
 }
 
 export const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export interface RawConnection {
+  /** The HTTP status line the server answered the handshake with. */
+  status: Promise<string>;
+  /** Resolves when the server ends or drops the TCP connection. */
+  ended: Promise<void>;
+  destroy: () => void;
+}
+
+/**
+ * A client on bare TCP that sends a valid upgrade request and then never writes
+ * again, so it ignores a Close frame the way a hostile client would.
+ */
+export function connectRaw(url: string, forwardedFor: string): RawConnection {
+  const { hostname, port, pathname } = new URL(url);
+  const socket = connect(Number(port), hostname);
+  socket.write(
+    [
+      `GET ${pathname} HTTP/1.1`,
+      `Host: ${hostname}:${port}`,
+      'Upgrade: websocket',
+      'Connection: Upgrade',
+      `Sec-WebSocket-Key: ${randomBytes(16).toString('base64')}`,
+      'Sec-WebSocket-Version: 13',
+      `Origin: ${ALLOWED_ORIGIN}`,
+      `X-Forwarded-For: ${forwardedFor}`,
+      '',
+      '',
+    ].join('\r\n'),
+  );
+  socket.on('error', () => undefined);
+  const status = new Promise<string>((resolve) =>
+    socket.once('data', (chunk: Buffer) => resolve(chunk.toString().split('\r\n')[0])),
+  );
+  const ended = new Promise<void>((resolve) => socket.once('close', () => resolve()));
+  return { status, ended, destroy: () => socket.destroy() };
+}
+
+/** Rejects if the promise has not settled within the given time. */
+export function within<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${what} did not happen within ${ms} ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}

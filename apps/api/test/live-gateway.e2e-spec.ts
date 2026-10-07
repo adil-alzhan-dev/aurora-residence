@@ -2,7 +2,15 @@ import type { INestApplication } from '@nestjs/common';
 import { LiveGateway, MAX_CONNECTIONS_PER_IP } from '../src/live/live.gateway.js';
 import { LiveService } from '../src/live/live.service.js';
 import { createTestApp, http, reseed } from './app.js';
-import { connectLive, listenForLive, pause, waitFor, type LiveConnection } from './live-client.js';
+import {
+  connectLive,
+  connectRaw,
+  listenForLive,
+  pause,
+  waitFor,
+  within,
+  type LiveConnection,
+} from './live-client.js';
 
 describe('Live socket (e2e)', () => {
   let app: INestApplication;
@@ -14,6 +22,7 @@ describe('Live socket (e2e)', () => {
     open.push(connection);
     return connection;
   };
+  const fromIp = (ip: string) => ({ headers: { 'X-Forwarded-For': ip } });
 
   beforeAll(async () => {
     reseed();
@@ -75,12 +84,10 @@ describe('Live socket (e2e)', () => {
   });
 
   it(`keeps at most ${MAX_CONNECTIONS_PER_IP} connections per client address`, async () => {
-    const fromIp = (ip: string) => ({ headers: { 'X-Forwarded-For': ip } });
     const first = [];
     for (let i = 0; i < MAX_CONNECTIONS_PER_IP; i += 1) first.push(await connect(fromIp('203.0.113.7')));
 
-    const extra = await connect(fromIp('203.0.113.7'));
-    expect(await extra.closed).toEqual({ code: 1008, reason: 'Too many connections from this address' });
+    await expect(connect(fromIp('203.0.113.7'))).rejects.toThrow('HTTP 429');
 
     // Only the address nginx appended counts, a spoofed first entry does not.
     const other = await connect(fromIp('203.0.113.7, 198.51.100.4'));
@@ -88,9 +95,40 @@ describe('Live socket (e2e)', () => {
 
     first[0].socket.close();
     await first[0].closed;
+    await waitFor(() => app.get(LiveGateway).slotsInUse('203.0.113.7') < MAX_CONNECTIONS_PER_IP);
     const again = await connect(fromIp('203.0.113.7'));
     await pause(50);
     expect(again.socket.readyState).toBe(again.socket.OPEN);
+  });
+
+  it('drops over-limit clients that ignore Close at the handshake and never leaks a slot', async () => {
+    const gateway = app.get(LiveGateway);
+    const ip = '203.0.113.9';
+    const regular: LiveConnection[] = [];
+    for (let i = 0; i < MAX_CONNECTIONS_PER_IP; i += 1) regular.push(await connect(fromIp(ip)));
+
+    for (const raw of [connectRaw(url, ip), connectRaw(url, ip), connectRaw(url, ip)]) {
+      await within(raw.ended, 1000, 'Closing the over-limit connection');
+      expect(await raw.status).toBe('HTTP/1.1 429 Too Many Requests');
+    }
+    expect(gateway.slotsInUse(ip)).toBe(MAX_CONNECTIONS_PER_IP);
+    expect(gateway.connectionCount()).toBe(MAX_CONNECTIONS_PER_IP);
+
+    gateway.broadcast('ping-all');
+    await waitFor(() => regular.every(({ messages }) => messages.includes('ping-all')));
+
+    for (const { socket } of regular) socket.terminate();
+    for (let i = 0; i < 3; i += 1) connectRaw(url, ip).destroy();
+    await waitFor(() => gateway.slotsInUse(ip) === 0 && gateway.connectionCount() === 0);
+
+    const accepted = connectRaw(url, ip);
+    expect(await accepted.status).toBe('HTTP/1.1 101 Switching Protocols');
+    expect(gateway.slotsInUse(ip)).toBe(1);
+    accepted.destroy();
+    await waitFor(() => gateway.slotsInUse(ip) === 0 && gateway.connectionCount() === 0);
+
+    for (let i = 0; i < MAX_CONNECTIONS_PER_IP; i += 1) await connect(fromIp(ip));
+    expect(gateway.slotsInUse(ip)).toBe(MAX_CONNECTIONS_PER_IP);
   });
 
   it('terminates clients that do not answer the ping', async () => {
