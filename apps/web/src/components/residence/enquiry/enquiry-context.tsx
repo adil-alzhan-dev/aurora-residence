@@ -19,14 +19,20 @@ type EnquiryProviderProps = {
 /**
  * One enquiry form per page: every "Request this residence" button opens it with the residence filled in.
  * A residence sold while the form is open closes it, as the page then offers no request at all.
+ * That close bypasses the dialog's own handler, so the dialog is mounted anew: a request still out
+ * keeps no "sending" lock and its late answer reaches only the form that is already gone.
  */
 export function EnquiryProvider({ residence, t, children }: EnquiryProviderProps) {
   const [open, setOpen] = useState(false);
-  if (open && residence.status === "sold") setOpen(false);
+  const [dialogKey, setDialogKey] = useState(0);
+  if (open && residence.status === "sold") {
+    setOpen(false);
+    setDialogKey((key) => key + 1);
+  }
   return (
     <OpenEnquiryContext value={() => setOpen(true)}>
       {children}
-      <EnquiryDialog open={open} onOpenChange={setOpen} residence={residence} t={t} />
+      <EnquiryDialog key={dialogKey} open={open} onOpenChange={setOpen} residence={residence} t={t} />
     </OpenEnquiryContext>
   );
 }

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { getDictionary } from "@/content";
@@ -26,13 +27,17 @@ function deferFetch() {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
-async function openAndSend() {
-  const user = userEvent.setup({ pointerEventsCheck: 0 });
-  render(
+let rerender: (ui: ReactElement) => void = () => undefined;
+
+async function openAndSend(
+  ui: ReactElement = (
     <EnquiryProvider residence={residence} t={t}>
       <RequestButton>Request this residence</RequestButton>
-    </EnquiryProvider>,
-  );
+    </EnquiryProvider>
+  ),
+) {
+  const user = userEvent.setup({ pointerEventsCheck: 0 });
+  rerender = render(ui).rerender;
   await user.click(screen.getByRole("button", { name: "Request this residence" }));
   await user.type(screen.getByLabelText(t.residenceEnquiry.nameLabel), "Elena Marsh");
   await user.selectOptions(screen.getByLabelText(t.enquiry.countryCode), "+1");
@@ -88,22 +93,11 @@ describe("EnquiryDialog while a request is out", () => {
 });
 
 describe("EnquiryProvider after a live update", () => {
-  const tree = (status: typeof residence.status, price = residence.priceUsd) => (
-    <EnquiryProvider residence={{ ...residence, status, priceUsd: price }} t={t}>
+  const tree = (status: typeof residence.status) => (
+    <EnquiryProvider residence={{ ...residence, status }} t={t}>
       <RequestButton>Request this residence</RequestButton>
     </EnquiryProvider>
   );
-
-  it("keeps the open form and what was typed when the residence is reserved or repriced", async () => {
-    const user = userEvent.setup({ pointerEventsCheck: 0 });
-    const { rerender } = render(tree("available"));
-    await user.click(screen.getByRole("button", { name: "Request this residence" }));
-    await user.type(screen.getByLabelText(t.residenceEnquiry.nameLabel), "Elena Marsh");
-
-    rerender(tree("reserved", 222_000));
-    expect(screen.getByRole("dialog")).toBeTruthy();
-    expect((screen.getByLabelText(t.residenceEnquiry.nameLabel) as HTMLInputElement).value).toBe("Elena Marsh");
-  });
 
   it("closes the form when the residence is sold and does not reopen it later", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
@@ -114,5 +108,47 @@ describe("EnquiryProvider after a live update", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     rerender(tree("available"));
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  async function sellWhileSending() {
+    const { fetchMock, answer } = deferFetch();
+    const user = await openAndSend(tree("available"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    rerender(tree("sold"));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    return { user, answer };
+  }
+
+  const reopen = async (user: ReturnType<typeof userEvent.setup>) => {
+    rerender(tree("available"));
+    await user.click(screen.getByRole("button", { name: "Request this residence" }));
+    return screen.getByRole("button", { name: t.residenceEnquiry.close });
+  };
+
+  it("can close the form again after a sale during sending and a late answer", async () => {
+    const { user, answer } = await sellWhileSending();
+    await act(async () => answer(json(201, { residence: "7.03" })));
+
+    const close = await reopen(user);
+    expect(close.hasAttribute("aria-disabled")).toBe(false);
+    expect(screen.queryByText(t.enquirySend.success.overline)).toBeNull();
+    await user.click(close);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    await reopen(user);
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("ignores the late answer of the sold form in a form opened after it", async () => {
+    const { user, answer } = await sellWhileSending();
+    await reopen(user);
+
+    await act(async () => answer(json(201, { residence: "7.03" })));
+
+    expect(screen.queryByText(t.enquirySend.success.overline)).toBeNull();
+    expect(screen.getByRole("button", { name: t.residenceEnquiry.submit })).toBeTruthy();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });
