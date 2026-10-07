@@ -16,7 +16,7 @@ export function useAdminEnquiries(filters: EnquiryFilters) {
   const path = enquiriesApiPath(filters);
   return useQuery({
     queryKey: adminKeys.enquiryList(path),
-    queryFn: () => adminApi.getJson(path, enquiryListSchema),
+    queryFn: ({ signal }) => adminApi.getJson(path, enquiryListSchema, signal),
     placeholderData: (previous) => previous,
   });
 }
@@ -31,7 +31,7 @@ export function useEnquiryCounts({ search, residence }: Pick<EnquiryFilters, "se
       const path = enquiryCountPath({ search, residence, status });
       return {
         queryKey: adminKeys.enquiryList(path),
-        queryFn: () => adminApi.getJson(path, enquiryListSchema),
+        queryFn: ({ signal }) => adminApi.getJson(path, enquiryListSchema, signal),
         placeholderData: <T>(previous: T) => previous,
       };
     }),
@@ -46,7 +46,7 @@ export function useEnquiryCounts({ search, residence }: Pick<EnquiryFilters, "se
 export function useEnquiryCard(id: number) {
   return useQuery({
     queryKey: adminKeys.enquiryCard(id),
-    queryFn: () => adminApi.getJson(enquiryPath(id), enquiryCardSchema),
+    queryFn: ({ signal }) => adminApi.getJson(enquiryPath(id), enquiryCardSchema, signal),
     enabled: Number.isInteger(id) && id > 0,
   });
 }

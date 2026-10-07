@@ -31,7 +31,7 @@ export const residencePath = (number: string) => `/api/admin/residences/${encode
 export function useMe() {
   return useQuery({
     queryKey: adminKeys.me,
-    queryFn: () => adminApi.getJson("/api/auth/me", meSchema),
+    queryFn: ({ signal }) => adminApi.getJson("/api/auth/me", meSchema, signal),
     staleTime: 5 * 60_000,
   });
 }
@@ -39,14 +39,14 @@ export function useMe() {
 export function useDashboardSummary() {
   return useQuery({
     queryKey: adminKeys.dashboard,
-    queryFn: () => adminApi.getJson("/api/admin/dashboard", dashboardSchema),
+    queryFn: ({ signal }) => adminApi.getJson("/api/admin/dashboard", dashboardSchema, signal),
   });
 }
 
 export function useAdminResidences(params: ListParams) {
   return useQuery({
     queryKey: adminKeys.residenceList(params),
-    queryFn: () => adminApi.getJson(residencesApiPath(params), residenceListSchema),
+    queryFn: ({ signal }) => adminApi.getJson(residencesApiPath(params), residenceListSchema, signal),
     placeholderData: (previous) => previous,
   });
 }
@@ -54,15 +54,15 @@ export function useAdminResidences(params: ListParams) {
 export function useResidenceCard(number: string) {
   return useQuery({
     queryKey: adminKeys.residenceCard(number),
-    queryFn: () => adminApi.getJson(residencePath(number), residenceCardSchema),
+    queryFn: ({ signal }) => adminApi.getJson(residencePath(number), residenceCardSchema, signal),
   });
 }
 
 export function useResidenceEnquiries(number: string) {
   return useQuery({
     queryKey: adminKeys.residenceEnquiries(number),
-    queryFn: () =>
-      adminApi.getJson(`/api/admin/enquiries?residence=${encodeURIComponent(number)}&limit=20`, enquiryListSchema),
+    queryFn: ({ signal }) =>
+      adminApi.getJson(`/api/admin/enquiries?residence=${encodeURIComponent(number)}&limit=20`, enquiryListSchema, signal),
   });
 }
 

@@ -32,6 +32,11 @@ export class SessionExpiredError extends AdminApiError {
   }
 }
 
+function withTimeout(signal: AbortSignal | null | undefined) {
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
 type AdminApiOptions = {
   fetchImpl?: typeof fetch;
   onSessionExpired: () => void;
@@ -104,7 +109,7 @@ export function createAdminApi({
       ...init,
       headers,
       credentials: "same-origin",
-      signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: withTimeout(init.signal),
     });
   }
 
@@ -127,8 +132,13 @@ export function createAdminApi({
     return retried;
   }
 
-  async function getJson<Schema extends z.ZodType>(path: string, schema: Schema): Promise<z.infer<Schema>> {
-    const response = await request(path);
+  /** `signal` is React Query's: a cancelled query aborts its fetch instead of letting it finish. */
+  async function getJson<Schema extends z.ZodType>(
+    path: string,
+    schema: Schema,
+    signal?: AbortSignal,
+  ): Promise<z.infer<Schema>> {
+    const response = await request(path, { signal });
     if (!response.ok) throw new AdminApiError(response.status);
     const parsed = schema.safeParse(await response.json());
     if (!parsed.success) throw new AdminApiError(response.status, `Unexpected answer from ${path}`);
