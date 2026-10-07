@@ -1,10 +1,13 @@
+"use client";
+
+import { useCurrency } from "@/components/currency/currency-provider";
 import { CurrencySwitcher } from "@/components/layout/settings-switchers";
 import { ButtonArrow } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
 import { calculateInstalments, DOWN_PAYMENT, TERM_MONTHS } from "@/lib/instalment";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +49,7 @@ export function ResidenceSpecs({ residence, ceilingM, t }: ResidenceSummaryProps
 }
 
 export function ResidencePrice({ residence, t }: Omit<ResidenceSummaryProps, "ceilingM">) {
+  const { formatPrice } = useCurrency();
   const text = t.residencePage;
   const sold = residence.status === "sold";
   const { monthly } = calculateInstalments(residence.priceUsd, DOWN_PAYMENT.initial, TERM_MONTHS.initial);
@@ -57,13 +61,13 @@ export function ResidencePrice({ residence, t }: Omit<ResidenceSummaryProps, "ce
         <CurrencySwitcher t={t} />
       </div>
       <p className={cn("text-stat whitespace-nowrap", sold ? "text-muted-foreground" : "text-foreground")}>
-        {formatUsd(residence.priceUsd)}
+        {formatPrice(residence.priceUsd)}
       </p>
       {!sold && (
         <p className="text-caption text-muted-foreground">
           {fillTemplate(text.pricePerMetre, {
-            perMetre: formatUsd(residence.priceUsd / residence.areaM2),
-            monthly: formatUsd(monthly),
+            perMetre: formatPrice(residence.priceUsd / residence.areaM2),
+            monthly: formatPrice(monthly),
           })}
         </p>
       )}

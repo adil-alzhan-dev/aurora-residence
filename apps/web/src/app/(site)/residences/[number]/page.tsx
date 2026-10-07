@@ -15,7 +15,9 @@ import { facesPark, WindowView } from "@/components/residence/window-view";
 import { getDictionary } from "@/content";
 import { getResidence } from "@/lib/api/residences";
 import { parseResidenceParam } from "@/lib/building";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
+import { formatMoney } from "@/lib/money";
+import { getMoneySettings } from "@/lib/money-server";
 import { loadResidencePage } from "@/lib/residence-page-data";
 import { layoutOf } from "@/lib/residence-layouts";
 import { revealDelay } from "@/lib/motion";
@@ -24,7 +26,7 @@ const t = getDictionary("en");
 
 export async function generateMetadata({ params }: PageProps<"/residences/[number]">): Promise<Metadata> {
   const { number } = parseResidenceParam((await params).number);
-  const residence = await getResidence(number);
+  const [residence, money] = await Promise.all([getResidence(number), getMoneySettings()]);
   const text = t.residencePage;
   if (!residence) return { title: fillTemplate(text.metaTitleShort, { number }) };
 
@@ -34,7 +36,7 @@ export async function generateMetadata({ params }: PageProps<"/residences/[numbe
     type: t.floorPage.typeNames[residence.bedrooms] ?? "",
     area: `${formatArea(residence.areaM2)} m²`,
     view: residence.view.toLowerCase(),
-    price: formatUsd(residence.priceUsd),
+    price: formatMoney(residence.priceUsd, money),
   };
   const description = residence.status === "sold" ? text.metaDescriptionSold : text.metaDescription;
   return { title: fillTemplate(text.metaTitle, values), description: fillTemplate(description, values) };

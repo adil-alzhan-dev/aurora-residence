@@ -1,6 +1,9 @@
+"use client";
+
+import { useCurrency } from "@/components/currency/currency-provider";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
-import { fillTemplate, formatUsd } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
 
 import { RequestButton } from "./enquiry/enquiry-context";
 
@@ -11,6 +14,7 @@ type StickyRequestBarProps = {
 
 /** Phones only: the request button stays at the bottom of the screen while the page scrolls. */
 export function StickyRequestBar({ residence, t }: StickyRequestBarProps) {
+  const { formatPrice } = useCurrency();
   return (
     <div
       data-sticky-request
@@ -20,7 +24,7 @@ export function StickyRequestBar({ residence, t }: StickyRequestBarProps) {
         <span className="text-caption text-muted-foreground">
           {fillTemplate(t.residenceShort, { number: residence.number })}
         </span>
-        <span className="text-body-l whitespace-nowrap text-foreground">{formatUsd(residence.priceUsd)}</span>
+        <span className="text-body-l whitespace-nowrap text-foreground">{formatPrice(residence.priceUsd)}</span>
       </p>
       <RequestButton className="flex-1 px-4">{t.request}</RequestButton>
     </div>

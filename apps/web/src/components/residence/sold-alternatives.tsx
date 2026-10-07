@@ -1,11 +1,14 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ArrowRightIcon } from "@/components/icons";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
 import { residenceHref, residencesViewHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
 
 import { bedroomsShortText } from "../residences/floor/residence-text";
 
@@ -18,6 +21,7 @@ type SoldAlternativesProps = {
 
 /** A sold residence has no request button: it points to what can still be bought, on this floor first. */
 export function SoldAlternatives({ floor, floorResidences, similar, t }: SoldAlternativesProps) {
+  const { formatPrice } = useCurrency();
   const text = t.residencePage;
   const onFloor = floorResidences.filter((residence) => residence.status === "available");
   const [title, options] =
@@ -47,7 +51,7 @@ export function SoldAlternatives({ floor, floorResidences, similar, t }: SoldAlt
                     </span>
                   </span>
                   <span className="flex items-center gap-3 whitespace-nowrap">
-                    {formatUsd(residence.priceUsd)}
+                    {formatPrice(residence.priceUsd)}
                     <ArrowRightIcon className="transition-transform duration-200 group-hover:translate-x-1" />
                   </span>
                 </Link>

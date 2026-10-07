@@ -1,8 +1,9 @@
+import { useCurrency } from "@/components/currency/currency-provider";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
 
 import { capitalize, sideViewText } from "../../residences/list/list-text";
 import { ResidenceDrawing } from "../plan/plan-drawing";
@@ -15,6 +16,7 @@ type ResidenceAsideProps = {
 
 /** Desktop modal only; phones show ResidenceCard instead. */
 export function ResidenceAside({ residence, t, note }: ResidenceAsideProps) {
+  const { formatPrice } = useCurrency();
   const page = t.residencePage;
   const specs = [
     { label: page.bedrooms, value: residence.bedrooms === 0 ? t.floorPage.studio : String(residence.bedrooms) },
@@ -43,7 +45,7 @@ export function ResidenceAside({ residence, t, note }: ResidenceAsideProps) {
           </div>
         ))}
       </dl>
-      <p className="text-fact text-foreground">{formatUsd(residence.priceUsd)}</p>
+      <p className="text-fact text-foreground">{formatPrice(residence.priceUsd)}</p>
     </aside>
   );
 }

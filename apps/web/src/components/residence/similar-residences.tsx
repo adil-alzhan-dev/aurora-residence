@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 
+import { useCurrency } from "@/components/currency/currency-provider";
 import { ButtonArrow, Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RevealSection } from "@/components/motion/reveal-section";
@@ -7,7 +10,7 @@ import type { Dictionary } from "@/content";
 import { residenceHref, residencesViewHref } from "@/content/navigation";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
 
 import { ResidenceCard } from "../residences/list/residence-card";
 import { capitalize, sideViewText } from "../residences/list/list-text";
@@ -20,6 +23,7 @@ type SimilarResidencesProps = {
 
 /** Apartment Card from Figma: the whole card opens the residence, hover draws the bronze hairline. */
 function ApartmentCard({ residence, t }: { residence: Residence; t: Dictionary }) {
+  const { formatPrice } = useCurrency();
   const specs = [
     { label: t.residencePage.area, value: `${formatArea(residence.areaM2)} m²` },
     { label: t.residencePage.floor, value: fillTemplate(t.residencePage.floorOf, { floor: residence.floor, total: FLOOR_COUNT }) },
@@ -53,7 +57,7 @@ function ApartmentCard({ residence, t }: { residence: Residence; t: Dictionary }
       </dl>
       <span aria-hidden="true" className="h-px bg-border" />
       <span className="flex items-center justify-between gap-4">
-        <span className="text-fact">{formatUsd(residence.priceUsd)}</span>
+        <span className="text-fact">{formatPrice(residence.priceUsd)}</span>
         <span className="flex items-center gap-3 text-label transition-colors duration-200 group-hover:text-primary">
           {t.residencePage.similar.details}
           <ButtonArrow />

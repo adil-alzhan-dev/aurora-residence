@@ -1,8 +1,11 @@
+"use client";
+
+import { useCurrency } from "@/components/currency/currency-provider";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
 import type { Residence } from "@/lib/api/residences";
 import { FLOOR_COUNT } from "@/lib/building";
-import { fillTemplate, formatArea, formatUsd } from "@/lib/format";
+import { fillTemplate, formatArea } from "@/lib/format";
 
 import { bedroomsShortText } from "../../residences/floor/residence-text";
 import { ResidenceDrawing } from "../plan/plan-drawing";
@@ -15,6 +18,7 @@ type ResidenceCardProps = {
 
 /** The residence in one line for phones, above the form and on the success screen. */
 export function ResidenceCard({ residence, t, note }: ResidenceCardProps) {
+  const { formatPrice } = useCurrency();
   return (
     <div className="flex items-center gap-4 rounded-base border border-border bg-card py-3 pr-4 pl-3 lg:hidden">
       <span className="flex h-16 w-20 shrink-0 items-center justify-center bg-background p-2">
@@ -31,7 +35,7 @@ export function ResidenceCard({ residence, t, note }: ResidenceCardProps) {
             area: `${formatArea(residence.areaM2)} m²`,
             floor: residence.floor,
             total: FLOOR_COUNT,
-            price: formatUsd(residence.priceUsd),
+            price: formatPrice(residence.priceUsd),
           })}
         </span>
         {note && <span className="text-caption text-foreground">{note}</span>}
