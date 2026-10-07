@@ -37,6 +37,20 @@ function withTimeout(signal: AbortSignal | null | undefined) {
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
+/**
+ * Stops waiting when `signal` aborts, but leaves `promise` itself running: a shared refresh
+ * is still needed by the other requests waiting on it.
+ */
+function untilAborted<T>(promise: Promise<T>, signal: AbortSignal | null | undefined): Promise<T> {
+  if (!signal) return promise;
+  signal.throwIfAborted();
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason);
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
+  });
+}
+
 type AdminApiOptions = {
   fetchImpl?: typeof fetch;
   onSessionExpired: () => void;
@@ -113,18 +127,26 @@ export function createAdminApi({
     });
   }
 
+  /**
+   * A fetch can resolve with 401 just before React Query cancels the query, so the signal is
+   * checked after every wait: a cancelled request never refreshes, retries or expires the session.
+   */
   async function request(path: string, init: RequestInit = {}): Promise<Response> {
+    const { signal } = init;
     const tokenUsed = accessToken;
     const first = await send(path, init, tokenUsed);
+    signal?.throwIfAborted();
     if (first.status !== 401) return first;
 
     // Another request may have refreshed while this one was in flight.
-    const token = accessToken && accessToken !== tokenUsed ? accessToken : await refresh();
+    const token = accessToken && accessToken !== tokenUsed ? accessToken : await untilAborted(refresh(), signal);
+    signal?.throwIfAborted();
     if (!token) {
       expire();
       throw new SessionExpiredError();
     }
     const retried = await send(path, init, token);
+    signal?.throwIfAborted();
     if (retried.status === 401) {
       expire();
       throw new SessionExpiredError();
