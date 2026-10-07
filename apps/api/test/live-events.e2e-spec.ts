@@ -1,9 +1,9 @@
-import type { INestApplication } from '@nestjs/common';
+import { ConflictException, type INestApplication } from '@nestjs/common';
 import { LiveService } from '../src/live/live.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { ReservationsService } from '../src/reservations/reservations.service.js';
 import { createTestApp, http, reseed, signIn } from './app.js';
-import { connectLive, listenForLive, waitFor, type LiveConnection } from './live-client.js';
+import { connectLive, listenForLive, pause, waitFor, type LiveConnection } from './live-client.js';
 
 interface Published {
   number: string;
@@ -94,17 +94,34 @@ describe('residence.updated events (e2e)', () => {
     expect(published).toEqual([]);
   });
 
-  it('publishes nothing when the transaction is rolled back', async () => {
-    // The price is written first, then the status check fails and undoes it.
+  it('publishes nothing and keeps the old price when the transaction is rolled back', async () => {
+    const reservations = app.get(ReservationsService);
+    const changeStatus = reservations.changeStatus.bind(reservations);
+    // Fails after the price, its history entry and the status change are all written.
+    const spy = jest.spyOn(reservations, 'changeStatus').mockImplementationOnce(async (tx, request) => {
+      await changeStatus(tx, request);
+      throw new ConflictException('Simulated failure at the end of the transaction');
+    });
+    const before = await prisma.residence.findUniqueOrThrow({
+      where: { number: '7.06' },
+      select: { id: true, priceUsd: true, status: true, _count: { select: { activity: true } } },
+    });
+
     await http(app)
       .patch('/api/admin/residences/7.06')
       .set(admin())
-      .send({ priceUsd: 999000, status: 'RESERVED' })
-      .expect(400);
-    const elena = await enquiryId('Elena Marsh');
-    await http(app).post('/api/admin/residences/6.01/reserve').set(admin()).send({ enquiryId: elena }).expect(400);
+      .send({ priceUsd: 999000, status: 'SOLD' })
+      .expect(409);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
 
-    expect((await prisma.residence.findUniqueOrThrow({ where: { number: '7.06' } })).priceUsd).toBe(318000);
+    const after = await prisma.residence.findUniqueOrThrow({
+      where: { number: '7.06' },
+      select: { id: true, priceUsd: true, status: true, _count: { select: { activity: true } } },
+    });
+    expect(after).toEqual(before);
+    expect(before.priceUsd).toBe(318000);
+    await pause(100);
     expect(published).toEqual([]);
     expect(live.messages).toEqual([]);
   });
