@@ -64,7 +64,7 @@ export function Switcher<T extends string>({
             disabled={option.disabled}
             onClick={() => select(option.value)}
             className={cn(
-              "flex items-center border-b px-3 py-3.5 text-label transition-colors duration-200 lg:py-2",
+              "flex items-center border-b px-3 py-3.5 text-label whitespace-nowrap transition-colors duration-200 lg:py-2",
               isSelected ? "text-foreground" : "text-muted-foreground hover:border-border hover:text-foreground",
               isSelected && !indicator ? "border-primary" : "border-transparent",
               "disabled:pointer-events-none disabled:text-disabled-foreground",
