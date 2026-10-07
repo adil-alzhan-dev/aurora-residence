@@ -121,7 +121,7 @@ export const residencesRu: typeof residencesEn = {
     anyFloor: "Любой этаж",
     floorOption: "Этаж {floor}",
     resultAll: "Свободно {available} из {total}",
-    resultFiltered: "Подходят {matching} из {total}, свободно {available}",
+    resultFiltered: "{matching} из {total}, свободно {available}",
     reset: "Сбросить",
     open: "Фильтры",
     openWithCount: "Фильтры · {count}",
