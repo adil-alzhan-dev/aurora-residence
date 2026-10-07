@@ -1,13 +1,19 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { invalidateAllResidences, invalidateResidence, useAdminLiveSync } from "./live-sync";
-import { adminKeys } from "./queries";
+import { useAdminLiveSync } from "./live-sync";
+import { useDashboardSummary, useInvalidateAdminData } from "./queries";
+import { adminApi } from "./session";
 
-vi.mock("./session", () => ({ adminApi: {} }));
+const fetchMock = vi.hoisted(() => vi.fn<typeof fetch>());
+
+vi.mock("./session", async () => {
+  const { createAdminApi } = await import("./api-client");
+  return { adminApi: createAdminApi({ fetchImpl: fetchMock, onSessionExpired: () => {} }) };
+});
 
 class FakeSocket {
   static all: FakeSocket[] = [];
@@ -21,75 +27,106 @@ class FakeSocket {
   close() {}
 }
 
-const keys = {
-  me: adminKeys.me,
-  dashboard: adminKeys.dashboard,
-  list: adminKeys.residenceList({ search: "", floor: null }),
-  floorList: adminKeys.residenceList({ search: "", floor: 7 }),
-  card703: adminKeys.residenceCard("7.03"),
-  card704: adminKeys.residenceCard("7.04"),
-  enquiryCard: adminKeys.enquiryCard(3),
-  enquiryList: adminKeys.enquiryList("/api/admin/enquiries"),
+const latestSocket = () => FakeSocket.all[FakeSocket.all.length - 1];
+
+const dashboard = {
+  residences: { AVAILABLE: 40, RESERVED: 4, SOLD: 20, total: 64 },
+  enquiries: { total: 9, new: 2, newToday: 1 },
+  facade: [],
+  reservations: [],
+  latestEnquiries: [],
 };
 
-function seededClient() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } });
-  for (const key of Object.values(keys)) queryClient.setQueryData(key, {});
-  return queryClient;
+const update = (number: string) => ({
+  data: JSON.stringify({
+    type: "residence.updated",
+    residence: { number, floor: 7, status: "RESERVED", priceUsd: 218000, updatedAt: "2026-10-07T09:12:00.000Z" },
+  }),
+});
+
+const dashboardRequests = () => fetchMock.mock.calls.filter(([input]) => input === "/api/admin/dashboard").length;
+
+/** Longer than the batch window plus the refetch, so a second read would have started by then. */
+const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+
+async function renderAdmin() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  const view = renderHook(
+    () => {
+      useAdminLiveSync();
+      return { summary: useDashboardSummary(), invalidate: useInvalidateAdminData() };
+    },
+    { wrapper },
+  );
+  await waitFor(() => expect(view.result.current.summary.isSuccess).toBe(true));
+  act(() => latestSocket().onopen?.());
+  fetchMock.mockClear();
+  getJson.mockClear();
+  return view;
 }
 
-const stale = (queryClient: QueryClient) =>
-  Object.entries(keys)
-    .filter(([, key]) => queryClient.getQueryState(key)?.isInvalidated)
-    .map(([name]) => name);
-
-describe("invalidateResidence", () => {
-  it("marks the residence card, the lists, the dashboard and the enquiries stale, nothing else", async () => {
-    const queryClient = seededClient();
-    await invalidateResidence(queryClient, "7.03");
-    expect(stale(queryClient)).toEqual(["dashboard", "list", "floorList", "card703", "enquiryCard", "enquiryList"]);
-  });
-});
-
-describe("invalidateAllResidences", () => {
-  it("marks every residence and enquiry query and the dashboard stale, but not the session", async () => {
-    const queryClient = seededClient();
-    await invalidateAllResidences(queryClient);
-    expect(stale(queryClient)).toEqual(Object.keys(keys).filter((name) => name !== "me"));
-  });
-});
+const getJson = vi.spyOn(adminApi, "getJson");
 
 describe("useAdminLiveSync", () => {
   beforeAll(() => vi.stubGlobal("WebSocket", FakeSocket));
   afterAll(() => vi.unstubAllGlobals());
+  beforeEach(() => {
+    fetchMock.mockReset();
+    fetchMock.mockImplementation(async () => Response.json(dashboard));
+  });
 
-  it("invalidates by the residence in each update and everything after a reconnect", () => {
-    vi.useFakeTimers();
-    const queryClient = seededClient();
-    const wrapper = ({ children }: { children: ReactNode }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-    const { unmount } = renderHook(() => useAdminLiveSync(), { wrapper });
-    const socket = () => FakeSocket.all[FakeSocket.all.length - 1];
-    act(() => socket().onopen?.());
+  it("reads the active dashboard once for ten updates in a row", async () => {
+    const { unmount } = await renderAdmin();
 
-    act(() =>
-      socket().onmessage?.({
-        data: JSON.stringify({
-          type: "residence.updated",
-          residence: { number: "7.04", floor: 7, status: "SOLD", priceUsd: 226000, updatedAt: "2026-10-07T09:12:00.000Z" },
-        }),
-      }),
-    );
-    expect(stale(queryClient)).toContain("card704");
-    expect(stale(queryClient)).not.toContain("card703");
+    act(() => {
+      for (let index = 1; index <= 10; index += 1) latestSocket().onmessage?.(update(`7.0${index % 6}`));
+    });
+    await settle();
 
-    act(() => socket().onclose?.());
-    act(() => vi.advanceTimersByTime(1200));
-    act(() => socket().onopen?.());
-    expect(stale(queryClient)).toContain("card703");
-
+    expect(getJson).toHaveBeenCalledTimes(1);
+    expect(dashboardRequests()).toBe(1);
     unmount();
-    vi.useRealTimers();
+  });
+
+  it("merges a resync after a reconnect into the batch it arrives in", async () => {
+    const { unmount } = await renderAdmin();
+    const before = latestSocket();
+    act(() => before.onclose?.());
+    await waitFor(() => expect(latestSocket()).not.toBe(before), { timeout: 2000 });
+
+    act(() => {
+      latestSocket().onmessage?.(update("7.03"));
+      latestSocket().onopen?.();
+    });
+    await settle();
+
+    expect(dashboardRequests()).toBe(1);
+    unmount();
+  });
+
+  it("reads once when the admin's own save and its live event arrive together", async () => {
+    const { result, unmount } = await renderAdmin();
+
+    await act(async () => {
+      const saved = result.current.invalidate();
+      latestSocket().onmessage?.(update("7.03"));
+      await saved;
+    });
+    await settle();
+
+    expect(dashboardRequests()).toBe(1);
+    unmount();
+  });
+
+  it("sends nothing after unmount for updates still waiting in the batch", async () => {
+    const { unmount } = await renderAdmin();
+    act(() => latestSocket().onmessage?.(update("7.03")));
+    unmount();
+    await settle();
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

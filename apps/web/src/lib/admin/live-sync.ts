@@ -1,37 +1,22 @@
 "use client";
 
-import { useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { useLiveEvents } from "@/lib/live/use-live";
 
-import { adminKeys } from "./queries";
+import { refreshBatchFor } from "./refresh-batch";
 
 /**
  * A residence changed somewhere: its card, every residence list and the dashboard read again.
- * Enquiry screens show the reservation state and the enquiry status a reservation moves, so they follow.
+ * Enquiry screens show the reservation state and the enquiry status a reservation moves, so they
+ * follow. After a reconnect anything may have changed while the socket was down.
  */
-export function invalidateResidence(queryClient: QueryClient, number: string) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: adminKeys.residenceCard(number) }),
-    queryClient.invalidateQueries({ queryKey: [...adminKeys.residences, "list"] }),
-    queryClient.invalidateQueries({ queryKey: adminKeys.dashboard }),
-    queryClient.invalidateQueries({ queryKey: adminKeys.enquiries }),
-  ]);
-}
-
-/** After a reconnect any residence may have changed while the socket was down. */
-export function invalidateAllResidences(queryClient: QueryClient) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: adminKeys.residences }),
-    queryClient.invalidateQueries({ queryKey: adminKeys.dashboard }),
-    queryClient.invalidateQueries({ queryKey: adminKeys.enquiries }),
-  ]);
-}
-
 export function useAdminLiveSync() {
-  const queryClient = useQueryClient();
+  const batch = refreshBatchFor(useQueryClient());
+  useEffect(() => () => batch.cancel(), [batch]);
   useLiveEvents({
-    onResidence: (residence) => void invalidateResidence(queryClient, residence.number),
-    onResync: () => void invalidateAllResidences(queryClient),
+    onResidence: (residence) => batch.residence(residence.number),
+    onResync: () => void batch.everything(),
   });
 }

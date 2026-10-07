@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { refreshBatchFor } from "./refresh-batch";
 import { residencesApiPath, type ResidenceFilters } from "./residence-filters";
 import {
   dashboardSchema,
@@ -66,15 +67,13 @@ export function useResidenceEnquiries(number: string) {
   });
 }
 
-/** After any change the cards, the lists and the dashboard ask the API again. */
+/**
+ * After any change the cards, the lists and the dashboard ask the API again. The live event about
+ * the same change usually arrives within the batch window, so both lead to a single read.
+ */
 export function useInvalidateAdminData() {
   const queryClient = useQueryClient();
-  return () =>
-    Promise.all([
-      queryClient.invalidateQueries({ queryKey: adminKeys.residences }),
-      queryClient.invalidateQueries({ queryKey: adminKeys.dashboard }),
-      queryClient.invalidateQueries({ queryKey: adminKeys.enquiries }),
-    ]);
+  return () => refreshBatchFor(queryClient).everything();
 }
 
 export type ResidenceChange = { priceUsd?: number; status?: AdminResidenceStatus; note?: string };
