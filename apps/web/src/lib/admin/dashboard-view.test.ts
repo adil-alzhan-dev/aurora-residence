@@ -32,14 +32,14 @@ describe("formatReceived", () => {
   it("says today and yesterday, then the date", () => {
     expect(formatReceived(new Date(2026, 9, 4, 11, 48), now, t, en)).toBe("Today, 11:48");
     expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, t, en)).toBe("Yesterday, 18:40");
-    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, t, en)).toBe("Oct 2, 09:05");
+    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, t, en)).toBe("Oct\u00a02, 09:05");
   });
 
   it("says the same in Russian", () => {
     const ru = adminFormat("ru-RU");
     expect(formatReceived(new Date(2026, 9, 4, 9, 2), now, adminRu.enquiries, ru)).toBe("Сегодня в 09:02");
     expect(formatReceived(new Date(2026, 9, 3, 18, 40), now, adminRu.enquiries, ru)).toBe("Вчера в 18:40");
-    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, adminRu.enquiries, ru)).toBe("2 окт., 09:05");
+    expect(formatReceived(new Date(2026, 9, 2, 9, 5), now, adminRu.enquiries, ru)).toBe("2\u00a0окт., 09:05");
   });
 });
 
@@ -50,7 +50,7 @@ describe("residenceDetails", () => {
       "Studio, 38.2 m², $95\u00a0000",
     );
     expect(residenceDetails(residence({}), adminRu.enquiries, adminFormat("ru-RU"))).toBe(
-      "2 сп., 84,2 м², 218\u00a0000\u00a0$",
+      "2 сп., 84,2\u00a0м², 218\u00a0000\u00a0$",
     );
   });
 });

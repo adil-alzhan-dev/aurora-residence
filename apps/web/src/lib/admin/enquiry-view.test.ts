@@ -37,7 +37,7 @@ describe("enquiry heading line", () => {
   it("marks an enquiry without a residence as general", () => {
     const card = { createdAt: new Date(2026, 9, 2, 16, 22), source: "Contacts form", residence: null };
     expect(receivedLine(card, now, adminEn.enquiry, en)).toBe(
-      `Received on Oct 2 at 16:22 ${adminEn.enquiry.general}`,
+      `Received on Oct\u00a02 at 16:22 ${adminEn.enquiry.general}`,
     );
   });
 });
@@ -98,6 +98,6 @@ describe("enquiry card in Russian", () => {
       ruTexts,
       ru,
     );
-    expect(line).toEqual({ text: "Квартира 7.03: Свободна  →  Бронь", note: "Бронь на 7 дней по заявке Elena Marsh" });
+    expect(line).toEqual({ text: "Квартира 7.03: Свободна  →  Бронь", note: "Бронь на 7\u00a0дней по заявке Elena Marsh" });
   });
 });

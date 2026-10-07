@@ -36,7 +36,7 @@ describe("apiMessageText", () => {
 describe("noteText", () => {
   it("translates notes the system writes", () => {
     expect(noteText("Reserved for 7 days, enquiry from Elena Marsh", ru, ruFormat)).toBe(
-      "Бронь на 7 дней по заявке Elena Marsh",
+      "Бронь на 7\u00a0дней по заявке Elena Marsh",
     );
     expect(noteText("Enquiry received from the site, residence 7.03 stays Available", ru, ruFormat)).toBe(
       "Заявка с сайта, квартира 7.03 остаётся свободной",

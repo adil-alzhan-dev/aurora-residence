@@ -30,7 +30,7 @@ export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: Admin
           {rows.map((row) => (
             <li key={row.number} className="flex min-h-10 items-center gap-3 border-b border-border py-2 sm:gap-0">
               <span className="w-12 shrink-0 text-admin-strong text-foreground sm:w-20">{row.number}</span>
-              <span className="min-w-0 flex-1 truncate text-admin-body text-foreground sm:w-50 sm:flex-none">
+              <span className="min-w-0 flex-1 truncate text-admin-body text-foreground wide:w-50 wide:flex-none">
                 {row.client ?? t.noClient}
               </span>
               <span className="hidden w-35 shrink-0 text-admin-body text-muted-foreground md:block">
@@ -38,7 +38,7 @@ export function ReservationsCard({ rows, t }: { rows: ReservationRow[]; t: Admin
               </span>
               <span
                 className={cn(
-                  "ml-auto shrink-0 whitespace-nowrap",
+                  "ml-auto shrink-0 whitespace-nowrap text-right sm:w-40",
                   row.endingSoon ? "text-admin-strong text-destructive" : "text-admin-caption text-muted-foreground",
                 )}
               >

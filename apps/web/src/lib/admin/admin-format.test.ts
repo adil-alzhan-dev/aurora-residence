@@ -23,13 +23,19 @@ describe("adminFormat", () => {
   });
 
   it("writes dates without the Russian year suffix, so they can end a sentence", () => {
-    expect(en.shortDate(date)).toBe("Oct 7");
-    expect(ru.shortDate(date)).toBe("7 окт.");
-    expect(en.longDate(date)).toBe("October 7, 2026");
-    expect(ru.longDate(date)).toBe("7 октября 2026");
-    expect(ru.day(date)).toBe("7 окт. 2026");
-    expect(en.dayTime(date)).toBe("Oct 7, 2026, 09:02");
-    expect(ru.dayTime(date)).toBe("7 окт. 2026, 09:02");
+    const spaced = (text: string) => text.replaceAll(NBSP, " ");
+    expect(spaced(en.shortDate(date))).toBe("Oct 7");
+    expect(spaced(ru.shortDate(date))).toBe("7 окт.");
+    expect(spaced(en.longDate(date))).toBe("October 7, 2026");
+    expect(spaced(ru.longDate(date))).toBe("7 октября 2026");
+    expect(spaced(ru.day(date))).toBe("7 окт. 2026");
+    expect(spaced(en.dayTime(date))).toBe("Oct 7, 2026, 09:02");
+    expect(spaced(ru.dayTime(date))).toBe("7 окт. 2026, 09:02");
+  });
+
+  it("keeps a date on one line", () => {
+    expect(ru.day(date)).toBe(`7${NBSP}окт.${NBSP}2026`);
+    expect(ru.dayTime(date)).toBe(`7${NBSP}окт.${NBSP}2026, 09:02`);
   });
 
   it("picks the word form for the count", () => {

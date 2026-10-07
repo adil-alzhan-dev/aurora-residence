@@ -85,7 +85,7 @@ export const enquiryRu: AdminDictionary["enquiry"] = {
   residence: {
     title: "Квартира",
     name: "Квартира {number}",
-    specs: "Этаж {floor}  ·  {bedrooms}  ·  {area} м²  ·  {price}",
+    specs: "Этаж {floor}  ·  {bedrooms}  ·  {area}\u00a0м²  ·  {price}",
     open: "Открыть квартиру {number}",
     reserve: "Забронировать на 7 дней",
     reserving: "Бронируем",

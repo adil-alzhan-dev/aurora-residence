@@ -3,14 +3,19 @@ import { plural, type PluralForms } from "@/lib/plural";
 
 const NBSP = " ";
 
+/** A date never breaks across lines: "14 окт. 2026", "Oct 14, 2026". */
+const keepTogether = (text: string) => text.replace(/\s/g, NBSP);
+
 /** Russian dates end with "г."; the admin stops at the year so a date can end a sentence. */
 function upToYear(format: Intl.DateTimeFormat, date: Date) {
   const parts = format.formatToParts(date);
   const year = parts.findIndex((part) => part.type === "year");
-  return parts
-    .slice(0, year === -1 ? parts.length : year + 1)
-    .map((part) => part.value)
-    .join("");
+  return keepTogether(
+    parts
+      .slice(0, year === -1 ? parts.length : year + 1)
+      .map((part) => part.value)
+      .join(""),
+  );
 }
 
 function createAdminFormat(intl: string) {
@@ -32,7 +37,7 @@ function createAdminFormat(intl: string) {
     price: (amountUsd: number) => money.format(Math.round(amountUsd)).replaceAll(",", NBSP),
     decimal: (value: number) => decimal.format(value),
     time: (date: Date) => time.format(date),
-    shortDate: (date: Date) => shortDate.format(date),
+    shortDate: (date: Date) => keepTogether(shortDate.format(date)),
     longDate: (date: Date) => upToYear(longDate, date),
     day: (date: Date) => upToYear(day, date),
     dayTime: (date: Date) => `${upToYear(day, date)}, ${time.format(date)}`,
