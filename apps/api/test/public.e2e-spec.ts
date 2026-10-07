@@ -67,9 +67,13 @@ describe('Public API (e2e)', () => {
 
   it('returns fixed currency rates', async () => {
     const response = await http(app).get('/api/rates').expect(200);
-    const body = response.body as { base: string; rates: { code: string }[] };
+    const body = response.body as { base: string; rates: { code: string; perUsd: number }[] };
     expect(body.base).toBe('USD');
-    expect(body.rates.map((r) => r.code).sort()).toEqual(['EUR', 'KZT', 'USD']);
+    expect(body.rates).toEqual([
+      { code: 'USD', perUsd: 1 },
+      { code: 'EUR', perUsd: 0.92 },
+      { code: 'KZT', perUsd: 505 },
+    ]);
   });
 
   describe('POST /api/enquiries', () => {
