@@ -29,7 +29,7 @@ export function FiltersBar({ filters, result, priceRange, keep, t }: FiltersProp
 
   return (
     <section aria-label={t.label} className="hidden border-y border-border lg:block">
-      <div className="container-page flex flex-wrap items-end gap-x-8 gap-y-6 py-6 xl:flex-nowrap xl:gap-12">
+      <div className="container-page flex flex-wrap items-end gap-x-8 gap-y-6 py-6 xl:gap-x-12 wide:flex-nowrap">
         <FilterFields
           filters={navigation.filters}
           priceRange={priceRange}
