@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
@@ -128,5 +129,77 @@ describe("admin API client", () => {
 
     await expect(api.logout()).rejects.toThrow();
     expect(api.hasAccessToken()).toBe(false);
+  });
+});
+
+describe("admin API client, cancelled requests", () => {
+  it.each([200, 500])(
+    "does not refresh or expire after a 401 that arrives as the query is cancelled (refresh %s)",
+    async (status) => {
+      let answer: (response: Response) => void = () => {};
+      const fetchImpl = vi.fn<typeof fetch>();
+      fetchImpl.mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+      fetchImpl.mockResolvedValueOnce(json(status, { accessToken: "fresh" }));
+      fetchImpl.mockResolvedValueOnce(json(200, {}));
+      const onSessionExpired = vi.fn();
+      const api = createAdminApi({ fetchImpl, onSessionExpired });
+      api.setAccessToken("stale");
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      const queryKey = ["admin", "dashboard"];
+
+      const fetching = queryClient
+        .fetchQuery({
+          queryKey,
+          queryFn: ({ signal }) => api.getJson("/api/admin/dashboard", z.object({}), signal),
+        })
+        .catch(() => undefined);
+      answer(json(401, { message: "Unauthorized" }));
+      await queryClient.cancelQueries({ queryKey });
+      await fetching;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(queryClient.getQueryState(queryKey)?.error).toBeNull();
+      expect(onSessionExpired).not.toHaveBeenCalled();
+      expect(fetchImpl.mock.calls.map(([input]) => String(input))).toEqual(["/api/admin/dashboard"]);
+      queryClient.clear();
+    },
+  );
+
+  it("stops waiting for a shared refresh when cancelled, while the other request still gets it", async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const { api, onSessionExpired, calls } = setup({
+      refresh: async () => {
+        await gate;
+        return json(200, { accessToken: "fresh" });
+      },
+    });
+    api.setAccessToken("stale");
+    const controller = new AbortController();
+
+    let settledEarly = false;
+    const cancelled = api.request("/api/admin/dashboard", { signal: controller.signal }).then(
+      (response) => `answered ${response.status}`,
+      (error: unknown) => (error instanceof Error ? error.name : "unknown error"),
+    );
+    void cancelled.then(() => (settledEarly = true));
+    const other = api.request("/api/admin/residences");
+    await vi.waitFor(() => {
+      expect(calls("/api/admin/residences")).toHaveLength(1);
+      expect(calls(REFRESH_PATH)).toHaveLength(1);
+    });
+    controller.abort();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect.soft(settledEarly).toBe(true);
+    release();
+
+    expect((await other).status).toBe(200);
+    expect(await cancelled).toBe("AbortError");
+    expect(calls("/api/admin/dashboard")).toHaveLength(1);
+    expect(calls(REFRESH_PATH)).toHaveLength(1);
+    expect(onSessionExpired).not.toHaveBeenCalled();
+    expect(api.hasAccessToken()).toBe(true);
   });
 });
