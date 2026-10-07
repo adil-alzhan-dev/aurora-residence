@@ -7,12 +7,11 @@ import { Location } from "@/components/home/location/location";
 import { ConstructionProgress } from "@/components/home/progress/construction-progress";
 import { ResidencePicker } from "@/components/home/residences/residence-picker";
 import { Stats } from "@/components/home/stats";
-import { getDictionary } from "@/content";
 import { getFloorSummaries } from "@/lib/api/floors";
+import { getSiteDictionary } from "@/lib/locale-server";
 
 export default async function HomePage() {
-  const t = getDictionary("en");
-  const floors = await getFloorSummaries();
+  const [t, floors] = await Promise.all([getSiteDictionary(), getFloorSummaries()]);
   return (
     <>
       <Hero t={{ hero: t.hero, a11y: t.a11y }} />

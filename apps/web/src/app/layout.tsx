@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 
-import { getDictionary } from "@/content";
+import { getLocale, getSiteDictionary } from "@/lib/locale-server";
 
 import "./globals.css";
 
@@ -30,16 +30,14 @@ const liningDigits = localFont({
   declarations: [{ prop: "unicode-range", value: "U+0030-0039" }],
 });
 
-const t = getDictionary("en");
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getSiteDictionary();
+  return { title: t.meta.title, description: t.meta.description };
+}
 
-export const metadata: Metadata = {
-  title: t.meta.title,
-  description: t.meta.description,
-};
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${manrope.variable} ${liningDigits.variable}`}>
+    <html lang={await getLocale()} className={`${cormorant.variable} ${manrope.variable} ${liningDigits.variable}`}>
       <body>{children}</body>
     </html>
   );

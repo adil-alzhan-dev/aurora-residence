@@ -11,6 +11,10 @@ import { loadResidencePage } from "@/lib/residence-page-data";
 import ResidencePage from "./page";
 
 vi.mock("@/lib/residence-page-data", () => ({ loadResidencePage: vi.fn() }));
+vi.mock("@/lib/locale-server", async () => {
+  const { getDictionary } = await import("@/content");
+  return { getSiteDictionary: async () => getDictionary("en") };
+});
 
 const t = getDictionary();
 const residence = allResidences.find((item) => item.number === "7.03")!;

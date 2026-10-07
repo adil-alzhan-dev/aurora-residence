@@ -4,21 +4,21 @@ import { RevealSection } from "@/components/motion/reveal-section";
 import { FacadeBrowser } from "@/components/residences/facade/facade-browser";
 import { ResidenceViews } from "@/components/residences/residence-views";
 import { ResidencesIntro } from "@/components/residences/residences-intro";
-import { getDictionary } from "@/content";
 import type { ResidenceView } from "@/content/navigation";
 import { loadFacadeData } from "@/lib/facade-data";
+import { getSiteDictionary } from "@/lib/locale-server";
 import { parseResidenceFilters } from "@/lib/residence-filters";
 import { parseResidenceSort, sortParam } from "@/lib/residence-sort";
 import { loadResidencesData } from "@/lib/residences-data";
 
-const t = getDictionary("en");
-
-export const metadata: Metadata = { title: t.residences.metaTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getSiteDictionary()).residences.metaTitle };
+}
 
 const parseView = (value: unknown): ResidenceView => (value === "grid" || value === "list" ? value : "facade");
 
 export default async function ResidencesPage({ searchParams }: PageProps<"/residences">) {
-  const params = await searchParams;
+  const [params, t] = await Promise.all([searchParams, getSiteDictionary()]);
   const view = parseView(params.view);
   const filters = parseResidenceFilters(params);
   const sort = parseResidenceSort(params.sort);

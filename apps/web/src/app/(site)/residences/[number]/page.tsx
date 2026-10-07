@@ -12,21 +12,21 @@ import { SimilarResidences } from "@/components/residence/similar-residences";
 import { SoldAlternatives } from "@/components/residence/sold-alternatives";
 import { StickyRequestBar } from "@/components/residence/sticky-request-bar";
 import { facesPark, WindowView } from "@/components/residence/window-view";
-import { getDictionary } from "@/content";
+import { areaText } from "@/components/residences/floor/residence-text";
+import { viewText } from "@/components/residences/list/list-text";
 import { getResidence } from "@/lib/api/residences";
 import { parseResidenceParam } from "@/lib/building";
-import { fillTemplate, formatArea } from "@/lib/format";
+import { fillTemplate } from "@/lib/format";
+import { getSiteDictionary } from "@/lib/locale-server";
 import { formatMoney } from "@/lib/money";
 import { getMoneySettings } from "@/lib/money-server";
 import { loadResidencePage } from "@/lib/residence-page-data";
 import { layoutOf } from "@/lib/residence-layouts";
 import { revealDelay } from "@/lib/motion";
 
-const t = getDictionary("en");
-
 export async function generateMetadata({ params }: PageProps<"/residences/[number]">): Promise<Metadata> {
   const { number } = parseResidenceParam((await params).number);
-  const [residence, money] = await Promise.all([getResidence(number), getMoneySettings()]);
+  const [residence, money, t] = await Promise.all([getResidence(number), getMoneySettings(), getSiteDictionary()]);
   const text = t.residencePage;
   if (!residence) return { title: fillTemplate(text.metaTitleShort, { number }) };
 
@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: PageProps<"/residences/[numbe
     number,
     floor: residence.floor,
     type: t.floorPage.typeNames[residence.bedrooms] ?? "",
-    area: `${formatArea(residence.areaM2)} m²`,
-    view: residence.view.toLowerCase(),
+    area: areaText(residence, t),
+    view: viewText(residence, t.list),
     price: formatMoney(residence.priceUsd, money),
   };
   const description = residence.status === "sold" ? text.metaDescriptionSold : text.metaDescription;
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps<"/residences/[numbe
 
 export default async function ResidencePage({ params }: PageProps<"/residences/[number]">) {
   const { number, floor } = parseResidenceParam((await params).number);
-  const data = await loadResidencePage(number);
+  const [data, t] = await Promise.all([loadResidencePage(number), getSiteDictionary()]);
   const text = t.residencePage;
 
   if (!data) {

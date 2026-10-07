@@ -1,15 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button, ButtonArrow } from "@/components/ui/button";
-import { getDictionary } from "@/content";
 import { residencesHref } from "@/content/navigation";
+import { getSiteDictionary } from "@/lib/locale-server";
 
-const t = getDictionary("en");
+export async function generateNotFoundMetadata(): Promise<Metadata> {
+  return { title: (await getSiteDictionary()).notFound.metaTitle };
+}
 
-export const notFoundTitle = t.notFound.metaTitle;
-
-export function NotFoundContent() {
-  const text = t.notFound;
+export async function NotFoundContent() {
+  const text = (await getSiteDictionary()).notFound;
   return (
     <section data-theme="dark" aria-labelledby="not-found-title" className="bg-background pt-(--header-height)">
       <div className="container-page flex min-h-[70svh] flex-col items-start justify-center gap-6 py-24 lg:py-32">

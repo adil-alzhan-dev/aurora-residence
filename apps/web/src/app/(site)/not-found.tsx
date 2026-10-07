@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
+import { generateNotFoundMetadata, NotFoundContent } from "@/components/layout/not-found-content";
 
-import { NotFoundContent, notFoundTitle } from "@/components/layout/not-found-content";
-
-export const metadata: Metadata = { title: notFoundTitle };
+export const generateMetadata = generateNotFoundMetadata;
 
 export default function SiteNotFound() {
   return <NotFoundContent />;

@@ -1,6 +1,6 @@
 import { PageSkeleton } from "@/components/residences/page-skeleton";
-import { getDictionary } from "@/content";
+import { getSiteDictionary } from "@/lib/locale-server";
 
-export default function ResidenceLoading() {
-  return <PageSkeleton theme="light" label={getDictionary("en").residencePage.loading} />;
+export default async function ResidenceLoading() {
+  return <PageSkeleton theme="light" label={(await getSiteDictionary()).residencePage.loading} />;
 }

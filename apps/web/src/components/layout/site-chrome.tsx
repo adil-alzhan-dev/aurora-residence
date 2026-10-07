@@ -1,16 +1,15 @@
 import { Suspense, type ReactNode } from "react";
 
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
-import { getDictionary } from "@/content";
+import { getSiteDictionary } from "@/lib/locale-server";
 
 import { LiveRefresh } from "./live-refresh";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader, SiteHeaderWithView } from "./site-header";
 
-const t = getDictionary("en");
-
 /** Header, footer and smooth scroll of the public site; the admin has its own shell. */
-export function SiteChrome({ children }: { children: ReactNode }) {
+export async function SiteChrome({ children }: { children: ReactNode }) {
+  const t = await getSiteDictionary();
   return (
     <>
       <SmoothScroll />
