@@ -10,6 +10,11 @@ describe("parseLiveMessage", () => {
     expect(parseLiveMessage(frame({ type: "residence.updated", residence }))).toEqual(residence);
   });
 
+  it("keeps only the known fields", () => {
+    const extra = { ...residence, bedrooms: 2 };
+    expect(parseLiveMessage(frame({ type: "residence.updated", residence: extra }))).toEqual(residence);
+  });
+
   it.each([
     ["not JSON", "{oops"],
     ["a binary frame", new ArrayBuffer(4)],
@@ -18,6 +23,11 @@ describe("parseLiveMessage", () => {
     ["a number outside the house", frame({ type: "residence.updated", residence: { ...residence, number: "12.01" } })],
     ["a price as text", frame({ type: "residence.updated", residence: { ...residence, priceUsd: "218000" } })],
     ["a missing date", frame({ type: "residence.updated", residence: { ...residence, updatedAt: undefined } })],
+    ["a date that is not ISO", frame({ type: "residence.updated", residence: { ...residence, updatedAt: "Oct 7, 2026" } })],
+    ["a floor below the house", frame({ type: "residence.updated", residence: { ...residence, floor: 0 } })],
+    ["a fractional floor", frame({ type: "residence.updated", residence: { ...residence, floor: 7.5 } })],
+    ["a negative price", frame({ type: "residence.updated", residence: { ...residence, priceUsd: -1 } })],
+    ["a frame without a residence", frame({ type: "residence.updated" })],
     ["null", "null"],
   ])("ignores %s", (_case, raw) => {
     expect(parseLiveMessage(raw)).toBeNull();
