@@ -139,6 +139,14 @@
   line-height: 2.5rem;
 }
 
+/* Tenge prices on narrow cards: ₸106,050,000 at 24px pushes the status badge out of a 360px card. */
+@utility text-fact-compact {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1.1875rem;
+  line-height: 1.875rem;
+}
+
 @utility text-amount {
   font-family: var(--font-sans);
   font-weight: 300;

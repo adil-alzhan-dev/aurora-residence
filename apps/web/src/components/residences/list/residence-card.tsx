@@ -23,10 +23,14 @@ type ResidenceCardProps = {
 
 const cardClass = "flex flex-col gap-4 rounded-base border border-border bg-card p-4 text-foreground";
 
+/** Dollar and euro prices fit at full size; tenge prices are a few digits longer. */
+const LONG_PRICE = 10;
+
 /** M / Residence Card: the whole card is the tap target; sold residences are shown but do not open. */
 export function ResidenceCard({ residence, t }: ResidenceCardProps) {
   const { formatPrice } = useCurrency();
   const openable = isOpenable(residence);
+  const price = formatPrice(residence.priceUsd);
   const details = [
     fillTemplate(t.list.floorOf, { floor: residence.floor, total: FLOOR_COUNT }),
     areaText(residence, t),
@@ -52,8 +56,14 @@ export function ResidenceCard({ residence, t }: ResidenceCardProps) {
       </span>
       <span aria-hidden="true" className="h-px bg-border" />
       <span className="flex min-h-11 items-center justify-between gap-3">
-        <span className={cn("text-fact whitespace-nowrap", !openable && "opacity-50")}>
-          {formatPrice(residence.priceUsd)}
+        <span
+          className={cn(
+            price.length > LONG_PRICE ? "text-fact-compact" : "text-fact",
+            "whitespace-nowrap",
+            !openable && "opacity-50",
+          )}
+        >
+          {price}
         </span>
         <span className="flex items-center gap-3">
           <StatusBadge status={residence.status} label={t.status[residence.status]} />
