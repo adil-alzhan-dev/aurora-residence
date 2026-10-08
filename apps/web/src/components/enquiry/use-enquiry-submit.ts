@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import type { FieldErrors, UseFormReturn } from "react-hook-form";
 
 import type { EnquiryPayload, EnquiryResult, EnquirySource } from "@/lib/api/enquiries";
 import type { Locale } from "@/lib/locale";
 
 import type { EnquiryValues } from "./enquiry-schema";
 import { toFullPhone } from "./full-phone";
+import { VALIDATION_UNLOADED } from "./lazy-enquiry-resolver";
 
-export type FormAlert = Extract<EnquiryResult, { kind: "refused" | "failed" }>;
+export type FormAlert = Extract<EnquiryResult, { kind: "refused" | "failed" }> | { kind: "unloaded" };
 
 type Target = { source: EnquirySource; residence?: string; locale: Locale };
 
@@ -71,9 +72,14 @@ export function useEnquirySubmit(
     const submission = ++currentSubmission.current;
     toggleSending(true);
     setAlert(null);
-    // The request module (and its response schema) is fetched with the first send.
-    const { sendEnquiry } = await import("@/lib/api/enquiries");
-    const result = await sendEnquiry(toEnquiryPayload(values, target));
+    let result: EnquiryResult;
+    try {
+      // The request module (and its response schema) is fetched with the first send.
+      const { sendEnquiry } = await import("@/lib/api/enquiries");
+      result = await sendEnquiry(toEnquiryPayload(values, target));
+    } catch {
+      result = { kind: "failed" };
+    }
     if (submission !== currentSubmission.current) return;
     toggleSending(false);
     if (result.kind === "sent") onSent();
@@ -81,7 +87,12 @@ export function useEnquirySubmit(
     else setAlert(result);
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(send)(event);
+  const showInvalid = (errors: FieldErrors<EnquiryValues>) => {
+    if (errors.root?.type === VALIDATION_UNLOADED) setAlert({ kind: "unloaded" });
+    else setAlert((current) => (current?.kind === "unloaded" ? null : current));
+  };
+
+  const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(send, showInvalid)(event);
 
   function showFieldErrors(fields: Record<string, string>) {
     const known = Object.keys(fields).filter(isFieldWithError).filter((field) => messages[field]);

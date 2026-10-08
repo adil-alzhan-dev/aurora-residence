@@ -24,6 +24,7 @@ export function FormAlertMessage({ alert, phone, t }: FormAlertMessageProps) {
   return (
     <p ref={ref} role="alert" tabIndex={-1} className="w-full text-caption text-destructive outline-none">
       {alert.kind === "refused" && t[alert.text]}
+      {alert.kind === "unloaded" && t.unloaded}
       {alert.kind === "failed" && (
         <>
           {t.failedBefore}

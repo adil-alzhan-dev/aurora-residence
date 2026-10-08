@@ -61,6 +61,7 @@ export const enquiryEn = {
     rateLimited: "Too many requests from this device. Please try again later.",
     failedBefore: "Something went wrong while sending your request. Please try again or call ",
     failedAfter: ".",
+    unloaded: "Part of the form did not load. Please check your connection and try again.",
     soldRejected: "This residence has just been sold. Please choose another one.",
     residenceMissing: "This residence is not in the house. Please choose another one.",
     success: {
