@@ -48,6 +48,7 @@ export function FacadeStage({ active, select, summary, dimmed, floorLabel, t }: 
           alt={t.residencePicker.facadeAlt}
           dayAlt={t.hero.renderDayAlt}
           sizes="(min-width: 1024px) min(123vw, 1767px), 189vw"
+          preload
         />
         <FloorRuler active={active} dimmed={dimmed} />
         <FacadeOverlay

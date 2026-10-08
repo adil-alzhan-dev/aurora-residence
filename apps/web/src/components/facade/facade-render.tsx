@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { useDeferredLayer } from "@/lib/deferred-layer";
 import { cn } from "@/lib/utils";
 
 export type TimeOfDay = "day" | "evening";
@@ -15,10 +16,38 @@ type FacadeRenderProps = {
   sizes: string;
   /** Pass to stack the daylight render under the evening one for the Day / Evening switch. */
   dayAlt?: string;
+  /** The render is the first screen of the page. */
+  preload?: boolean;
 };
 
+type FacadeLayerProps = {
+  time: TimeOfDay;
+  alt: string;
+  sizes: string;
+  visible: boolean;
+  preload: boolean;
+};
+
+function FacadeLayer({ time, alt, sizes, visible, preload }: FacadeLayerProps) {
+  if (!useDeferredLayer(visible)) return null;
+  return (
+    <Image
+      src={sources[time]}
+      alt={visible ? alt : ""}
+      aria-hidden={!visible}
+      fill
+      preload={preload && visible}
+      sizes={sizes}
+      className={cn(
+        "object-cover transition-opacity duration-900 ease-in-out",
+        visible ? "opacity-100" : "opacity-0",
+      )}
+    />
+  );
+}
+
 /** Both renders share the same geometry to the pixel, so the overlay never moves when they crossfade. */
-export function FacadeRender({ time, alt, sizes, dayAlt }: FacadeRenderProps) {
+export function FacadeRender({ time, alt, sizes, dayAlt, preload = false }: FacadeRenderProps) {
   const layers: { time: TimeOfDay; alt: string }[] = dayAlt
     ? [
         { time: "day", alt: dayAlt },
@@ -26,21 +55,14 @@ export function FacadeRender({ time, alt, sizes, dayAlt }: FacadeRenderProps) {
       ]
     : [{ time: "evening", alt }];
 
-  return layers.map((layer) => {
-    const visible = layer.time === time || layers.length === 1;
-    return (
-      <Image
-        key={layer.time}
-        src={sources[layer.time]}
-        alt={visible ? layer.alt : ""}
-        aria-hidden={!visible}
-        fill
-        sizes={sizes}
-        className={cn(
-          "object-cover transition-opacity duration-900 ease-in-out",
-          visible ? "opacity-100" : "opacity-0",
-        )}
-      />
-    );
-  });
+  return layers.map((layer) => (
+    <FacadeLayer
+      key={layer.time}
+      time={layer.time}
+      alt={layer.alt}
+      sizes={sizes}
+      visible={layer.time === time || layers.length === 1}
+      preload={preload}
+    />
+  ));
 }
