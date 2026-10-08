@@ -6,23 +6,25 @@ import { getLocale, getSiteDictionary } from "@/lib/locale-server";
 
 import "./globals.css";
 
+// Only the latin files are preloaded (EN is the default); the cyrillic ones still load by unicode-range on RU pages.
 const cormorant = Cormorant_Garamond({
-  subsets: ["latin", "cyrillic"],
+  subsets: ["latin"],
   weight: ["300", "400", "500"],
   variable: "--font-cormorant",
   display: "swap",
 });
 
 const manrope = Manrope({
-  subsets: ["latin", "cyrillic"],
+  subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   variable: "--font-manrope",
   display: "swap",
 });
 
 // Figma sets digits inside Cormorant headings in Manrope Light, so the digit face is fixed at 300.
+// The file is Manrope's variable latin font cut down to the glyphs 0-9.
 const liningDigits = localFont({
-  src: "../fonts/manrope-latin-wght.woff2",
+  src: "../fonts/manrope-digits-wght.woff2",
   weight: "300",
   variable: "--font-digits",
   display: "swap",
