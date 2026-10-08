@@ -3,6 +3,9 @@ import { IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } fro
 import { RESIDENCE_NUMBER_PATTERN } from '../../../common/residence-number.param.js';
 import { EnquiryStatus } from '../../../generated/prisma/enums.js';
 
+// 1000 pages of the largest limit; a project of 66 residences never gets near it.
+const OFFSET_MAX = 100_000;
+
 export class AdminEnquiriesQueryDto {
   /** Matches client name, email or phone. */
   @IsOptional()
@@ -29,5 +32,6 @@ export class AdminEnquiriesQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(OFFSET_MAX)
   offset = 0;
 }

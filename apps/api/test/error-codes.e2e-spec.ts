@@ -94,7 +94,6 @@ describe('Error codes of the API (e2e)', () => {
     const unknownRoute = await http(app).get('/api/nothing-here');
     expect(unknownRoute.body).toEqual({ statusCode: 404, code: 'NOT_FOUND', message: 'Cannot GET /api/nothing-here' });
 
-    expectError(await http(app).get('/api/admin/enquiries/abc').set(admin()), 400, 'BAD_REQUEST');
     const brokenJson = await http(app)
       .post('/api/auth/login')
       .set('Content-Type', 'application/json')

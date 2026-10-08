@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { AdminAccess } from '../../auth/admin-access.decorator.js';
 import type { AuthenticatedAdmin } from '../../auth/auth.types.js';
 import { CurrentAdmin } from '../../auth/current-admin.decorator.js';
+import { ParseIdPipe } from '../../common/parse-id.pipe.js';
 import { AdminEnquiriesService } from './admin-enquiries.service.js';
 import { AdminEnquiriesQueryDto } from './dto/admin-enquiries-query.dto.js';
 import { UpdateEnquiryDto } from './dto/update-enquiry.dto.js';
@@ -17,13 +18,13 @@ export class AdminEnquiriesController {
   }
 
   @Get(':id')
-  card(@Param('id', ParseIntPipe) id: number) {
+  card(@Param('id', ParseIdPipe) id: number) {
     return this.enquiries.card(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIdPipe) id: number,
     @Body() dto: UpdateEnquiryDto,
     @CurrentAdmin() admin: AuthenticatedAdmin,
   ) {

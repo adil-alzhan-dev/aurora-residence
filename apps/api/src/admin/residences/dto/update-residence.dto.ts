@@ -1,4 +1,5 @@
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { PRICE_USD_MAX, PRICE_USD_MIN } from '../../../common/number-limits.js';
 import type { ResidenceStatus } from '../../../generated/prisma/enums.js';
 
 export const PATCHABLE_STATUSES = ['AVAILABLE', 'SOLD'] as const satisfies readonly ResidenceStatus[];
@@ -10,8 +11,8 @@ const isSent = (_: object, value: unknown) => value !== undefined;
 export class UpdateResidenceDto {
   // Decorators run bottom-up, so a wrong type is reported before the range.
   @ValidateIf(isSent)
-  @Min(10_000)
-  @Max(10_000_000)
+  @Min(PRICE_USD_MIN)
+  @Max(PRICE_USD_MAX)
   @IsInt({ message: 'priceUsd must be a whole number of dollars' })
   priceUsd?: number;
 

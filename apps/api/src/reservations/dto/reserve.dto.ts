@@ -1,8 +1,10 @@
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { DB_INT_MAX } from '../../common/number-limits.js';
 
 export class ReserveDto {
   @IsInt({ message: 'enquiryId must be the id of an enquiry' })
   @Min(1)
+  @Max(DB_INT_MAX)
   enquiryId!: number;
 
   @IsOptional()
