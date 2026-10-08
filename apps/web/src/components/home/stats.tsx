@@ -2,7 +2,10 @@ import type { CSSProperties } from "react";
 
 import { CountUp } from "@/components/motion/count-up";
 import { RevealSection } from "@/components/motion/reveal-section";
-import type { Dictionary } from "@/content";
+import type { Dictionary, StatItem } from "@/content";
+import { cn } from "@/lib/utils";
+
+const LONG_STAT_TEXT = 8;
 
 type StatsProps = {
   t: Pick<Dictionary, "stats">;
@@ -22,7 +25,7 @@ export function Stats({ t }: StatsProps) {
                 className="absolute top-0.5 left-0 hidden h-24 w-px bg-border lg:block"
               />
             )}
-            <span className="text-stat whitespace-nowrap text-foreground lining-nums">
+            <span className={cn(statClass(item), "whitespace-nowrap text-foreground lining-nums")}>
               {"value" in item ? (
                 <CountUp value={item.value} suffix={item.suffix} />
               ) : (
@@ -35,4 +38,8 @@ export function Stats({ t }: StatsProps) {
       </ul>
     </RevealSection>
   );
+}
+
+function statClass(item: StatItem) {
+  return "text" in item && item.text.length > LONG_STAT_TEXT ? "text-stat-compact" : "text-stat";
 }

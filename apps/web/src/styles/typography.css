@@ -119,6 +119,24 @@
   }
 }
 
+/* "4 кв. 2027" at 40px is 176px wide, wider than a 156-171px stats column on 360-400px phones. */
+@utility text-stat-compact {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 2rem;
+  line-height: 2.875rem;
+  letter-spacing: -0.005em;
+
+  @media (width >= 30rem) {
+    font-size: 2.5rem;
+  }
+
+  @media (width >= 64rem) {
+    font-size: 4rem;
+    line-height: 4.5rem;
+  }
+}
+
 @utility text-fact {
   font-family: var(--font-sans);
   font-weight: 300;
