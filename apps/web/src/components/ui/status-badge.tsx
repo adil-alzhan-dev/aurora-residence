@@ -3,7 +3,7 @@ import { cva } from "class-variance-authority";
 import type { ResidenceStatus } from "@/lib/api/residences";
 import { cn } from "@/lib/utils";
 
-const badgeVariants = cva("inline-flex items-center gap-2 rounded-base px-2 py-1 text-label text-foreground", {
+const badgeVariants = cva("inline-flex items-center gap-2 rounded-base px-2 py-1 text-label whitespace-nowrap text-foreground", {
   variants: {
     status: {
       available: "bg-status-free-subtle",

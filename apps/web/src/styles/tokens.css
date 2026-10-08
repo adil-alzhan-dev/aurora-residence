@@ -60,6 +60,7 @@
 
 @theme {
   --color-*: initial;
+  --breakpoint-phone: 24.375rem;
   --breakpoint-wide: 90rem;
   --container-page: 1280px;
   --radius-base: 2px;

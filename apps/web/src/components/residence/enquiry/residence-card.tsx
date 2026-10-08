@@ -20,14 +20,14 @@ type ResidenceCardProps = {
 export function ResidenceCard({ residence, t, note }: ResidenceCardProps) {
   const { formatPrice } = useCurrency();
   return (
-    <div className="flex items-center gap-4 rounded-base border border-border bg-card py-3 pr-4 pl-3 lg:hidden">
-      <span className="flex h-16 w-20 shrink-0 items-center justify-center bg-background p-2">
+    <div className="flex items-center gap-3 rounded-base border border-border bg-card px-3 py-3 phone:gap-4 phone:pr-4 lg:hidden">
+      <span className="flex h-16 w-14 shrink-0 items-center justify-center bg-background p-2 phone:w-20">
         <ResidenceDrawing position={residence.position} className="size-full opacity-60" />
       </span>
       <span className="flex min-w-0 flex-col gap-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="text-body-l text-foreground">{fillTemplate(t.residencePage.title, { number: residence.number })}</span>
-          <StatusBadge status={residence.status} label={t.status[residence.status]} />
+        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span className="text-body-l whitespace-nowrap text-foreground">{fillTemplate(t.residencePage.title, { number: residence.number })}</span>
+          <StatusBadge status={residence.status} label={t.status[residence.status]} className="shrink-0" />
         </span>
         <span className="text-caption whitespace-pre-wrap text-muted-foreground">
           {fillTemplate(t.residenceEnquiry.summary, {
