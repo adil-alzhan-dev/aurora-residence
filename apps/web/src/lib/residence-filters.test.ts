@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { allResidences } from "./__fixtures__/residences";
-import { countResult, emptyFilters, matchesFilters, parseResidenceFilters, summarizeFloors } from "./residence-filters";
+import { parseResidenceFilters } from "./residence-filter-params";
+import { countResult, emptyFilters, matchesFilters, summarizeFloors } from "./residence-filters";
 
 describe("residence filters", () => {
   it("uses the full building from the spec as the fixture", () => {

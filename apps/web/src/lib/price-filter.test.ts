@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { allResidences } from "./__fixtures__/residences";
 import { convertUsd, formatAmount, type CurrencyRates, type MoneySettings } from "./money";
 import { formatMaxPrice, maxPriceAmount, maxPriceChoices, maxPriceOptions } from "./price-filter";
-import { matchesFilters, parseResidenceFilters } from "./residence-filters";
+import { parseResidenceFilters } from "./residence-filter-params";
+import { matchesFilters } from "./residence-filters";
 
 const RATES: CurrencyRates = { USD: 1, EUR: 0.92, KZT: 505 };
 const usd: MoneySettings = { currency: "USD", rates: RATES };

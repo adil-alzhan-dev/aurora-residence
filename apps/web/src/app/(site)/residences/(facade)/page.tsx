@@ -7,7 +7,7 @@ import { ResidencesIntro } from "@/components/residences/residences-intro";
 import type { ResidenceView } from "@/content/navigation";
 import { loadFacadeData } from "@/lib/facade-data";
 import { getSiteDictionary } from "@/lib/locale-server";
-import { parseResidenceFilters } from "@/lib/residence-filters";
+import { parseResidenceFilters } from "@/lib/residence-filter-params";
 import { parseResidenceSort, sortParam } from "@/lib/residence-sort";
 import { loadResidencesData } from "@/lib/residences-data";
 

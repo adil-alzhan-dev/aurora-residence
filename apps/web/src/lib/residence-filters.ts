@@ -1,9 +1,6 @@
-// zod/mini: the filter helpers below run in the browser too.
-import * as z from "zod/mini";
-
 import type { FloorSummary } from "./api/floors";
 import type { Residence } from "./api/residences";
-import { FLOOR_COUNT, floorNumbers } from "./building";
+import { floorNumbers } from "./building";
 
 export type ResidenceFilters = {
   bedrooms: number | null;
@@ -14,28 +11,6 @@ export type ResidenceFilters = {
 export const emptyFilters: ResidenceFilters = { bedrooms: null, maxPrice: null, floor: null };
 
 export const bedroomOptions = [0, 1, 2, 3] as const;
-
-const firstValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
-
-const filterParam = (schema: z.ZodMiniNumber<number>) =>
-  z.catch(z.nullable(z.pipe(z.transform(firstValue), z.pipe(z.coerce.number(), schema))), null);
-
-const filtersSchema = z.object({
-  bedrooms: filterParam(z.int().check(z.minimum(0), z.maximum(3))),
-  maxPrice: filterParam(z.int().check(z.positive())),
-  floor: filterParam(z.int().check(z.minimum(1), z.maximum(FLOOR_COUNT))),
-});
-
-type SearchParams = Record<string, string | string[] | undefined>;
-
-/** Broken or unknown values in a shared link are ignored rather than shown as an error. */
-export function parseResidenceFilters(params: SearchParams): ResidenceFilters {
-  return filtersSchema.parse({
-    bedrooms: params.bedrooms ?? null,
-    maxPrice: params.maxPrice ?? null,
-    floor: params.floor ?? null,
-  });
-}
 
 export const activeFilterCount = (filters: ResidenceFilters) =>
   Object.values(filters).filter((value) => value !== null).length;
