@@ -24,7 +24,7 @@ export function StickyRequestBar({ residence, t }: StickyRequestBarProps) {
         <span className="text-caption text-muted-foreground">
           {fillTemplate(t.residenceShort, { number: residence.number })}
         </span>
-        <span className="text-body-l whitespace-nowrap text-foreground">{formatPrice(residence.priceUsd)}</span>
+        <span className="text-body-l font-medium whitespace-nowrap text-foreground">{formatPrice(residence.priceUsd)}</span>
       </p>
       <RequestButton className="flex-1 px-4">{t.request}</RequestButton>
     </div>
