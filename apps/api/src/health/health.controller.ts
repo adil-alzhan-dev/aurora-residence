@@ -1,4 +1,6 @@
-import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import { HealthService } from './health.service.js';
 
 export interface HealthStatus {
@@ -13,10 +15,9 @@ export class HealthController {
   @Get()
   async check(): Promise<HealthStatus> {
     if (!(await this.health.isDatabaseUp())) {
-      throw new ServiceUnavailableException({
+      throw new ApiError(HttpStatus.SERVICE_UNAVAILABLE, ERROR_CODES.SERVICE_UNAVAILABLE, 'Database is unreachable', {
         status: 'error',
         database: 'down',
-        message: 'Database is unreachable',
       });
     }
     return { status: 'ok', database: 'ok' };

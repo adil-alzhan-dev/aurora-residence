@@ -1,4 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { ResidencesQueryDto } from './dto/residences-query.dto.js';
@@ -34,7 +36,7 @@ export class ResidencesService {
       where: { number },
       select: PUBLIC_RESIDENCE_SELECT,
     });
-    if (!row) throw new NotFoundException(`Residence ${number} not found`);
+    if (!row) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
     return toPublicResidence(row);
   }
 }

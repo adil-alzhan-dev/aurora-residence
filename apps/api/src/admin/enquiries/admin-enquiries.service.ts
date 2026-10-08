@@ -1,4 +1,6 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { ApiError } from '../../common/api-error.js';
+import { ERROR_CODES } from '../../common/error-codes.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { ResidenceStatus } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -67,20 +69,24 @@ export class AdminEnquiriesService {
 
   async card(id: number) {
     const row = await this.prisma.enquiry.findUnique({ where: { id }, select: CARD_SELECT });
-    if (!row) throw new NotFoundException(`Enquiry ${id} not found`);
+    if (!row) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.ENQUIRY_NOT_FOUND, `Enquiry ${id} not found`);
     return toCard(row);
   }
 
   async update(id: number, dto: UpdateEnquiryDto, actorId: number) {
     if (dto.status === undefined && dto.managerNote === undefined && dto.residenceNumber === undefined) {
-      throw new BadRequestException('Send a new status, managerNote or residenceNumber');
+      throw new ApiError(
+        HttpStatus.BAD_REQUEST,
+        ERROR_CODES.NOTHING_TO_UPDATE,
+        'Send a new status, managerNote or residenceNumber',
+      );
     }
     await this.prisma.$transaction(async (tx) => {
       const current = await tx.enquiry.findUnique({
         where: { id },
         select: { status: true, managerNote: true, residence: { select: { number: true } } },
       });
-      if (!current) throw new NotFoundException(`Enquiry ${id} not found`);
+      if (!current) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.ENQUIRY_NOT_FOUND, `Enquiry ${id} not found`);
       if (dto.residenceNumber !== undefined) {
         if (current.residence) throw alreadyLinked(current.residence.number);
         await linkResidence(tx, id, dto.residenceNumber, actorId);
@@ -118,8 +124,12 @@ export class AdminEnquiriesService {
 async function linkResidence(tx: Tx, id: number, number: string, actorId: number): Promise<void> {
   const [residence] = await tx.$queryRaw<{ id: number; status: ResidenceStatus }[]>`
     SELECT id, status FROM "Residence" WHERE number = ${number} FOR UPDATE`;
-  if (!residence) throw new BadRequestException(`Residence ${number} does not exist`);
-  if (residence.status === 'SOLD') throw new ConflictException(`Residence ${number} is sold`);
+  if (!residence) {
+    throw new ApiError(HttpStatus.BAD_REQUEST, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} does not exist`);
+  }
+  if (residence.status === 'SOLD') {
+    throw new ApiError(HttpStatus.CONFLICT, ERROR_CODES.RESIDENCE_SOLD, `Residence ${number} is sold`);
+  }
 
   const linked = await tx.enquiry.updateMany({
     where: { id, residenceId: null },
@@ -144,8 +154,12 @@ async function linkResidence(tx: Tx, id: number, number: string, actorId: number
   });
 }
 
-function alreadyLinked(number: string): ConflictException {
-  return new ConflictException(`Enquiry already has residence ${number}`);
+function alreadyLinked(number: string): ApiError {
+  return new ApiError(
+    HttpStatus.CONFLICT,
+    ERROR_CODES.ENQUIRY_RESIDENCE_EXISTS,
+    `Enquiry already has residence ${number}`,
+  );
 }
 
 function toListItem(row: ListRow) {

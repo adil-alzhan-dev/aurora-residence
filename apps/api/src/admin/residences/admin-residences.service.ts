@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { ApiError } from '../../common/api-error.js';
+import { ERROR_CODES } from '../../common/error-codes.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import type { ResidenceStatus } from '../../generated/prisma/enums.js';
 import { LiveService } from '../../live/live.service.js';
@@ -67,7 +69,7 @@ export class AdminResidencesService {
         activity: { select: ACTIVITY_SELECT, orderBy: { createdAt: 'desc' } },
       },
     });
-    if (!row) throw new NotFoundException(`Residence ${number} not found`);
+    if (!row) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
     return {
       ...toAdminResidence(row),
       reservation: await this.reservations.activeReservation(row.id),
@@ -77,14 +79,14 @@ export class AdminResidencesService {
 
   async update(number: string, dto: UpdateResidenceDto, actorId: number): Promise<AdminResidenceCard> {
     if (dto.priceUsd === undefined && dto.status === undefined) {
-      throw new BadRequestException('Send a new priceUsd or status');
+      throw new ApiError(HttpStatus.BAD_REQUEST, ERROR_CODES.NOTHING_TO_UPDATE, 'Send a new priceUsd or status');
     }
     const changed = await this.prisma.$transaction(async (tx) => {
       const current = await tx.residence.findUnique({
         where: { number },
         select: { id: true, priceUsd: true },
       });
-      if (!current) throw new NotFoundException(`Residence ${number} not found`);
+      if (!current) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
 
       const priceChanged = dto.priceUsd !== undefined && dto.priceUsd !== current.priceUsd;
       if (priceChanged) {

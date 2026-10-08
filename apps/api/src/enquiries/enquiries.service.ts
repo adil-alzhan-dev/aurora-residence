@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateEnquiryDto } from './dto/create-enquiry.dto.js';
@@ -48,9 +50,13 @@ export class EnquiriesService {
       where: { number },
       select: { id: true, status: true },
     });
-    if (!residence) throw new NotFoundException(`Residence ${number} not found`);
+    if (!residence) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
     if (residence.status === 'SOLD') {
-      throw new BadRequestException(`Residence ${number} is already sold, please choose another one`);
+      throw new ApiError(
+        HttpStatus.BAD_REQUEST,
+        ERROR_CODES.RESIDENCE_SOLD,
+        `Residence ${number} is already sold, please choose another one`,
+      );
     }
     return residence;
   }

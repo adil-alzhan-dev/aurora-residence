@@ -1,4 +1,4 @@
-import { ServiceUnavailableException } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { HealthController } from './health.controller.js';
@@ -34,10 +34,13 @@ describe('HealthController', () => {
 
     const error: unknown = await controller.check().catch((e: unknown) => e);
 
-    expect(error).toBeInstanceOf(ServiceUnavailableException);
-    const exception = error as ServiceUnavailableException;
+    expect(error).toBeInstanceOf(HttpException);
+    const exception = error as HttpException;
     expect(exception.getStatus()).toBe(503);
-    expect(exception.getResponse()).toMatchObject({
+    expect(exception.getResponse()).toEqual({
+      statusCode: 503,
+      code: 'SERVICE_UNAVAILABLE',
+      message: 'Database is unreachable',
       status: 'error',
       database: 'down',
     });

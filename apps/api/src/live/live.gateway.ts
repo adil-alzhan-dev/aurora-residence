@@ -3,6 +3,7 @@ import type { OnModuleDestroy } from '@nestjs/common';
 import { type OnGatewayConnection, type OnGatewayInit, WebSocketGateway } from '@nestjs/websockets';
 import { type VerifyClientCallbackAsync, WebSocket, type WebSocketServer } from 'ws';
 import { wsAllowedOrigins } from '../common/env.js';
+import { ERROR_CODES, type ErrorCode } from '../common/error-codes.js';
 
 export const LIVE_PATH = '/socket';
 export const MAX_CONNECTIONS_PER_IP = 10;
@@ -20,6 +21,18 @@ export function clientIp(request: IncomingMessage): string {
   const last = forwarded?.split(',').pop()?.trim();
   return last || request.socket.remoteAddress || 'unknown';
 }
+
+/** ws writes these into the raw HTTP refusal; the JSON body matches the API error format. */
+function refusal(statusCode: number, code: ErrorCode, message: string) {
+  return [
+    statusCode,
+    JSON.stringify({ statusCode, code, message }),
+    { 'Content-Type': 'application/json; charset=utf-8' },
+  ] as const;
+}
+
+const ORIGIN_REFUSAL = refusal(403, ERROR_CODES.FORBIDDEN, 'Origin not allowed');
+const LIMIT_REFUSAL = refusal(429, ERROR_CODES.RATE_LIMITED, 'Too many connections from this address');
 
 interface LiveClient {
   alive: boolean;
@@ -87,11 +100,11 @@ export class LiveGateway implements OnGatewayInit, OnGatewayConnection, OnModule
 
   private readonly verifyClient: VerifyClientCallbackAsync = (info, done) => {
     if (!info.origin || !wsAllowedOrigins().includes(info.origin)) {
-      done(false, 403, 'Origin not allowed');
+      done(false, ...ORIGIN_REFUSAL);
       return;
     }
     if (!this.reserveSlot(clientIp(info.req), info.req)) {
-      done(false, 429, 'Too many connections from this address');
+      done(false, ...LIMIT_REFUSAL);
       return;
     }
     done(true);

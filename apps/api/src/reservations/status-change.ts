@@ -1,4 +1,6 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 
@@ -25,7 +27,7 @@ export interface StatusChange {
 export async function lockResidence(tx: Tx, number: string): Promise<StatusChange['residence']> {
   const [residence] = await tx.$queryRaw<StatusChange['residence'][]>`
     SELECT id, number, status FROM "Residence" WHERE number = ${number} FOR UPDATE`;
-  if (!residence) throw new NotFoundException(`Residence ${number} not found`);
+  if (!residence) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
   return residence;
 }
 

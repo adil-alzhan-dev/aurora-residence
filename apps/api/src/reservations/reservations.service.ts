@@ -1,10 +1,6 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -56,7 +52,11 @@ export class ReservationsService {
     await this.prisma.$transaction(async (tx) => {
       const residence = await lockResidence(tx, number);
       if (residence.status !== 'RESERVED') {
-        throw new ConflictException(`Residence ${number} has no active reservation`);
+        throw new ApiError(
+          HttpStatus.CONFLICT,
+          ERROR_CODES.NO_ACTIVE_RESERVATION,
+          `Residence ${number} has no active reservation`,
+        );
       }
       await this.changeStatus(tx, { number, to: 'AVAILABLE', actorId, note });
     });
@@ -139,7 +139,7 @@ export class ReservationsService {
       where: { number },
       select: { id: true, number: true, status: true },
     });
-    if (!residence) throw new NotFoundException(`Residence ${number} not found`);
+    if (!residence) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
     return {
       number: residence.number,
       status: residence.status,
@@ -167,8 +167,10 @@ export class ReservationsService {
   }
 }
 
-function notAvailable(number: string, status: ResidenceStatus): ConflictException {
-  return new ConflictException(
+function notAvailable(number: string, status: ResidenceStatus): ApiError {
+  return new ApiError(
+    HttpStatus.CONFLICT,
+    status === 'SOLD' ? ERROR_CODES.RESIDENCE_SOLD : ERROR_CODES.RESIDENCE_RESERVED,
     `Residence ${number} is ${status.toLowerCase()}, only an available residence can be reserved`,
   );
 }
@@ -182,20 +184,28 @@ async function findEnquiryForReservation(
     where: { id },
     select: { id: true, name: true, status: true, residence: { select: { id: true, number: true } } },
   });
-  if (!enquiry) throw new NotFoundException(`Enquiry ${id} not found`);
+  if (!enquiry) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.ENQUIRY_NOT_FOUND, `Enquiry ${id} not found`);
   if (!enquiry.residence) {
-    throw new BadRequestException(
+    throw new ApiError(
+      HttpStatus.BAD_REQUEST,
+      ERROR_CODES.ENQUIRY_HAS_NO_RESIDENCE,
       `Enquiry ${id} has no residence. Link it to ${residence.number} before reserving.`,
     );
   }
   if (enquiry.residence.id !== residence.id) {
-    throw new BadRequestException(
+    throw new ApiError(
+      HttpStatus.BAD_REQUEST,
+      ERROR_CODES.ENQUIRY_RESIDENCE_MISMATCH,
       `Enquiry ${id} is about residence ${enquiry.residence.number}, not ${residence.number}. ` +
         `Choose an enquiry for ${residence.number}.`,
     );
   }
   if (enquiry.status === 'CLOSED') {
-    throw new BadRequestException(`Enquiry ${id} is closed, reopen it before reserving`);
+    throw new ApiError(
+      HttpStatus.BAD_REQUEST,
+      ERROR_CODES.ENQUIRY_CLOSED,
+      `Enquiry ${id} is closed, reopen it before reserving`,
+    );
   }
   return enquiry;
 }

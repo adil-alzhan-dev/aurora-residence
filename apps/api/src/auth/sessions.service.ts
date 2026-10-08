@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ApiError } from '../common/api-error.js';
 import { requireEnv } from '../common/env.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   AccessTokenPayload,
@@ -13,7 +15,6 @@ import type {
 export const ACCESS_TTL_SECONDS = 15 * 60;
 export const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
 
-const SESSION_EXPIRED = 'Your session has expired, please sign in again';
 const ADMIN_SELECT = { id: true, email: true, name: true, role: true } as const;
 
 /**
@@ -47,7 +48,7 @@ export class SessionsService {
       where: { id: payload.sid, adminUserId: payload.sub, revokedAt: null, expiresAt: { gt: new Date() } },
       select: { adminUser: { select: ADMIN_SELECT } },
     });
-    if (!session) throw new UnauthorizedException(SESSION_EXPIRED);
+    if (!session) throw sessionExpired();
     return session.adminUser;
   }
 
@@ -64,10 +65,10 @@ export class SessionsService {
       where: { id: payload.sid, refreshTokenId: payload.rid, revokedAt: null, expiresAt: { gt: new Date() } },
       data: { refreshTokenId, expiresAt },
     });
-    if (rotated.count === 0) throw new UnauthorizedException(SESSION_EXPIRED);
+    if (rotated.count === 0) throw sessionExpired();
 
     const admin = await this.prisma.adminUser.findUnique({ where: { id: payload.sub }, select: ADMIN_SELECT });
-    if (!admin) throw new UnauthorizedException(SESSION_EXPIRED);
+    if (!admin) throw sessionExpired();
     return this.sign(admin, payload.sid, refreshTokenId, expiresAt);
   }
 
@@ -102,15 +103,23 @@ export class SessionsService {
   }
 
   private async verify<T extends object>(token: string | undefined, secret: string): Promise<T> {
-    if (!token) throw new UnauthorizedException(SESSION_EXPIRED);
+    if (!token) throw sessionExpired();
     try {
       return await this.jwt.verifyAsync<T>(token, { secret });
     } catch {
-      throw new UnauthorizedException(SESSION_EXPIRED);
+      throw sessionExpired();
     }
   }
 }
 
 function refreshExpiry(): Date {
   return new Date(Date.now() + REFRESH_TTL_SECONDS * 1000);
+}
+
+function sessionExpired(): ApiError {
+  return new ApiError(
+    HttpStatus.UNAUTHORIZED,
+    ERROR_CODES.SESSION_EXPIRED,
+    'Your session has expired, please sign in again',
+  );
 }
