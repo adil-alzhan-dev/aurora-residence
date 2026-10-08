@@ -45,7 +45,8 @@ describe("LiveIndicator", () => {
     expect(status.textContent).toBe(t.live.open);
 
     act(() => FakeSocket.all[0].onclose?.());
-    expect(status.textContent).toBe(t.live.offline);
+    expect(status.textContent).toBe(`${t.live.offline}${t.live.offlineShort}`);
+    expect(screen.getByText(t.live.offlineShort).getAttribute("aria-hidden")).toBe("true");
 
     act(() => vi.advanceTimersByTime(1200));
     act(() => FakeSocket.all[1].onopen?.());

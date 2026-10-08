@@ -51,6 +51,7 @@ export const adminRu: AdminDictionary = {
   live: {
     open: "Онлайн: изменения сразу на сайте",
     offline: "Нет связи: подключаемся",
+    offlineShort: "Нет связи",
   },
   roles: {
     ADMIN: "Администратор",

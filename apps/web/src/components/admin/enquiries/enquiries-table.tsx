@@ -75,7 +75,7 @@ export function EnquiriesPager({ page, total, onPage, t }: PagerProps) {
   if (pages <= 1) return null;
   const range = pageRange(page, total);
   const button =
-    "flex h-10 items-center rounded-base border border-border bg-card px-4 text-admin-body text-foreground transition-colors duration-200 hover:border-foreground disabled:pointer-events-none disabled:text-disabled-foreground";
+    "flex h-11 items-center rounded-base border border-border bg-card px-4 text-admin-body md:h-10 text-foreground transition-colors duration-200 hover:border-foreground disabled:pointer-events-none disabled:text-disabled-foreground";
   return (
     <nav aria-label={t.pagination} className="flex flex-wrap items-center justify-between gap-3">
       <p aria-live="polite" className="text-admin-caption text-muted-foreground">

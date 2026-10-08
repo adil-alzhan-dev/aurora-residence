@@ -51,6 +51,7 @@ export const adminEn = {
   live: {
     open: "Live: changes reach the site instantly",
     offline: "Offline: reconnecting",
+    offlineShort: "Offline",
   },
   roles: {
     ADMIN: "Administrator",
