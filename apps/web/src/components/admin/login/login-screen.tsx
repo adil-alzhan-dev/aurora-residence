@@ -11,7 +11,7 @@ export function LoginScreen({ t, next }: { t: AdminDictionary; next: string | nu
         locale={t.locale.lang}
         label={t.common.language}
         languages={t.common.languages}
-        className="absolute top-4 right-4 sm:top-8 sm:right-8"
+        className="absolute top-4 right-4 sm:top-8 sm:right-8 max-md:[&>button]:min-w-11 max-md:[&>button]:justify-center"
       />
       <main
         aria-labelledby="login-title"

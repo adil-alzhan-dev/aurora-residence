@@ -66,7 +66,12 @@ export function AdminTopbar({ t }: { t: AdminDictionary }) {
       </p>
       <div className="flex shrink-0 items-center gap-3 md:gap-6">
         <LiveIndicator t={t.live} />
-        <LocaleSwitcher locale={t.locale.lang} label={t.common.language} languages={t.common.languages} />
+        <LocaleSwitcher
+          locale={t.locale.lang}
+          label={t.common.language}
+          languages={t.common.languages}
+          className="max-md:[&>button]:min-w-11 max-md:[&>button]:justify-center"
+        />
         <span aria-hidden="true" className="h-8 w-px bg-border" />
         <CurrentManager t={t} />
       </div>

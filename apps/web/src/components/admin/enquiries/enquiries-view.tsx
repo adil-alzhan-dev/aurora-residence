@@ -65,7 +65,7 @@ function EmptyState({ filtered, onReset, t }: { filtered: boolean; onReset: () =
         <button
           type="button"
           onClick={onReset}
-          className="text-admin-strong text-foreground underline-offset-4 hover:text-primary hover:underline"
+          className="text-admin-strong text-foreground underline-offset-4 hover:text-primary hover:underline max-md:min-h-11"
         >
           {t.reset}
         </button>

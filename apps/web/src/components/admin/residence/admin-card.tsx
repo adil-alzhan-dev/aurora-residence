@@ -12,7 +12,7 @@ type AdminCardProps = {
 
 export function AdminCard({ id, title, lead, className, children }: AdminCardProps) {
   return (
-    <section aria-labelledby={id} className={cn("flex flex-col rounded-base border border-border bg-card p-6", className)}>
+    <section aria-labelledby={id} className={cn("flex flex-col rounded-base border border-border bg-card p-4 md:p-6", className)}>
       <div className="flex flex-col">
         <h2 id={id} className="text-admin-section text-foreground">
           {title}

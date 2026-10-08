@@ -27,7 +27,7 @@ export function DashboardCard({ id, title, lead, action, className, headerClassN
         {action && (
           <Link
             href={action.href}
-            className="flex shrink-0 items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary"
+            className="flex shrink-0 items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary max-md:min-h-11"
           >
             {action.label}
             <ArrowRightIcon />

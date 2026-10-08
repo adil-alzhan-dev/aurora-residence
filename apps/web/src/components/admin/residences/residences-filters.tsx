@@ -11,7 +11,7 @@ import type { AdminResidenceStatus, ResidenceList } from "@/lib/admin/schemas";
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const box = "flex h-11 items-center gap-2 rounded-base border border-border bg-card px-3 md:h-10";
+const box = "flex items-center gap-2 rounded-base border border-border bg-card px-3 md:h-10";
 
 type FiltersProps = {
   filters: ResidenceFilters;
@@ -33,7 +33,7 @@ function FloorSelect({ value, onFloor, t }: { value: number | null; onFloor: (fl
         id={id}
         value={value ?? ""}
         onChange={(event) => onFloor(event.target.value ? Number(event.target.value) : null)}
-        className="h-full min-w-0 flex-1 cursor-pointer appearance-none bg-transparent pr-6 text-admin-body text-foreground outline-none"
+        className="h-11 min-w-0 flex-1 cursor-pointer md:h-full appearance-none bg-transparent pr-6 text-admin-body text-foreground outline-none"
       >
         <option value="">{t.allFloors}</option>
         {floorNumbers.map((floor) => (

@@ -21,7 +21,7 @@ export function EnquiryClient({ enquiry, t, sources }: { enquiry: EnquiryCard; t
         {fields.map((field) => (
           <div key={field.label} className="flex min-w-0 flex-col gap-1">
             <dt className="text-label text-muted-foreground">{field.label}</dt>
-            <dd className="text-admin-body break-words text-foreground [&_a]:transition-colors [&_a]:hover:text-primary">
+            <dd className="text-admin-body break-words text-foreground [&_a]:transition-colors [&_a]:hover:text-primary max-md:[&_a]:inline-flex max-md:[&_a]:min-h-11 max-md:[&_a]:items-center">
               {field.value}
             </dd>
           </div>

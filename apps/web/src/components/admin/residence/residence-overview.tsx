@@ -23,7 +23,7 @@ export function ResidenceOverview({ residence, t }: { residence: ResidenceCard; 
 
   return (
     <div
-      className="flex flex-col gap-6 rounded-base border border-border bg-card p-6 md:flex-row md:items-center"
+      className="flex flex-col gap-6 rounded-base border border-border bg-card p-4 md:flex-row md:items-center md:p-6"
     >
       <div
         role="img"

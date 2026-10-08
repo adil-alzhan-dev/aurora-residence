@@ -26,7 +26,7 @@ export function StatusSelect({ value, current, onValueChange, label, reservedHin
     <Select.Root value={value} onValueChange={(next) => onValueChange(next as AdminResidenceStatus)} disabled={disabled}>
       <Select.Trigger
         aria-label={label}
-        className="group flex h-8 w-37 items-center justify-between gap-2 rounded-base border border-border bg-card pr-2 pl-1 transition-colors duration-200 hover:border-foreground data-disabled:opacity-60 data-[state=open]:border-primary"
+        className="group flex h-11 w-37 items-center justify-between gap-2 rounded-base border border-border bg-card pr-2 pl-1 transition-colors duration-200 hover:border-foreground data-disabled:opacity-60 data-[state=open]:border-primary md:h-8"
       >
         <Select.Value>
           <ResidenceStatusBadge status={value} statuses={statuses} />
@@ -51,7 +51,7 @@ export function StatusSelect({ value, current, onValueChange, label, reservedHin
                   key={status}
                   value={status}
                   disabled={locked}
-                  className="flex h-9 cursor-pointer items-center justify-between gap-2 px-2 outline-none select-none data-disabled:cursor-not-allowed data-highlighted:bg-background"
+                  className="flex h-11 cursor-pointer items-center justify-between gap-2 px-2 outline-none select-none data-disabled:cursor-not-allowed data-highlighted:bg-background md:h-9"
                 >
                   <Select.ItemText>
                     <span className={locked ? "opacity-50" : undefined}>

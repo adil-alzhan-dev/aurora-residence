@@ -64,7 +64,7 @@ export function EnquiryResidenceCard({ enquiry, t, reserve, link }: CardProps) {
           {reserve}
           <Link
             href={adminHref.residence(residence.number)}
-            className="flex w-fit items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary"
+            className="flex w-fit items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary max-md:min-h-11"
           >
             {fillTemplate(t.enquiry.residence.open, { number: residence.number })}
             <ArrowRightIcon />

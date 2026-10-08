@@ -29,7 +29,7 @@ export function EnquiryStatusCard({ enquiry, t }: { enquiry: EnquiryCard; t: Adm
               disabled={update.isPending}
               onClick={() => status !== enquiry.status && update.mutate({ status })}
               className={cn(
-                "flex h-10 min-w-0 flex-1 items-center justify-center px-2 whitespace-nowrap transition-colors duration-200 sm:px-3 focus-visible:-outline-offset-2",
+                "flex h-11 min-w-0 flex-1 items-center justify-center px-2 whitespace-nowrap transition-colors duration-200 sm:px-3 md:h-10 focus-visible:-outline-offset-2",
                 active ? "bg-foreground text-admin-strong text-card" : "text-admin-body text-muted-foreground hover:text-foreground",
                 update.isPending && "cursor-wait",
               )}

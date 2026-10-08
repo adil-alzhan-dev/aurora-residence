@@ -38,8 +38,8 @@ export function ResidenceEnquiries({ number, now, t }: EnquiriesProps) {
               </Link>
               <span className="text-admin-caption text-muted-foreground">
                 {formatReceived(item.createdAt, now, t.enquiries, format)}
-                <span aria-hidden="true">{"  ·  "}</span>
-                <span className="whitespace-nowrap">{item.phone}</span>
+                <span aria-hidden="true" className="max-md:hidden">{"  ·  "}</span>
+                <span className="whitespace-nowrap max-md:block">{item.phone}</span>
               </span>
             </div>
             <EnquiryStatusBadge status={item.status} label={t.enquiries.statuses[item.status]} />

@@ -66,7 +66,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
         <dl className="flex flex-col gap-5">
           <Field label={text.client}>
             {reservation.enquiry ? (
-              <Link href={adminHref.enquiry(reservation.enquiry.id)} className="hover:text-primary">
+              <Link href={adminHref.enquiry(reservation.enquiry.id)} className="hover:text-primary max-md:inline-flex max-md:min-h-11 max-md:items-center">
                 {reservation.enquiry.name}
               </Link>
             ) : (

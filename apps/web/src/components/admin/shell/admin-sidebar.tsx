@@ -36,7 +36,7 @@ export function AdminSidebar({ t }: { t: AdminDictionary }) {
     <aside className="border-border bg-card max-lg:border-b lg:w-60 lg:shrink-0 lg:border-r">
       <div className="flex flex-col lg:sticky lg:top-0 lg:h-svh lg:px-6 lg:py-8">
         <div className="flex items-center justify-between py-2 pr-1 pl-4 lg:p-0">
-          <Link href={ADMIN_HOME} aria-label={t.common.home} className="flex">
+          <Link href={ADMIN_HOME} aria-label={t.common.home} className="flex max-md:min-h-11 max-md:items-center">
             <Logo size="small" />
           </Link>
           {logoutButton("lg:hidden")}

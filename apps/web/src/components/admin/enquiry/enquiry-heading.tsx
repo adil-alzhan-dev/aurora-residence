@@ -12,7 +12,7 @@ export function BackToEnquiries({ label }: { label: string }) {
   return (
     <Link
       href={adminHref.enquiries}
-      className="flex w-fit items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary"
+      className="flex w-fit items-center gap-2 text-admin-strong text-foreground transition-colors duration-200 hover:text-primary max-md:min-h-11"
     >
       <ArrowRightIcon className="rotate-180" />
       {label}

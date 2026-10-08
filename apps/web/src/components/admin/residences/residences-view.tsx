@@ -98,7 +98,7 @@ export function ResidencesView({ t }: { t: AdminDictionary }) {
           <button
             type="button"
             onClick={() => change({ search: "", floor: null, status: null })}
-            className="text-admin-strong text-foreground underline-offset-4 hover:text-primary hover:underline"
+            className="text-admin-strong text-foreground underline-offset-4 hover:text-primary hover:underline max-md:min-h-11"
           >
             {text.reset}
           </button>

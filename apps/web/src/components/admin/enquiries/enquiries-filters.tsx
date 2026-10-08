@@ -9,7 +9,7 @@ import { ENQUIRY_STATUSES, cleanEnquirySearch, type EnquiryFilters } from "@/lib
 import type { EnquiryCounts } from "@/lib/admin/enquiry-queries";
 import { cn } from "@/lib/utils";
 
-const box = "flex h-11 items-center gap-2 rounded-base border border-border bg-card px-3 md:h-10";
+const box = "flex items-center gap-2 rounded-base border border-border bg-card px-3 md:h-10";
 
 type FiltersProps = {
   filters: EnquiryFilters;
@@ -73,7 +73,7 @@ function ResidenceSelect({ value, numbers, onResidence, t }: ResidenceSelectProp
         id={id}
         value={value ?? ""}
         onChange={(event) => onResidence(event.target.value || null)}
-        className="h-full min-w-0 flex-1 cursor-pointer appearance-none bg-transparent pr-6 text-admin-body text-foreground outline-none"
+        className="h-11 min-w-0 flex-1 cursor-pointer md:h-full appearance-none bg-transparent pr-6 text-admin-body text-foreground outline-none"
       >
         <option value="">{t.anyResidence}</option>
         {options.map((number) => (

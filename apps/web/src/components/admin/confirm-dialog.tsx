@@ -4,6 +4,7 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useId, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -36,7 +37,13 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     >
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-50 bg-dark/60" />
-        <AlertDialog.Content className="fixed top-1/2 left-1/2 z-50 flex w-[calc(100vw-2rem)] max-w-[480px] -translate-1/2 flex-col gap-5 rounded-base border border-border bg-card p-6 text-foreground">
+        <AlertDialog.Content
+          className={cn(
+            "fixed z-50 flex flex-col gap-5 border-border bg-card text-foreground",
+            "max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[90svh] max-md:overflow-y-auto max-md:border-t max-md:px-4 max-md:pt-6 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]",
+            "md:top-1/2 md:left-1/2 md:w-[calc(100vw-2rem)] md:max-w-[480px] md:-translate-1/2 md:rounded-base md:border md:p-6",
+          )}
+        >
           <AlertDialog.Title className="text-admin-section text-foreground">{title}</AlertDialog.Title>
           <AlertDialog.Description asChild>
             <div className="flex flex-col gap-1 text-admin-body text-foreground">{children}</div>
@@ -61,12 +68,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
               {error}
             </p>
           )}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 max-md:mt-auto max-md:flex-col max-md:items-stretch max-md:gap-1">
             <Button type="button" disabled={pending} onClick={() => props.onConfirm(text.trim())}>
               {pending ? pendingLabel : confirmLabel}
             </Button>
             <AlertDialog.Cancel asChild>
-              <Button type="button" variant="ghost" disabled={pending} className="px-3">
+              <Button type="button" variant="ghost" disabled={pending} className="px-3 max-md:w-full">
                 {cancelLabel}
               </Button>
             </AlertDialog.Cancel>
