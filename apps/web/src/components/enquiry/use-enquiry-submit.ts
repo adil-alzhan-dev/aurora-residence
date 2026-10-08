@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
-import { sendEnquiry, type EnquiryPayload, type EnquirySource } from "@/lib/api/enquiries";
+import { sendEnquiry, type EnquiryPayload, type EnquiryResult, type EnquirySource } from "@/lib/api/enquiries";
 import type { Locale } from "@/lib/locale";
 
 import { toFullPhone, type EnquiryValues } from "./enquiry-schema";
 
-export type FormAlert = { kind: "rate-limited" } | { kind: "failed" } | { kind: "rejected"; message: string };
+export type FormAlert = Extract<EnquiryResult, { kind: "refused" | "failed" }>;
 
 type Target = { source: EnquirySource; residence?: string; locale: Locale };
 
@@ -36,7 +36,7 @@ export function toEnquiryPayload(values: EnquiryValues, { source, residence, loc
 type SubmitOptions = {
   onSent: () => void;
   onSendingChange?: (sending: boolean) => void;
-  /** The form's own texts for API field errors, which come in English. */
+  /** The form's own texts for API field errors; the API's English words are never shown. */
   messages?: Partial<Record<FieldWithError, string>>;
 };
 
@@ -81,13 +81,13 @@ export function useEnquirySubmit(
   const submit = (event: FormEvent<HTMLFormElement>) => form.handleSubmit(send)(event);
 
   function showFieldErrors(fields: Record<string, string>) {
-    const known = Object.entries(fields).filter((entry): entry is [FieldWithError, string] => isFieldWithError(entry[0]));
+    const known = Object.keys(fields).filter(isFieldWithError).filter((field) => messages[field]);
     if (known.length === 0) {
       setAlert({ kind: "failed" });
       return;
     }
-    known.forEach(([field, message], index) => {
-      form.setError(field, { type: "server", message: messages[field] ?? message }, { shouldFocus: index === 0 });
+    known.forEach((field, index) => {
+      form.setError(field, { type: "server", message: messages[field] }, { shouldFocus: index === 0 });
     });
   }
 

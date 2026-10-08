@@ -25,7 +25,7 @@ export function LoginScreen({ t, next }: { t: AdminDictionary; next: string | nu
           </h1>
           <p className="text-admin-body text-muted-foreground">{t.login.lead}</p>
         </div>
-        <LoginForm t={t.login} next={next} />
+        <LoginForm t={t.login} api={t.messages.api} next={next} />
         <p className="text-admin-caption text-muted-foreground">{t.login.forgot}</p>
       </main>
       <footer className="absolute inset-x-4 bottom-12 text-center text-admin-caption text-muted-foreground">

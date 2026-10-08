@@ -1,6 +1,12 @@
 import { z } from "zod";
 
+import type { Dictionary } from "@/content";
+
+import type { ErrorCode } from "../../../../api/src/common/error-codes";
+
 export const ENQUIRIES_PATH = "/api/enquiries";
+
+const ERROR_CODE_VALIDATION: ErrorCode = "VALIDATION_FAILED";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -19,17 +25,36 @@ export type EnquiryPayload = {
   locale: "EN" | "RU";
 };
 
+/** Codes the form explains in its own words: key of the site dictionary's `enquirySend`. */
+export const ENQUIRY_ERROR_TEXTS = {
+  RATE_LIMITED: "rateLimited",
+  RESIDENCE_SOLD: "soldRejected",
+  RESIDENCE_NOT_FOUND: "residenceMissing",
+} as const satisfies Partial<Record<ErrorCode, keyof Dictionary["enquirySend"]>>;
+
+export type EnquiryErrorText = (typeof ENQUIRY_ERROR_TEXTS)[keyof typeof ENQUIRY_ERROR_TEXTS];
+
 export type EnquiryResult =
   | { kind: "sent"; residence: string | null }
   | { kind: "invalid"; fields: Record<string, string> }
-  | { kind: "rejected"; message: string }
-  | { kind: "rate-limited" }
+  | { kind: "refused"; text: EnquiryErrorText }
   | { kind: "failed" };
 
 const receiptSchema = z.object({ residence: z.string().nullable() });
-const fieldErrorsSchema = z.object({ errors: z.record(z.string(), z.string()) });
-const rejectionSchema = z.object({ message: z.string().min(1) });
+const errorSchema = z.object({
+  code: z.string().optional(),
+  errors: z.record(z.string(), z.string()).optional(),
+});
 
+/** The form's text for a refusal: by its code, else by the status; null means the general text. */
+export function enquiryErrorText(code: string | null, status: number): EnquiryErrorText | null {
+  if (code !== null && Object.hasOwn(ENQUIRY_ERROR_TEXTS, code)) {
+    return ENQUIRY_ERROR_TEXTS[code as keyof typeof ENQUIRY_ERROR_TEXTS];
+  }
+  return code === null && status === 429 ? ENQUIRY_ERROR_TEXTS.RATE_LIMITED : null;
+}
+
+/** Decided by the error code only; the English message of the API is never shown or read. */
 export async function readEnquiryResponse(response: Response): Promise<EnquiryResult> {
   const body: unknown = await response.json().catch(() => null);
 
@@ -38,16 +63,11 @@ export async function readEnquiryResponse(response: Response): Promise<EnquiryRe
     const receipt = receiptSchema.safeParse(body);
     return { kind: "sent", residence: receipt.success ? receipt.data.residence : null };
   }
-  if (response.status === 429) return { kind: "rate-limited" };
-  if (response.status === 400) {
-    const fieldErrors = fieldErrorsSchema.safeParse(body);
-    if (fieldErrors.success && Object.keys(fieldErrors.data.errors).length > 0) {
-      return { kind: "invalid", fields: fieldErrors.data.errors };
-    }
-    const rejection = rejectionSchema.safeParse(body);
-    if (rejection.success) return { kind: "rejected", message: rejection.data.message };
-  }
-  return { kind: "failed" };
+  const parsed = errorSchema.safeParse(body);
+  const { code = null, errors = {} } = parsed.success ? parsed.data : {};
+  if (code === ERROR_CODE_VALIDATION && Object.keys(errors).length > 0) return { kind: "invalid", fields: errors };
+  const text = enquiryErrorText(code, response.status);
+  return text ? { kind: "refused", text } : { kind: "failed" };
 }
 
 export async function sendEnquiry(payload: EnquiryPayload): Promise<EnquiryResult> {

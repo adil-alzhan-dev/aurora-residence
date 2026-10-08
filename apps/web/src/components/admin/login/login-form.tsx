@@ -12,6 +12,7 @@ import { useAdminFormat } from "@/components/admin/admin-locale";
 import { Button } from "@/components/ui/button";
 import type { AdminDictionary } from "@/content/en-admin";
 import type { AdminFormat } from "@/lib/admin/admin-format";
+import { apiErrorText } from "@/lib/admin/api-texts";
 import { signIn, type LoginResult } from "@/lib/admin/login";
 import { safeNextPath } from "@/lib/admin/paths";
 import { adminApi } from "@/lib/admin/session";
@@ -29,20 +30,25 @@ const loginSchema = (t: AdminDictionary["login"]) =>
 
 type Problem = Exclude<LoginResult, { kind: "signed-in" }>;
 
-function problemText(problem: Problem, t: AdminDictionary["login"], format: AdminFormat) {
+type LoginTexts = { t: AdminDictionary["login"]; api: AdminDictionary["messages"]["api"] };
+
+function problemText(problem: Problem, { t, api }: LoginTexts, format: AdminFormat) {
   switch (problem.kind) {
     case "wrong-credentials":
       return fillTemplate(t.wrongCredentials, { attempts: format.count(problem.attemptsLeft, t.attempts) });
-    case "paused": {
-      const minutes = Math.ceil(problem.retryAfterSeconds / 60);
-      return fillTemplate(t.paused, { minutes: format.count(minutes, t.minutes) });
+    case "paused":
+    case "rate-limited": {
+      const minutes = format.count(Math.ceil(problem.retryAfterSeconds / 60), t.minutes);
+      return fillTemplate(problem.kind === "paused" ? t.paused : t.rateLimited, { minutes });
     }
+    case "refused":
+      return apiErrorText(problem, api);
     default:
       return t.failed;
   }
 }
 
-export function LoginForm({ t, next }: { t: AdminDictionary["login"]; next: string | null }) {
+export function LoginForm({ t, api, next }: LoginTexts & { next: string | null }) {
   const format = useAdminFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -78,13 +84,13 @@ export function LoginForm({ t, next }: { t: AdminDictionary["login"]; next: stri
       if (result.fields.password) setError("password", { message: t.passwordRequired });
       return;
     }
-    if (result.kind === "paused") setPauseSeconds(result.retryAfterSeconds);
+    if (result.kind === "paused" || result.kind === "rate-limited") setPauseSeconds(result.retryAfterSeconds);
     setProblem(result);
   });
 
   const { errors, isSubmitting } = formState;
   const wrongCredentials = problem?.kind === "wrong-credentials";
-  const message = errors.email?.message ?? errors.password?.message ?? (problem && problemText(problem, t, format));
+  const message = errors.email?.message ?? errors.password?.message ?? (problem && problemText(problem, { t, api }, format));
   const paused = pauseSeconds !== null;
 
   return (

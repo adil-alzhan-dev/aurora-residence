@@ -64,6 +64,7 @@ export const enquiryRu: typeof enquiryEn = {
     failedBefore: "Не удалось отправить заявку. Попробуйте ещё раз или позвоните ",
     failedAfter: ".",
     soldRejected: "Эту квартиру только что продали. Пожалуйста, выберите другую.",
+    residenceMissing: "Такой квартиры в доме нет. Пожалуйста, выберите другую.",
     success: {
       overline: "Заявка отправлена",
       title: "Спасибо",

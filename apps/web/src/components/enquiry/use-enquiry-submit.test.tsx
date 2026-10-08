@@ -75,7 +75,13 @@ describe("useEnquirySubmit", () => {
     const apiMessage = "Enter a phone number with country code, for example +1 555 010 2040";
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ message: apiMessage, errors: { phone: apiMessage } }), { status: 400 })),
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({ statusCode: 400, code: "VALIDATION_FAILED", message: [apiMessage], errors: { phone: apiMessage } }),
+            { status: 400 },
+          ),
+      ),
     );
     const russian = "Введите номер: от 7 до 15 цифр вместе с кодом";
     const { result } = renderHook(() => {
@@ -88,6 +94,22 @@ describe("useEnquirySubmit", () => {
       await result.current.submit.submit(submitEvent);
     });
     await waitFor(() => expect(result.current.form.getFieldState("phone").error?.message).toBe(russian));
+  });
+
+  it("never shows the API's English words, even for a field without its own text", async () => {
+    const body = { statusCode: 400, code: "VALIDATION_FAILED", message: ["comment is too long"], errors: { comment: "comment is too long" } };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(body), { status: 400 })));
+    const { result } = renderHook(() => {
+      const form = useForm<EnquiryValues>({ defaultValues: values });
+      const submit = useEnquirySubmit(form, { source: "Contacts form", locale: "en" }, { onSent: vi.fn() });
+      return { form, submit };
+    });
+
+    await act(async () => {
+      await result.current.submit.submit(submitEvent);
+    });
+    await waitFor(() => expect(result.current.submit.alert).toEqual({ kind: "failed" }));
+    expect(result.current.form.getFieldState("comment").error).toBeUndefined();
   });
 });
 

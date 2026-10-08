@@ -108,7 +108,7 @@ describe("EnquiryDialog in Russian", () => {
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(JSON.parse(String(init.body))).toMatchObject({ locale: "RU", source: "Residence page" });
 
-    answer(json(400, { message: "Residence 7.03 is already sold, please choose another one" }));
+    answer(json(400, { statusCode: 400, code: "RESIDENCE_SOLD", message: "Residence 7.03 is already sold, please choose another one" }));
 
     expect(await screen.findByText(ru.enquirySend.soldRejected)).toBeTruthy();
     expect(screen.queryByText(/already sold/)).toBeNull();

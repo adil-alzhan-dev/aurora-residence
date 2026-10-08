@@ -62,6 +62,7 @@ export const enquiryEn = {
     failedBefore: "Something went wrong while sending your request. Please try again or call ",
     failedAfter: ".",
     soldRejected: "This residence has just been sold. Please choose another one.",
+    residenceMissing: "This residence is not in the house. Please choose another one.",
     success: {
       overline: "Request sent",
       title: "Thank you",

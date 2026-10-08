@@ -23,8 +23,7 @@ export function FormAlertMessage({ alert, phone, t }: FormAlertMessageProps) {
 
   return (
     <p ref={ref} role="alert" tabIndex={-1} className="w-full text-caption text-destructive outline-none">
-      {alert.kind === "rate-limited" && t.rateLimited}
-      {alert.kind === "rejected" && t.soldRejected}
+      {alert.kind === "refused" && t[alert.text]}
       {alert.kind === "failed" && (
         <>
           {t.failedBefore}

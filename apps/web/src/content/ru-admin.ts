@@ -37,6 +37,7 @@ export const adminRu: AdminDictionary = {
     wrongCredentials: "Неверная почта или пароль. Осталось {attempts}, потом вход приостановится на 15 минут.",
     attempts: pluralForms("{count} попытка", "{count} попытки", "{count} попыток"),
     paused: "Слишком много неудачных попыток. Вход приостановлен, попробуйте через {minutes}.",
+    rateLimited: "Слишком много запросов на вход. Попробуйте через {minutes}.",
     minutes: pluralForms("{count} минуту", "{count} минуты", "{count} минут"),
     failed: "Не удалось связаться с сервером. Проверьте соединение и попробуйте ещё раз.",
   },

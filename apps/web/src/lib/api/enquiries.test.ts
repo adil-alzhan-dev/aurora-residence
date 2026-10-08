@@ -40,11 +40,11 @@ describe("sendEnquiry", () => {
     );
   });
 
-  it("returns field errors from a validation failure", async () => {
+  it("returns field errors of VALIDATION_FAILED", async () => {
     answerWith(
       json(400, {
         statusCode: 400,
-        error: "Bad Request",
+        code: "VALIDATION_FAILED",
         message: ["Enter a valid email address"],
         errors: { email: "Enter a valid email address", phone: "Enter a phone number" },
       }),
@@ -56,22 +56,28 @@ describe("sendEnquiry", () => {
     });
   });
 
-  it("passes on the reason when a residence cannot be requested", async () => {
-    const message = "Residence 7.02 is already sold, please choose another one";
-    answerWith(json(400, { statusCode: 400, error: "Bad Request", message }));
+  // The English message says something else on purpose: only the code decides.
+  it.each([
+    ["RESIDENCE_SOLD", 400, "soldRejected"],
+    ["RESIDENCE_NOT_FOUND", 404, "residenceMissing"],
+    ["RATE_LIMITED", 429, "rateLimited"],
+  ] as const)("names the reason of %s", async (code, status, text) => {
+    answerWith(json(status, { statusCode: status, code, message: "Residence 7.02 is available" }));
 
-    await expect(sendEnquiry(payload)).resolves.toEqual({ kind: "rejected", message });
+    await expect(sendEnquiry(payload)).resolves.toEqual({ kind: "refused", text });
   });
 
-  it("reports the rate limit", async () => {
-    answerWith(json(429, { statusCode: 429, message: "ThrottlerException: Too Many Requests" }));
+  it("treats a 429 without a code as the rate limit", async () => {
+    answerWith(new Response("Too Many Requests", { status: 429 }));
 
-    await expect(sendEnquiry(payload)).resolves.toEqual({ kind: "rate-limited" });
+    await expect(sendEnquiry(payload)).resolves.toEqual({ kind: "refused", text: "rateLimited" });
   });
 
   it.each([
-    ["a server error", json(500, { statusCode: 500, message: "Internal server error" })],
-    ["a missing residence", json(404, { statusCode: 404, message: "Residence 12.01 not found" })],
+    ["a server error", json(500, { statusCode: 500, code: "INTERNAL_ERROR", message: "Internal server error" })],
+    ["an unknown code", json(400, { statusCode: 400, code: "SOMETHING_NEW", message: "Residence 7.02 is sold" })],
+    ["a code the form does not explain", json(409, { statusCode: 409, code: "RESIDENCE_RESERVED" })],
+    ["a validation failure without fields", json(400, { statusCode: 400, code: "VALIDATION_FAILED", message: "Bad JSON" })],
     ["a body that is not JSON", new Response("<html>Bad gateway</html>", { status: 502 })],
     ["a network failure", new TypeError("Failed to fetch")],
   ])("fails as a whole on %s", async (_, response) => {

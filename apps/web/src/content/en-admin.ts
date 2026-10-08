@@ -37,6 +37,7 @@ export const adminEn = {
     wrongCredentials: "Wrong email or password. {attempts} left, then sign-in pauses for 15 minutes.",
     attempts: pluralForms("{count} attempt", "{count} attempts"),
     paused: "Too many failed attempts. Sign-in is paused, try again in {minutes}.",
+    rateLimited: "Too many sign-in requests. Try again in {minutes}.",
     minutes: pluralForms("{count} minute", "{count} minutes"),
     failed: "Could not reach the server. Check the connection and try again.",
   },
