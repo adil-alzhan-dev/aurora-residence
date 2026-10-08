@@ -134,7 +134,7 @@ describe('Error codes of the API (e2e)', () => {
     expect(response.body).toEqual({
       statusCode: 503,
       code: 'SERVICE_UNAVAILABLE',
-      message: 'Database is unreachable',
+      message: 'Service temporarily unavailable',
       status: 'error',
       database: 'down',
     });

@@ -11,7 +11,6 @@ const CODE_BY_STATUS: Partial<Record<number, ErrorCode>> = {
   [HttpStatus.CONFLICT]: ERROR_CODES.CONFLICT,
   [HttpStatus.PAYLOAD_TOO_LARGE]: ERROR_CODES.PAYLOAD_TOO_LARGE,
   [HttpStatus.TOO_MANY_REQUESTS]: ERROR_CODES.RATE_LIMITED,
-  [HttpStatus.SERVICE_UNAVAILABLE]: ERROR_CODES.SERVICE_UNAVAILABLE,
 };
 
 const INTERNAL_ERROR: ApiErrorBody = {
@@ -20,11 +19,23 @@ const INTERNAL_ERROR: ApiErrorBody = {
   message: 'Internal server error',
 };
 
+const SERVICE_UNAVAILABLE: ApiErrorBody = {
+  statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+  code: ERROR_CODES.SERVICE_UNAVAILABLE,
+  message: 'Service temporarily unavailable',
+};
+
+// What the health check adds to a 503 when the database is down; any other value is dropped.
+const HEALTH_DOWN = { status: 'error', database: 'down' } as const;
+
+const CLIENT_ERROR_EXTRAS = ['errors', 'attemptsLeft', 'retryAfterSeconds'] as const;
+
 /**
- * Gives every HTTP error the same body: { statusCode, code, message } plus the
- * extra fields an ApiError carries. Headers set before the throw (Retry-After
- * from the throttler) stay on the response. Server errors other than 503 never
- * show their details to the client, only to the log.
+ * Gives every HTTP error the same body: { statusCode, code, message }. A 4xx may
+ * add only the fields in CLIENT_ERROR_EXTRAS. A 5xx answers with a fixed text by
+ * its code and never shows its details or payload to the client, only to the log;
+ * the one exception is the health check's constant HEALTH_DOWN fields on a 503.
+ * Headers set before the throw (Retry-After from the throttler) stay on the response.
  */
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
@@ -42,19 +53,25 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
   private toBody(error: unknown): ApiErrorBody {
     const exception = isClientHttpError(error) ? new HttpException(error.message, error.status) : error;
-    const status: number = exception instanceof HttpException ? exception.getStatus() : 500;
-    if (!(exception instanceof HttpException) || (status >= 500 && status !== 503)) {
-      const error = exception instanceof Error ? exception : new Error(String(exception));
-      this.logger.error(error.message, error.stack);
-      return INTERNAL_ERROR;
+    const status: HttpStatus =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    if (!(exception instanceof HttpException) || status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logServerError(exception);
+      const isUnavailable = exception instanceof HttpException && status === HttpStatus.SERVICE_UNAVAILABLE;
+      return isUnavailable ? serviceUnavailableBody(exception) : INTERNAL_ERROR;
     }
     const payload = exception.getResponse();
-    if (hasErrorCode(payload)) return payload;
     return {
       statusCode: status,
-      code: CODE_BY_STATUS[status] ?? ERROR_CODES.BAD_REQUEST,
+      code: errorCodeOf(payload) ?? CODE_BY_STATUS[status] ?? ERROR_CODES.BAD_REQUEST,
       message: messageOf(payload, exception),
+      ...allowedExtras(payload),
     };
+  }
+
+  private logServerError(exception: unknown): void {
+    const error = exception instanceof Error ? exception : new Error(String(exception));
+    this.logger.error(error.message, error.stack);
   }
 }
 
@@ -68,9 +85,32 @@ function isClientHttpError(error: unknown): error is Error & { status: number } 
   return expose === true && typeof status === 'number' && status >= 400 && status < 500;
 }
 
-function hasErrorCode(payload: unknown): payload is ApiErrorBody {
+function serviceUnavailableBody(exception: HttpException): ApiErrorBody {
+  const payload = exception.getResponse();
+  const isHealthDown =
+    typeof payload === 'object' &&
+    payload !== null &&
+    'status' in payload &&
+    'database' in payload &&
+    payload.status === HEALTH_DOWN.status &&
+    payload.database === HEALTH_DOWN.database;
+  return isHealthDown ? { ...SERVICE_UNAVAILABLE, ...HEALTH_DOWN } : SERVICE_UNAVAILABLE;
+}
+
+function errorCodeOf(payload: unknown): ErrorCode | undefined {
   const code = (payload as { code?: unknown } | null)?.code;
-  return typeof code === 'string' && (ALL_ERROR_CODES as string[]).includes(code);
+  if (typeof code !== 'string' || !(ALL_ERROR_CODES as string[]).includes(code)) return undefined;
+  return code as ErrorCode;
+}
+
+function allowedExtras(payload: unknown): Record<string, unknown> {
+  if (typeof payload !== 'object' || payload === null) return {};
+  const extras: Record<string, unknown> = {};
+  for (const field of CLIENT_ERROR_EXTRAS) {
+    const value = (payload as Record<string, unknown>)[field];
+    if (value !== undefined) extras[field] = value;
+  }
+  return extras;
 }
 
 function messageOf(payload: unknown, exception: HttpException): string | string[] {
