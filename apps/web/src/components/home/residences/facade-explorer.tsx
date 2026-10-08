@@ -8,7 +8,7 @@ import { FacadeOverlay } from "@/components/facade/facade-overlay";
 import { FacadeRender } from "@/components/facade/facade-render";
 import { floorCenter, houseRightPercent, toPercentY } from "@/components/facade/facade-geometry";
 import { FloorRuler } from "@/components/facade/floor-ruler";
-import { describeFloor, FloorTooltip } from "@/components/facade/floor-tooltip";
+import { floorAriaLabel, FloorTooltip } from "@/components/facade/floor-tooltip";
 import { useFloorDemo } from "@/components/facade/use-floor-demo";
 import { useFloorTaps } from "@/components/facade/use-floor-taps";
 import { Button, ButtonArrow } from "@/components/ui/button";
@@ -36,10 +36,7 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
   const selectedFloor = active ?? DEMO_FLOOR;
   const showTooltip = settled && active !== null;
 
-  const floorLabel = (floor: number) => {
-    const info = describeFloor(floor, byFloor.get(floor), picker, formatPrice);
-    return [info.title, info.availability, info.price, picker.openPlan].filter(Boolean).join(", ");
-  };
+  const floorLabel = (floor: number) => floorAriaLabel(floor, byFloor.get(floor), picker, formatPrice);
 
   const tooltip = (className?: string) => (
     <FloorTooltip floor={selectedFloor} summary={byFloor.get(selectedFloor)} t={picker} className={className} />

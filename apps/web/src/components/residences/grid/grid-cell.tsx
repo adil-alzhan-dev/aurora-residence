@@ -6,7 +6,7 @@ import { useCurrency } from "@/components/currency/currency-provider";
 import type { Dictionary } from "@/content";
 import { residenceHref } from "@/content/navigation";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
-import { fillTemplate } from "@/lib/format";
+import { fillTemplate, lowerFirst } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { areaText, isOpenable, typeAreaText, type FloorText } from "../floor/residence-text";
@@ -67,9 +67,9 @@ export function GridCell({ residence, matches, t }: GridCellProps) {
       prefetch={false}
       aria-label={fillTemplate(t.grid.cellLabel, {
         number: residence.number,
-        type: typeAreaText(residence, t),
+        type: lowerFirst(typeAreaText(residence, t)),
         price: formatPrice(residence.priceUsd),
-        status: t.status[residence.status],
+        status: lowerFirst(t.status[residence.status]),
       })}
       className={className}
     >

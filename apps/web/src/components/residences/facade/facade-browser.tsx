@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { useCurrency } from "@/components/currency/currency-provider";
-import { describeFloor } from "@/components/facade/floor-tooltip";
+import { describeFloor, floorAriaLabel } from "@/components/facade/floor-tooltip";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { Dictionary } from "@/content";
@@ -44,10 +44,7 @@ export function FacadeBrowser({ summaries, cells, initialFloor, filtersKey, noMa
   const picker = t.residencePicker;
   const { formatPrice } = useCurrency();
   const activeInfo = describeFloor(active, byFloor.get(active), picker, formatPrice);
-  const floorLabel = (floor: number) => {
-    const info = describeFloor(floor, byFloor.get(floor), picker, formatPrice);
-    return [info.title, info.availability, info.price, picker.openPlan].filter(Boolean).join(", ");
-  };
+  const floorLabel = (floor: number) => floorAriaLabel(floor, byFloor.get(floor), picker, formatPrice);
 
   return (
     <>

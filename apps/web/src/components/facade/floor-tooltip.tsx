@@ -1,7 +1,7 @@
 import { useCurrency } from "@/components/currency/currency-provider";
 import type { Dictionary } from "@/content";
 import type { FloorSummary } from "@/lib/api/floors";
-import { fillTemplate } from "@/lib/format";
+import { fillTemplate, joinPhrase } from "@/lib/format";
 import type { FormatPrice } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +39,17 @@ export function describeFloor(
     soldOut,
     known: true,
   };
+}
+
+/** Floor link for screen readers: "Floor 7, 4 of 6 available, from $95,000, open plan". */
+export function floorAriaLabel(
+  floor: number,
+  summary: FloorSummary | undefined,
+  t: PickerText,
+  formatPrice: FormatPrice,
+) {
+  const info = describeFloor(floor, summary, t, formatPrice);
+  return joinPhrase([info.title, info.availability, info.price, t.openPlan]);
 }
 
 export function FloorTooltip({ floor, summary, t, className }: FloorTooltipProps) {

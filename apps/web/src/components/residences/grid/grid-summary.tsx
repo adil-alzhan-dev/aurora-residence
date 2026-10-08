@@ -6,7 +6,7 @@ import { useCurrency } from "@/components/currency/currency-provider";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
-import { fillTemplate } from "@/lib/format";
+import { fillTemplate, lowerFirst } from "@/lib/format";
 import { formatMoney, type MoneySettings } from "@/lib/money";
 import { formatMaxPrice } from "@/lib/price-filter";
 import type { ResidenceFilters } from "@/lib/residence-filters";
@@ -46,7 +46,7 @@ function describeFilters(
         min: formatMoney(range.min, money),
         max: filters.maxPrice === null ? formatMoney(range.max, money) : formatMaxPrice(filters.maxPrice, money),
       })
-    : t.filters.anyPrice;
+    : lowerFirst(t.filters.anyPrice);
   return fillTemplate(t.grid.filtersText, { type: type ?? t.grid.anyType, floor, price });
 }
 

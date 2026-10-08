@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDecimal } from "./format";
+import { formatDecimal, joinPhrase, lowerFirst } from "./format";
 import { formatMoney, type CurrencyRates } from "./money";
 import { plural, pluralForms } from "./plural";
 
@@ -49,5 +49,21 @@ describe("plural", () => {
     const forms = pluralForms("residence", "residences");
     expect(plural(1, forms, "en-US")).toBe("residence");
     expect(plural(5, forms, "en-US")).toBe("residences");
+  });
+});
+
+describe("joinPhrase", () => {
+  it("keeps the capital only at the start of the phrase", () => {
+    expect(joinPhrase(["Этаж 7", "Свободно 4 из 6", "от 95 000 $", "открыть план"])).toBe(
+      "Этаж 7, свободно 4 из 6, от 95 000 $, открыть план",
+    );
+    expect(joinPhrase(["Floor 7", "Sold out", null, "open plan"])).toBe("Floor 7, sold out, open plan");
+  });
+
+  it("leaves numbers, abbreviations and all-caps words as they are", () => {
+    expect(lowerFirst("4 of 6 available")).toBe("4 of 6 available");
+    expect(lowerFirst("Q4 2027")).toBe("Q4 2027");
+    expect(lowerFirst("AURORA")).toBe("AURORA");
+    expect(lowerFirst("Всё продано")).toBe("всё продано");
   });
 });

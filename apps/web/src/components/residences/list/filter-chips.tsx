@@ -3,7 +3,7 @@
 import { useCurrency } from "@/components/currency/currency-provider";
 import { CloseIcon } from "@/components/icons";
 import type { Dictionary } from "@/content";
-import { fillTemplate } from "@/lib/format";
+import { fillTemplate, lowerFirst } from "@/lib/format";
 import type { MoneySettings } from "@/lib/money";
 import { formatMaxPrice } from "@/lib/price-filter";
 import type { KeptParams, ResidenceFilters } from "@/lib/residence-filters";
@@ -45,7 +45,7 @@ export function FilterChips({ filters, keep, t }: FilterChipsProps) {
           {chip.label}
           <button
             type="button"
-            aria-label={fillTemplate(t.chips.remove, { label: chip.label })}
+            aria-label={fillTemplate(t.chips.remove, { label: lowerFirst(chip.label) })}
             onClick={() => navigation.update({ [chip.key]: null })}
             className="flex size-11 items-center justify-center"
           >

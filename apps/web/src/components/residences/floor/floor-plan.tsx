@@ -5,6 +5,7 @@ import type { MouseEvent, PointerEvent } from "react";
 
 import { residenceHref } from "@/content/navigation";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
+import { joinPhrase } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { PlanHoverCard } from "./plan-hover-card";
@@ -74,11 +75,11 @@ export function FloorPlan({ residences, active, point, onActivate, onLeave, t }:
         {residences.map((residence) => {
           const unit = planUnits[residence.position];
           if (!unit) return null;
-          const label = [
+          const label = joinPhrase([
             residence.number,
             typeAreaText(residence, t),
             t.floorPage[residence.status === "sold" ? "notForSale" : "clickToOpen"],
-          ];
+          ]);
           const hitArea = (
             <rect
               {...unit.rect}
@@ -91,7 +92,7 @@ export function FloorPlan({ residences, active, point, onActivate, onLeave, t }:
             <a
               key={residence.number}
               href={residenceHref(residence.number)}
-              aria-label={label.join(", ")}
+              aria-label={label}
               onClick={(event) => open(event, residence)}
               onFocus={() => onActivate(residence.number, unitCenter(unit))}
               onBlur={onLeave}

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import type { GalleryItem } from "@/content";
-import { fillTemplate, padNumber } from "@/lib/format";
+import { fillTemplate, lowerFirst, padNumber } from "@/lib/format";
 import { revealDelay } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export function GalleryShot({ item, index, openLabel, sizes, imageClassName, del
       <button
         type="button"
         onClick={() => onOpen(index)}
-        aria-label={fillTemplate(openLabel, { caption: item.caption })}
+        aria-label={fillTemplate(openLabel, { caption: lowerFirst(item.caption) })}
         data-reveal={delay === undefined ? undefined : "wipe-up"}
         style={delay === undefined ? undefined : revealDelay(delay)}
         className={cn("group relative block w-full cursor-zoom-in overflow-hidden bg-border", imageClassName)}
