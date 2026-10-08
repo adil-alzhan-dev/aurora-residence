@@ -4,6 +4,7 @@ import { LiveGateway, MAX_CONNECTIONS_PER_IP } from '../src/live/live.gateway.js
 import { LiveService } from '../src/live/live.service.js';
 import { createTestApp, http, reseed } from './app.js';
 import {
+  HandshakeRefused,
   connectLive,
   connectRaw,
   listenForLive,
@@ -45,6 +46,9 @@ describe('Live socket (e2e)', () => {
     await expect(connectLive(url, { origin: 'https://evil.example' })).rejects.toThrow('HTTP 403');
     await expect(connectLive(url, { origin: 'http://localhost:3000' })).rejects.toThrow('HTTP 403');
     await expect(connectLive(url, { origin: undefined })).rejects.toThrow('HTTP 403');
+    const refused = (await connectLive(url, { origin: 'https://evil.example' }).catch((e: unknown) => e)) as HandshakeRefused;
+    expect(refused.contentType).toBe('application/json; charset=utf-8');
+    expect(JSON.parse(refused.body)).toEqual({ statusCode: 403, code: 'FORBIDDEN', message: 'Origin not allowed' });
   });
 
   it('sends residence.updated with only the public fields of the residence', async () => {
@@ -111,6 +115,13 @@ describe('Live socket (e2e)', () => {
     for (const raw of [connectRaw(url, ip), connectRaw(url, ip), connectRaw(url, ip)]) {
       await within(raw.ended, 1000, 'Closing the over-limit connection');
       expect(await raw.status).toBe('HTTP/1.1 429 Too Many Requests');
+      const [head, body] = raw.received().split('\r\n\r\n');
+      expect(head).toContain('Content-Type: application/json; charset=utf-8');
+      expect(JSON.parse(body)).toEqual({
+        statusCode: 429,
+        code: 'RATE_LIMITED',
+        message: 'Too many connections from this address',
+      });
     }
     expect(gateway.slotsInUse(ip)).toBe(MAX_CONNECTIONS_PER_IP);
     expect(gateway.connectionCount()).toBe(MAX_CONNECTIONS_PER_IP);

@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service.js';
-import { createTestApp, http, reseed } from './app.js';
+import { createTestApp, expectError, http, reseed } from './app.js';
 
 const PUBLIC_RESIDENCE_KEYS = [
   'areaM2', 'bedrooms', 'floor', 'isPenthouse', 'layout', 'number',
@@ -47,7 +47,7 @@ describe('Public API (e2e)', () => {
     const residences = response.body as Residence[];
     expect(residences).toHaveLength(14);
     expect(residences[0]).toMatchObject({ number: '2.03', priceUsd: 198_000 });
-    await http(app).get('/api/residences?status=FREE').expect(400);
+    expectError(await http(app).get('/api/residences?status=FREE'), 400, 'VALIDATION_FAILED');
   });
 
   it('returns one residence by number and 404 / 400 for bad numbers', async () => {
@@ -60,7 +60,7 @@ describe('Public API (e2e)', () => {
   it('summarises a floor', async () => {
     const response = await http(app).get('/api/floors/7').expect(200);
     expect(response.body).toMatchObject({ floor: 7, total: 6, available: 4, fromPriceUsd: 95_000 });
-    await http(app).get('/api/floors/12').expect(400);
+    expectError(await http(app).get('/api/floors/12'), 400, 'VALIDATION_FAILED');
     const floors = await http(app).get('/api/floors').expect(200);
     expect(floors.body).toHaveLength(11);
   });
@@ -122,6 +122,7 @@ describe('Public API (e2e)', () => {
 
     it('rejects a sold residence, invalid fields and unknown fields', async () => {
       const sold = await http(app).post('/api/enquiries').send({ ...enquiry, residence: '7.02' }).expect(400);
+      expectError(sold, 400, 'RESIDENCE_SOLD');
       expect((sold.body as { message: string }).message).toMatch(/already sold/);
       await http(app).post('/api/enquiries').send({ ...enquiry, email: 'nope' }).expect(400);
       for (const phone of ['-------', '+ () - -', '555 010 2040', '+1 23', '+1234567890123456']) {

@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { ReservationsService } from '../src/reservations/reservations.service.js';
-import { createTestApp, http, reseed, signIn } from './app.js';
+import { createTestApp, expectError, http, reseed, signIn } from './app.js';
 
 interface Card {
   status: string;
@@ -51,7 +51,8 @@ describe('Reservations (e2e)', () => {
     const history = (await card('7.03')).history;
     expect(history[0]).toMatchObject({ author: 'Maya Collins', to: 'RESERVED', note: 'Reserved for 7 days, enquiry from Elena Marsh' });
 
-    await http(app).post('/api/admin/residences/7.03/reserve').set(admin()).send({ enquiryId: id }).expect(409);
+    const again = await http(app).post('/api/admin/residences/7.03/reserve').set(admin()).send({ enquiryId: id });
+    expectError(again, 409, 'RESIDENCE_RESERVED');
   });
 
   it('refuses a reservation with an enquiry about another residence', async () => {
@@ -61,6 +62,7 @@ describe('Reservations (e2e)', () => {
       .set(admin())
       .send({ enquiryId: id })
       .expect(400);
+    expectError(response, 400, 'ENQUIRY_RESIDENCE_MISMATCH');
     expect((response.body as { message: string }).message).toContain('is about residence 7.03, not 6.01');
     expect((await card('6.01')).status).toBe('AVAILABLE');
     expect(await activeReservations('6.01')).toBe(0);
@@ -86,6 +88,7 @@ describe('Reservations (e2e)', () => {
       ),
     );
     expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+    expectError(results.find((r) => r.status === 409)!, 409, 'RESIDENCE_RESERVED');
     expect(await activeReservations('4.06')).toBe(1);
   });
 
@@ -93,7 +96,8 @@ describe('Reservations (e2e)', () => {
     await http(app).post('/api/admin/residences/4.06/release').set(admin()).send({}).expect(200);
     expect((await card('4.06')).status).toBe('AVAILABLE');
     expect(await activeReservations('4.06')).toBe(0);
-    await http(app).post('/api/admin/residences/4.06/release').set(admin()).send({}).expect(409);
+    const again = await http(app).post('/api/admin/residences/4.06/release').set(admin()).send({});
+    expectError(again, 409, 'NO_ACTIVE_RESERVATION');
   });
 
   it('refuses RESERVED on PATCH and leaves the residence untouched', async () => {
@@ -103,6 +107,7 @@ describe('Reservations (e2e)', () => {
       .set(admin())
       .send({ status: 'RESERVED' })
       .expect(400);
+    expectError(response, 400, 'VALIDATION_FAILED');
     expect(String((response.body as { message: string[] }).message)).toContain(
       'To reserve a residence, use POST /api/admin/residences/:number/reserve',
     );

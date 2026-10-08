@@ -19,7 +19,17 @@ export interface LiveConnection {
   closed: Promise<{ code: number; reason: string }>;
 }
 
-/** Resolves once the socket is open; rejects with the HTTP status if the upgrade is refused. */
+export class HandshakeRefused extends Error {
+  constructor(
+    readonly statusCode: number,
+    readonly contentType: string | undefined,
+    readonly body: string,
+  ) {
+    super(`HTTP ${statusCode}`);
+  }
+}
+
+/** Resolves once the socket is open; rejects with HandshakeRefused if the upgrade is refused. */
 export function connectLive(url: string, options: ClientOptions = {}): Promise<LiveConnection> {
   const socket = new WebSocket(url, { origin: ALLOWED_ORIGIN, ...options });
   const messages: string[] = [];
@@ -30,8 +40,13 @@ export function connectLive(url: string, options: ClientOptions = {}): Promise<L
   return new Promise((resolve, reject) => {
     socket.once('open', () => resolve({ socket, messages, closed }));
     socket.once('unexpected-response', (_request, response) => {
-      reject(new Error(`HTTP ${response.statusCode}`));
-      socket.terminate();
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk: Buffer) => chunks.push(chunk));
+      response.once('end', () => {
+        const body = Buffer.concat(chunks).toString();
+        reject(new HandshakeRefused(response.statusCode ?? 0, response.headers['content-type'], body));
+        socket.terminate();
+      });
     });
     socket.once('error', reject);
   });
@@ -52,6 +67,8 @@ export interface RawConnection {
   status: Promise<string>;
   /** Resolves when the server ends or drops the TCP connection. */
   ended: Promise<void>;
+  /** Everything the server sent before the connection ended. */
+  received: () => string;
   destroy: () => void;
 }
 
@@ -80,8 +97,10 @@ export function connectRaw(url: string, forwardedFor: string): RawConnection {
   const status = new Promise<string>((resolve) =>
     socket.once('data', (chunk: Buffer) => resolve(chunk.toString().split('\r\n')[0])),
   );
+  let received = '';
+  socket.on('data', (chunk: Buffer) => (received += chunk.toString()));
   const ended = new Promise<void>((resolve) => socket.once('close', () => resolve()));
-  return { status, ended, destroy: () => socket.destroy() };
+  return { status, ended, received: () => received, destroy: () => socket.destroy() };
 }
 
 /** Rejects if the promise has not settled within the given time. */

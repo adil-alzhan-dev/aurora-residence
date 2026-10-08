@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service.js';
-import { createTestApp, http, reseed } from './app.js';
+import { createTestApp, expectError, http, reseed } from './app.js';
 import { TEST_ADMIN } from './test-env.js';
 
 interface SignedIn {
@@ -41,7 +41,11 @@ describe('Sessions (e2e)', () => {
     await http(app).post('/api/auth/logout').set('Cookie', session.cookie).expect(204);
 
     const after = await http(app).get('/api/admin/enquiries').set(bearer(session.accessToken)).expect(401);
-    expect((after.body as { message: string }).message).toBe('Your session has expired, please sign in again');
+    expect(after.body).toEqual({
+      statusCode: 401,
+      code: 'SESSION_EXPIRED',
+      message: 'Your session has expired, please sign in again',
+    });
     await http(app)
       .patch('/api/admin/residences/6.01')
       .set(bearer(session.accessToken))
@@ -86,6 +90,6 @@ describe('Sessions (e2e)', () => {
     await prisma.adminUser.update({ where: { email: TEST_ADMIN.email }, data: { role: 'MANAGER' } });
 
     await prisma.adminSession.deleteMany();
-    await http(app).get('/api/admin/dashboard').set(bearer(session.accessToken)).expect(401);
+    expectError(await http(app).get('/api/admin/dashboard').set(bearer(session.accessToken)), 401, 'SESSION_EXPIRED');
   });
 });

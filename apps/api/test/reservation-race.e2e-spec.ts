@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import type { Response } from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { ReservationsService } from '../src/reservations/reservations.service.js';
-import { createTestApp, http, reseed, signIn } from './app.js';
+import { createTestApp, expectError, http, reseed, signIn } from './app.js';
 
 interface ReserveBody {
   status: string;
@@ -96,6 +96,7 @@ describe('Concurrent reservations of one residence (e2e)', () => {
     const responses = await race(other.id, elena);
 
     expect(responses.map((r) => r.status).sort()).toEqual([201, 409]);
+    expectError(responses.find((r) => r.status === 409)!, 409, 'RESIDENCE_RESERVED');
     const winner = responses.find((r) => r.status === 201)!;
     const winnerId = winner === responses[0] ? other.id : elena;
     expect((winner.body as ReserveBody).reservation?.enquiry?.id).toBe(winnerId);
@@ -112,7 +113,7 @@ describe('Concurrent reservations of one residence (e2e)', () => {
 
     const [wrong, right] = await race(jonas, elena);
 
-    expect(wrong.status).toBe(400);
+    expectError(wrong, 400, 'ENQUIRY_RESIDENCE_MISMATCH');
     expect((wrong.body as { message: string }).message).toContain('is about residence 9.03, not 7.03');
     expect(right.status).toBe(201);
     expect((right.body as ReserveBody).reservation?.enquiry?.id).toBe(elena);

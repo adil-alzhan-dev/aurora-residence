@@ -2,10 +2,11 @@ import { execFileSync } from 'node:child_process';
 import type { INestApplication } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
-import request from 'supertest';
+import request, { type Response } from 'supertest';
 import type { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import type { ErrorCode } from '../src/common/error-codes.js';
 import { ReservationsScheduler } from '../src/reservations/reservations.scheduler.js';
 import { TEST_ADMIN } from './test-env.js';
 
@@ -36,4 +37,12 @@ export async function signIn(app: INestApplication): Promise<string> {
     .send({ email: TEST_ADMIN.email, password: TEST_ADMIN.password })
     .expect(200);
   return (response.body as { accessToken: string }).accessToken;
+}
+
+/** Checks the status and the stable error code of an API error response. */
+export function expectError(response: Response, statusCode: number, code: ErrorCode): void {
+  expect({ status: response.status, body: response.body as unknown }).toMatchObject({
+    status: statusCode,
+    body: { statusCode, code },
+  });
 }

@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service.js';
-import { createTestApp, http, reseed, signIn } from './app.js';
+import { createTestApp, expectError, http, reseed, signIn } from './app.js';
 import { TEST_ADMIN } from './test-env.js';
 
 interface ListItem {
@@ -74,6 +74,7 @@ describe('Admin enquiries without a residence (e2e)', () => {
       .set(admin())
       .send({ enquiryId: id })
       .expect(400);
+    expectError(response, 400, 'ENQUIRY_HAS_NO_RESIDENCE');
     expect((response.body as { message: string }).message).toContain(`Enquiry ${id} has no residence`);
     expect((await http(app).get('/api/residences/6.01').expect(200)).body).toMatchObject({ status: 'AVAILABLE' });
   });
@@ -93,6 +94,7 @@ describe('Admin enquiries without a residence (e2e)', () => {
     expect(log).toEqual({ toValue: '6.01', actor: { email: TEST_ADMIN.email }, residence: { number: '6.01' } });
 
     const again = await link(id, '6.02').expect(409);
+    expectError(again, 409, 'ENQUIRY_RESIDENCE_EXISTS');
     expect((again.body as { message: string }).message).toBe('Enquiry already has residence 6.01');
   });
 
@@ -109,14 +111,16 @@ describe('Admin enquiries without a residence (e2e)', () => {
 
   it('lets only one of two parallel links through', async () => {
     const id = await submit('Ingrid Solberg');
-    const results = await Promise.all([link(id, '3.01'), link(id, '3.02')]);
+    const results = await Promise.all([link(id, '3.02'), link(id, '3.04')]);
     expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
+    expectError(results.find((r) => r.status === 409)!, 409, 'ENQUIRY_RESIDENCE_EXISTS');
     expect(await prisma.activityLog.count({ where: { type: 'ENQUIRY_RESIDENCE_LINKED', enquiryId: id } })).toBe(1);
   });
 
   it('refuses sold, missing and malformed residences', async () => {
     const id = await submit('Mateo Cruz');
     const sold = await link(id, '7.02').expect(409);
+    expectError(sold, 409, 'RESIDENCE_SOLD');
     expect((sold.body as { message: string }).message).toBe('Residence 7.02 is sold');
 
     const spare = await prisma.residence.findFirstOrThrow({
@@ -125,9 +129,11 @@ describe('Admin enquiries without a residence (e2e)', () => {
     });
     await prisma.residence.delete({ where: { number: spare.number } });
     const missing = await link(id, spare.number).expect(400);
+    expectError(missing, 400, 'RESIDENCE_NOT_FOUND');
     expect((missing.body as { message: string }).message).toBe(`Residence ${spare.number} does not exist`);
 
     const malformed = await link(id, '12.01').expect(400);
+    expectError(malformed, 400, 'VALIDATION_FAILED');
     expect((malformed.body as { errors: Record<string, string> }).errors.residenceNumber).toBe(
       'Residence number must look like 7.03',
     );
@@ -166,8 +172,10 @@ describe('Admin enquiries without a residence (e2e)', () => {
   it('asks for at least one change and requires a token', async () => {
     const id = await submit('Elise Martin');
     const empty = await http(app).patch(`/api/admin/enquiries/${id}`).set(admin()).send({}).expect(400);
+    expectError(empty, 400, 'NOTHING_TO_UPDATE');
     expect((empty.body as { message: string }).message).toBe('Send a new status, managerNote or residenceNumber');
-    await http(app).patch(`/api/admin/enquiries/${id}`).send({ residenceNumber: '6.01' }).expect(401);
+    const anonymous = await http(app).patch(`/api/admin/enquiries/${id}`).send({ residenceNumber: '6.01' });
+    expectError(anonymous, 401, 'UNAUTHORIZED');
     expect((await card(id)).residence).toBeNull();
   });
 

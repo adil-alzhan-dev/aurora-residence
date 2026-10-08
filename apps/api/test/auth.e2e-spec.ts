@@ -1,5 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
-import { createTestApp, http, reseed, signIn } from './app.js';
+import { createTestApp, expectError, http, reseed, signIn } from './app.js';
 import { TEST_ADMIN } from './test-env.js';
 
 describe('Auth (e2e)', () => {
@@ -39,11 +39,10 @@ describe('Auth (e2e)', () => {
   });
 
   it('rejects malformed and extra fields', async () => {
-    await http(app).post('/api/auth/login').send({ email: 'not-an-email', password: 'x' }).expect(400);
-    await http(app)
-      .post('/api/auth/login')
-      .send({ email: TEST_ADMIN.email, password: 'x', role: 'ADMIN' })
-      .expect(400);
+    const malformed = await http(app).post('/api/auth/login').send({ email: 'not-an-email', password: 'x' });
+    expectError(malformed, 400, 'VALIDATION_FAILED');
+    const extra = await http(app).post('/api/auth/login').send({ email: TEST_ADMIN.email, password: 'x', role: 'ADMIN' });
+    expectError(extra, 400, 'VALIDATION_FAILED');
   });
 
   it('rotates the refresh token and forgets it after logout', async () => {
@@ -53,10 +52,11 @@ describe('Auth (e2e)', () => {
     const refreshed = await http(app).post('/api/auth/refresh').set('Cookie', cookie).expect(200);
     const rotated = refreshed.headers['set-cookie'] as unknown as string[];
     expect((refreshed.body as { accessToken: string }).accessToken).toBeTruthy();
-    await http(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+    expectError(await http(app).post('/api/auth/refresh').set('Cookie', cookie), 401, 'SESSION_EXPIRED');
 
     await http(app).post('/api/auth/logout').set('Cookie', rotated).expect(204);
-    await http(app).post('/api/auth/refresh').set('Cookie', rotated).expect(401);
+    expectError(await http(app).post('/api/auth/refresh').set('Cookie', rotated), 401, 'SESSION_EXPIRED');
+    expectError(await http(app).post('/api/auth/refresh'), 401, 'SESSION_EXPIRED');
   });
 
   it.each([
@@ -71,8 +71,9 @@ describe('Auth (e2e)', () => {
     ['get', '/api/admin/enquiries/1'],
     ['patch', '/api/admin/enquiries/1'],
   ] as const)('%s %s answers 401 without a valid token', async (method, path) => {
-    await http(app)[method](path).expect(401);
-    await http(app)[method](path).set('Authorization', 'Bearer forged.token.value').expect(401);
+    expectError(await http(app)[method](path), 401, 'UNAUTHORIZED');
+    const forged = await http(app)[method](path).set('Authorization', 'Bearer forged.token.value');
+    expectError(forged, 401, 'SESSION_EXPIRED');
   });
 
   it('opens the admin API with a valid token', async () => {
