@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
-import { sendEnquiry, type EnquiryPayload, type EnquiryResult, type EnquirySource } from "@/lib/api/enquiries";
+import type { EnquiryPayload, EnquiryResult, EnquirySource } from "@/lib/api/enquiries";
 import type { Locale } from "@/lib/locale";
 
-import { toFullPhone, type EnquiryValues } from "./enquiry-schema";
+import type { EnquiryValues } from "./enquiry-schema";
+import { toFullPhone } from "./full-phone";
 
 export type FormAlert = Extract<EnquiryResult, { kind: "refused" | "failed" }>;
 
@@ -70,6 +71,8 @@ export function useEnquirySubmit(
     const submission = ++currentSubmission.current;
     toggleSending(true);
     setAlert(null);
+    // The request module (and its response schema) is fetched with the first send.
+    const { sendEnquiry } = await import("@/lib/api/enquiries");
     const result = await sendEnquiry(toEnquiryPayload(values, target));
     if (submission !== currentSubmission.current) return;
     toggleSending(false);

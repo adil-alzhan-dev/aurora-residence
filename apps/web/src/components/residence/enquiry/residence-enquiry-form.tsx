@@ -1,14 +1,14 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { ConsentField } from "@/components/enquiry/consent-field";
 import { ContactFields, describedBy } from "@/components/enquiry/contact-fields";
-import { createEnquirySchema, type EnquiryValues } from "@/components/enquiry/enquiry-schema";
+import type { EnquiryValues } from "@/components/enquiry/enquiry-schema";
 import { FormField, inputClass } from "@/components/enquiry/form-field";
 import { FormAlertMessage, SubmitButton } from "@/components/enquiry/form-status";
+import { lazyEnquiryResolver } from "@/components/enquiry/lazy-enquiry-resolver";
 import { useEnquirySubmit } from "@/components/enquiry/use-enquiry-submit";
 import type { Dictionary } from "@/content";
 import { cn } from "@/lib/utils";
@@ -28,9 +28,9 @@ export function ResidenceEnquiryForm({ number, t, onSent, onSendingChange }: Res
     () => ({ ...t.enquiry.errors, ...text.errors, consent: t.enquirySend.consentError }),
     [t.enquiry.errors, text.errors, t.enquirySend.consentError],
   );
-  const schema = useMemo(() => createEnquirySchema(messages), [messages]);
+  const resolver = useMemo(() => lazyEnquiryResolver(messages), [messages]);
   const form = useForm<EnquiryValues>({
-    resolver: zodResolver(schema),
+    resolver,
     mode: "onTouched",
     defaultValues: { name: "", code: "", phone: "", email: "", comment: "", consent: false, website: "" },
   });

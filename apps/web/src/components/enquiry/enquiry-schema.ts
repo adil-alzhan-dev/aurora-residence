@@ -1,5 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 // zod/mini keeps the enquiry forms light; checks run in the same order as the API DTO.
 import * as z from "zod/mini";
+
+import { toFullPhone } from "./full-phone";
 
 const MIN_PHONE_DIGITS = 7;
 const MAX_PHONE_DIGITS = 15;
@@ -8,10 +11,7 @@ const MAX_COMMENT_LENGTH = 2000;
 
 const countDigits = (value: string) => value.replace(/\D/g, "").length;
 
-/** The phone exactly as it goes to the API, so the length check here matches the API's limit of 25. */
-export const toFullPhone = (code: string, phone: string) => `${code} ${phone.trim().replace(/\s+/g, " ")}`;
-
-type EnquiryErrors = {
+export type EnquiryErrors = {
   name: string;
   code: string;
   phone: string;
@@ -48,3 +48,5 @@ export function createEnquirySchema(errors: EnquiryErrors) {
 }
 
 export type EnquiryValues = z.input<ReturnType<typeof createEnquirySchema>>;
+
+export const enquiryResolver = (errors: EnquiryErrors) => zodResolver(createEnquirySchema(errors));

@@ -49,7 +49,8 @@ describe("useEnquirySubmit", () => {
       void result.current.submit(submitEvent);
     });
     await waitFor(() => expect(result.current.sending).toBe(true));
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // The request module loads with the first send, so the request itself follows a moment later.
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(onSendingChange).toHaveBeenLastCalledWith(true);
 
     await act(async () => answers[0](new Response(JSON.stringify({ residence: null }), { status: 201 })));
