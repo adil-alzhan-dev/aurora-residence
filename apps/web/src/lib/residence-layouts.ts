@@ -93,5 +93,3 @@ export function layoutOf(position: number, isPenthouse: boolean) {
     ceilingM: isPenthouse ? PENTHOUSE_CEILING_M : CEILING_M,
   };
 }
-
-export const roomsTotal = (rooms: Room[]) => Math.round(rooms.reduce((sum, item) => sum + item.areaM2, 0) * 10) / 10;

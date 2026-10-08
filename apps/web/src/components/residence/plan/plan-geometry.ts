@@ -104,6 +104,3 @@ export const planGeometry: Record<number, PlanGeometry> = {
 export function toPlan({ matrix: [a, b, c, d, e, f] }: PlanGeometry, { x, y }: Point): Point {
   return { x: a * x + c * y + e, y: b * x + d * y + f };
 }
-
-/** Space around the walls for the dimension lines and the entrance mark, in drawing units. */
-export const planMargin = (geometry: PlanGeometry) => Math.max(geometry.width, geometry.height) * 0.04;
