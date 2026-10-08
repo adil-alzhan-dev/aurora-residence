@@ -3,7 +3,7 @@ import { Suspense, type ReactNode } from "react";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { getSiteDictionary } from "@/lib/locale-server";
 
-import { DeferredLiveRefresh } from "./deferred-live-refresh";
+import { LiveRefresh } from "./live-refresh";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader, SiteHeaderWithView } from "./site-header";
 
@@ -22,7 +22,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <SmoothScroll />
-      <DeferredLiveRefresh />
+      <LiveRefresh />
       <Suspense fallback={<SiteHeader t={headerText} />}>
         <SiteHeaderWithView t={headerText} />
       </Suspense>
