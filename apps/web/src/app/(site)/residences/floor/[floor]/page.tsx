@@ -25,7 +25,17 @@ export default async function FloorPage({ params }: PageProps<"/residences/floor
     <RevealSection data-theme="light" threshold={0} className="bg-background pt-(--header-height)">
       <FloorHeading floor={floor} summary={details} neighbours={neighbours} t={t.floorPage} />
       {details ? (
-        <FloorExplorer details={details} t={t} />
+        <FloorExplorer
+          details={details}
+          t={{
+            floorPage: t.floorPage,
+            residences: t.residences,
+            status: t.status,
+            locale: t.locale,
+            a11y: t.a11y,
+            settings: t.settings,
+          }}
+        />
       ) : (
         <p role="alert" className="container-page pb-24 text-body-l text-muted-foreground">
           {t.floorPage.unavailable}

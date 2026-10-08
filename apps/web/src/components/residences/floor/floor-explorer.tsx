@@ -14,7 +14,7 @@ import { planUnits, unitCenter } from "./plan-units";
 
 type FloorExplorerProps = {
   details: FloorDetails;
-  t: Dictionary;
+  t: Pick<Dictionary, "floorPage" | "residences" | "status" | "locale" | "a11y" | "settings">;
 };
 
 /** Plan and table share one highlighted residence, so hovering either side lights up the other. */

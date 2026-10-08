@@ -21,7 +21,7 @@ type FloorResidencesProps = {
   active: string | null;
   onActivate: (number: string) => void;
   onLeave: () => void;
-  t: Dictionary;
+  t: Pick<Dictionary, "floorPage" | "residences" | "status" | "locale" | "a11y" | "settings">;
 };
 
 export function FloorResidences({ floor, residences, active, onActivate, onLeave, t }: FloorResidencesProps) {

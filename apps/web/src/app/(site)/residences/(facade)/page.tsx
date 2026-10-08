@@ -57,7 +57,13 @@ export default async function ResidencesPage({ searchParams }: PageProps<"/resid
             initialFloor={facade.initialFloor}
             filtersKey={JSON.stringify(filters)}
             noMatches={facade.result?.matching === 0}
-            t={t}
+            t={{
+              residencePicker: t.residencePicker,
+              residences: t.residences,
+              hero: t.hero,
+              a11y: t.a11y,
+              status: t.status,
+            }}
           />
         </>
       )}
