@@ -80,10 +80,10 @@ describe('Sessions (e2e)', () => {
 
   it('applies a role change and a removed session on the next request', async () => {
     const session = await signIn();
-    await prisma.adminUser.update({ where: { email: TEST_ADMIN.email }, data: { role: 'MANAGER' } });
-    const me = await http(app).get('/api/auth/me').set(bearer(session.accessToken)).expect(200);
-    expect((me.body as { role: string }).role).toBe('MANAGER');
     await prisma.adminUser.update({ where: { email: TEST_ADMIN.email }, data: { role: 'ADMIN' } });
+    const me = await http(app).get('/api/auth/me').set(bearer(session.accessToken)).expect(200);
+    expect((me.body as { role: string }).role).toBe('ADMIN');
+    await prisma.adminUser.update({ where: { email: TEST_ADMIN.email }, data: { role: 'MANAGER' } });
 
     await prisma.adminSession.deleteMany();
     await http(app).get('/api/admin/dashboard').set(bearer(session.accessToken)).expect(401);

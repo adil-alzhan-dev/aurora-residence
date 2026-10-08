@@ -19,7 +19,7 @@ export async function upsertAdmin(tx: Tx, admin: AdminSeed): Promise<number> {
     email: admin.email,
     name: admin.name,
     passwordHash: await argon2.hash(admin.password),
-    role: 'ADMIN' as const,
+    role: 'MANAGER' as const,
   };
   const saved = await tx.adminUser.upsert({
     where: { email: admin.email },

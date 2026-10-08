@@ -34,7 +34,7 @@ describe('Auth (e2e)', () => {
       .get('/api/auth/me')
       .set('Authorization', `Bearer ${body.accessToken}`)
       .expect(200);
-    expect(me.body).toMatchObject({ email: TEST_ADMIN.email, name: TEST_ADMIN.name, role: 'ADMIN' });
+    expect(me.body).toMatchObject({ email: TEST_ADMIN.email, name: TEST_ADMIN.name, role: 'MANAGER' });
     expect(Object.keys(me.body as object).sort()).toEqual(['email', 'id', 'name', 'role']);
   });
 
