@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import { createAdminApi, REFRESH_PATH, SessionExpiredError } from "./api-client";
+import { AdminApiError, createAdminApi, REFRESH_PATH, SessionExpiredError } from "./api-client";
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -129,6 +129,26 @@ describe("admin API client", () => {
 
     await expect(api.logout()).rejects.toThrow();
     expect(api.hasAccessToken()).toBe(false);
+  });
+  it("keeps the code and field errors of a refusal", async () => {
+    const body = { statusCode: 400, code: "VALIDATION_FAILED", message: ["priceUsd is too low"], errors: { priceUsd: "too low" } };
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) =>
+      String(input).endsWith("/7.03") ? json(400, body) : json(404, { statusCode: 404, code: "RESIDENCE_NOT_FOUND" }),
+    );
+    const api = createAdminApi({ fetchImpl, onSessionExpired: vi.fn() });
+
+    const refused = api.sendJson("/api/admin/residences/7.03", "PATCH", { priceUsd: 1 }, z.object({}));
+    await expect(refused).rejects.toMatchObject({ status: 400, code: "VALIDATION_FAILED", fieldErrors: { priceUsd: "too low" } });
+    const missing = api.getJson("/api/admin/residences/12.01", z.object({}));
+    await expect(missing).rejects.toBeInstanceOf(AdminApiError);
+    await expect(missing).rejects.toMatchObject({ status: 404, code: "RESIDENCE_NOT_FOUND" });
+  });
+
+  it("leaves the code empty when the answer has none", async () => {
+    const fetchImpl = vi.fn(async () => new Response("<html>Bad gateway</html>", { status: 502 }));
+    const api = createAdminApi({ fetchImpl, onSessionExpired: vi.fn() });
+
+    await expect(api.getJson("/api/admin/dashboard", z.object({}))).rejects.toMatchObject({ status: 502, code: null });
   });
 });
 

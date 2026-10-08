@@ -17,9 +17,14 @@ import { fillTemplate } from "@/lib/format";
 
 const NOTE_MAX = 2000;
 
-type NoteCardProps = { enquiry: EnquiryCard; now: Date; t: AdminDictionary["enquiry"] };
+type NoteCardProps = {
+  enquiry: EnquiryCard;
+  now: Date;
+  t: AdminDictionary["enquiry"];
+  api: AdminDictionary["messages"]["api"];
+};
 
-export function ManagerNoteCard({ enquiry, now, t }: NoteCardProps) {
+export function ManagerNoteCard({ enquiry, now, t, api }: NoteCardProps) {
   const text = t.note;
   const fieldId = useId();
   const errorId = useId();
@@ -33,7 +38,7 @@ export function ManagerNoteCard({ enquiry, now, t }: NoteCardProps) {
     resetOptions: { keepDirtyValues: true },
   });
   const fieldError = form.formState.errors.note?.message;
-  const requestError = enquiryChangeErrorText(update.error, t.errors);
+  const requestError = enquiryChangeErrorText(update.error, t.errors, api);
   const lastSave = enquiry.managerNote ? lastNoteSave(enquiry.activity) : null;
 
   const submit = form.handleSubmit(({ note }) => {

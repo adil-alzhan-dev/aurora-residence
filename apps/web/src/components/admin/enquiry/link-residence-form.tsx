@@ -29,7 +29,13 @@ function useLinkableNumbers() {
   );
 }
 
-export function LinkResidenceForm({ enquiryId, t }: { enquiryId: number; t: AdminDictionary["enquiry"] }) {
+type LinkResidenceFormProps = {
+  enquiryId: number;
+  t: AdminDictionary["enquiry"];
+  api: AdminDictionary["messages"]["api"];
+};
+
+export function LinkResidenceForm({ enquiryId, t, api }: LinkResidenceFormProps) {
   const text = t.link;
   const inputId = useId();
   const listId = useId();
@@ -93,7 +99,7 @@ export function LinkResidenceForm({ enquiryId, t }: { enquiryId: number; t: Admi
         pendingLabel={text.linking}
         cancelLabel={t.cancel}
         pending={update.isPending}
-        error={pending ? linkErrorText(update.error, pending, { ...t.errors, invalid: text.invalid }) : null}
+        error={pending ? linkErrorText(update.error, pending, { ...t.errors, invalid: text.invalid }, api) : null}
         onConfirm={() => pending && update.mutate({ residenceNumber: pending }, { onSuccess: () => setPending(null) })}
       >
         <p>{pending ? fillTemplate(text.confirmText, { number: pending }) : ""}</p>

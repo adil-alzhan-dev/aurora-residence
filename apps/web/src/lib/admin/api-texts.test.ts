@@ -4,32 +4,44 @@ import { adminEn } from "@/content/en-admin";
 import { adminRu } from "@/content/ru-admin";
 
 import { adminFormat } from "./admin-format";
-import { apiMessageText, authorText, noteText, sourceText } from "./api-texts";
+import { apiErrorKey, apiErrorText, authorText, hasCode, noteText, sourceText } from "./api-texts";
 
 const ru = { messages: adminRu.messages, statuses: adminRu.facade.statuses };
 const en = { messages: adminEn.messages, statuses: adminEn.facade.statuses };
 const ruFormat = adminFormat("ru-RU");
 const enFormat = adminFormat("en-US");
 
-describe("apiMessageText", () => {
-  it("recognises the API's refusals and fills in the numbers", () => {
-    expect(apiMessageText("Residence 7.03 has no active reservation", adminRu.messages.api)).toBe(
+describe("apiErrorText", () => {
+  it("picks the text by code and fills in the residence", () => {
+    expect(apiErrorText({ status: 409, code: "NO_ACTIVE_RESERVATION" }, adminRu.messages.api, { number: "7.03" })).toBe(
       "У квартиры 7.03 нет активной брони.",
     );
-    expect(
-      apiMessageText(
-        "Residence 7.03 is no longer available, someone has just changed it. Reload and try again.",
-        adminRu.messages.api,
-      ),
-    ).toBe("Квартиру 7.03 только что изменили.");
-    expect(apiMessageText("Enquiry 4 has no residence. Link it to 7.03 before reserving.", adminRu.messages.api)).toBe(
-      "У заявки нет квартиры: сначала привяжите к ней 7.03.",
+    expect(apiErrorText({ status: 400, code: "ENQUIRY_HAS_NO_RESIDENCE" }, adminEn.messages.api, { number: "7.03" })).toBe(
+      "The enquiry has no residence yet: link it to 7.03 first.",
     );
   });
 
-  it("returns null for a message it does not know", () => {
-    expect(apiMessageText("Something unexpected", adminRu.messages.api)).toBeNull();
-    expect(apiMessageText("", adminRu.messages.api)).toBeNull();
+  it("uses the code even when the same code comes with another status", () => {
+    const notFound = adminEn.messages.api.residenceNotFound;
+    expect(apiErrorKey({ status: 404, code: "RESIDENCE_NOT_FOUND" })).toBe("residenceNotFound");
+    expect(apiErrorKey({ status: 400, code: "RESIDENCE_NOT_FOUND" })).toBe("residenceNotFound");
+    expect(apiErrorText({ status: 400, code: "RESIDENCE_NOT_FOUND" }, adminEn.messages.api)).toBe(notFound);
+  });
+
+  it("falls back to the HTTP status for an unknown or missing code", () => {
+    expect(apiErrorKey({ status: 409, code: "SOMETHING_NEW" })).toBe("conflict");
+    expect(apiErrorKey({ status: 429, code: null })).toBe("rateLimited");
+    expect(apiErrorKey({ status: 404, code: null })).toBe("notFound");
+    expect(apiErrorKey({ status: 502, code: null })).toBe("internalError");
+    expect(apiErrorKey({ status: 400, code: "toString" })).toBe("badRequest");
+  });
+});
+
+describe("hasCode", () => {
+  it("matches only the codes asked for", () => {
+    expect(hasCode({ code: "RESIDENCE_SOLD" }, "RESIDENCE_RESERVED", "RESIDENCE_SOLD")).toBe(true);
+    expect(hasCode({ code: "RESIDENCE_SOLD" }, "RESIDENCE_RESERVED")).toBe(false);
+    expect(hasCode({ code: null }, "CONFLICT")).toBe(false);
   });
 });
 

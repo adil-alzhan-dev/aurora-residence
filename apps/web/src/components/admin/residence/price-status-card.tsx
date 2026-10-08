@@ -142,7 +142,7 @@ export function PriceStatusCard({ residence, t }: Props) {
         cancelLabel={confirmText.cancel}
         note={{ label: confirmText.note, placeholder: confirmText.notePlaceholder }}
         pending={update.isPending}
-        error={changeErrorText(update.error, t.residence, t.messages.api)}
+        error={changeErrorText(update.error, residence.number, t.residence, t.messages.api)}
         onConfirm={confirm}
       >
         {change?.priceUsd !== undefined && (

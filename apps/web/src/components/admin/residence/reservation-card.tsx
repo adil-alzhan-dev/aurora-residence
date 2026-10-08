@@ -113,7 +113,7 @@ export function ReservationCard({ residence, now, t }: ReservationCardProps) {
         cancelLabel={t.residence.confirm.cancel}
         note={{ label: t.residence.confirm.note, placeholder: t.residence.confirm.notePlaceholder }}
         pending={release.isPending}
-        error={changeErrorText(release.error, t.residence, t.messages.api)}
+        error={changeErrorText(release.error, residence.number, t.residence, t.messages.api)}
         onConfirm={(note) =>
           release.mutate(note || undefined, {
             onSuccess: () => {

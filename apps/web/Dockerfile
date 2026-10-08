@@ -6,6 +6,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --filter web
+# The web app takes the API's error code type from this one file (plain TS, no imports).
+COPY apps/api/src/common/error-codes.ts apps/api/src/common/
 COPY apps/web apps/web
 RUN pnpm --filter web build
 

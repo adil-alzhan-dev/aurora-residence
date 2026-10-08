@@ -109,6 +109,9 @@ export const enquiryEn = {
   cancel: "Cancel",
   errors: {
     reserveConflict: "Residence {number} cannot be reserved: it is no longer available, someone reserved or sold it a moment ago. The card now shows the current state.",
+    reserveReserved:
+      "Residence {number} cannot be reserved: someone reserved it a moment ago. The card now shows the current state.",
+    reserveSold: "Residence {number} cannot be reserved: it was sold a moment ago. The card now shows the current state.",
     reserveRejected: "This enquiry cannot be used for the reservation. {detail}",
     linkMissing: "There is no residence {number} in the house. Numbers go from 1.01 to 11.06.",
     linkSold: "Residence {number} is sold, link another residence.",

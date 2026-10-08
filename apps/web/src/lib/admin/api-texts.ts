@@ -1,6 +1,8 @@
 import type { AdminDictionary } from "@/content/en-admin";
 import { fillTemplate } from "@/lib/format";
 
+import type { ErrorCode } from "../../../../api/src/common/error-codes";
+
 import type { AdminFormat } from "./admin-format";
 
 type Messages = AdminDictionary["messages"];
@@ -9,21 +11,67 @@ type NoteKey = Exclude<keyof Messages["notes"], "known">;
 
 const NUMBER = String.raw`(?<number>\d{1,2}\.\d{2})`;
 
-/** Messages of 400 and 409 answers that are worth showing; anything else gets the general text. */
-const API_MESSAGES: [RegExp, ApiKey][] = [
-  [new RegExp(String.raw`^Enquiry \d+ has no residence\. Link it to ${NUMBER} before reserving`), "enquiryNoResidence"],
-  [
-    new RegExp(String.raw`^Enquiry \d+ is about residence (?<other>\d{1,2}\.\d{2}), not ${NUMBER}\.`),
-    "enquiryOtherResidence",
-  ],
-  [/^Enquiry \d+ is closed/, "enquiryClosed"],
-  [/^Enquiry \d+ not found$/, "enquiryNotFound"],
-  [new RegExp(String.raw`^Residence ${NUMBER} (not found|does not exist)$`), "residenceNotFound"],
-  [new RegExp(String.raw`^Residence ${NUMBER} has no active reservation$`), "noActiveReservation"],
-  [new RegExp(String.raw`^Residence ${NUMBER} is \w+, only an available residence can be reserved$`), "notAvailable"],
-  [new RegExp(String.raw`^Residence ${NUMBER} is no longer \w+, someone has just changed it`), "changedMeanwhile"],
-  [new RegExp(String.raw`^Residence ${NUMBER} can be reserved only for an enquiry`), "reserveFromEnquiry"],
-];
+/** Every code of the API, see apps/api/src/common/error-codes.ts; the type keeps this table complete. */
+const API_ERROR_KEYS: Record<ErrorCode, ApiKey> = {
+  BAD_REQUEST: "badRequest",
+  UNAUTHORIZED: "unauthorized",
+  FORBIDDEN: "forbidden",
+  NOT_FOUND: "notFound",
+  CONFLICT: "conflict",
+  PAYLOAD_TOO_LARGE: "payloadTooLarge",
+  RATE_LIMITED: "rateLimited",
+  INTERNAL_ERROR: "internalError",
+  SERVICE_UNAVAILABLE: "serviceUnavailable",
+  VALIDATION_FAILED: "validationFailed",
+  NOTHING_TO_UPDATE: "nothingToUpdate",
+  INVALID_CREDENTIALS: "invalidCredentials",
+  LOGIN_LOCKED: "loginLocked",
+  SESSION_EXPIRED: "sessionExpired",
+  RESIDENCE_NOT_FOUND: "residenceNotFound",
+  ENQUIRY_NOT_FOUND: "enquiryNotFound",
+  RESIDENCE_SOLD: "residenceSold",
+  RESIDENCE_RESERVED: "residenceReserved",
+  NO_ACTIVE_RESERVATION: "noActiveReservation",
+  ENQUIRY_HAS_NO_RESIDENCE: "enquiryHasNoResidence",
+  ENQUIRY_RESIDENCE_MISMATCH: "enquiryResidenceMismatch",
+  ENQUIRY_CLOSED: "enquiryClosed",
+  ENQUIRY_RESIDENCE_EXISTS: "enquiryResidenceExists",
+};
+
+/** For an answer without a code the admin knows, e.g. from nginx or a newer API. */
+const STATUS_KEYS: Partial<Record<number, ApiKey>> = {
+  400: "badRequest",
+  401: "unauthorized",
+  403: "forbidden",
+  404: "notFound",
+  409: "conflict",
+  413: "payloadTooLarge",
+  429: "rateLimited",
+  503: "serviceUnavailable",
+};
+
+const isKnownCode = (code: string | null): code is ErrorCode =>
+  code !== null && Object.hasOwn(API_ERROR_KEYS, code);
+
+/** True when the error carries one of `codes`; anything without a code is never a match. */
+export function hasCode(error: { code: string | null }, ...codes: ErrorCode[]): boolean {
+  return codes.some((code) => code === error.code);
+}
+
+/** The dictionary key for an error: by its code, otherwise by the HTTP status. */
+export function apiErrorKey({ code, status }: { code: string | null; status: number }): ApiKey {
+  if (isKnownCode(code)) return API_ERROR_KEYS[code];
+  return STATUS_KEYS[status] ?? "internalError";
+}
+
+/** The reader's words for a refusal; `values` fills {number} where the text names the residence. */
+export function apiErrorText(
+  error: { code: string | null; status: number },
+  t: Messages["api"],
+  values: Record<string, string> = {},
+): string {
+  return fillTemplate(t[apiErrorKey(error)], values);
+}
 
 /** Notes the API and the demo data write into the history by themselves. */
 const NOTES: [RegExp, NoteKey][] = [
@@ -50,12 +98,6 @@ function findMatch<Key extends string>(text: string, rules: [RegExp, Key][]) {
     if (match) return { key, groups: match.groups ?? {} };
   }
   return null;
-}
-
-/** The API's own words for a refusal, in the reader's language; null for a message the admin does not know. */
-export function apiMessageText(message: string, t: Messages["api"]): string | null {
-  const match = findMatch(message, API_MESSAGES);
-  return match ? fillTemplate(t[match.key], match.groups) : null;
 }
 
 type NoteTexts = { messages: Messages; statuses: AdminDictionary["facade"]["statuses"] };

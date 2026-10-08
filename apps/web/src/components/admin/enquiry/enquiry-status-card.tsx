@@ -14,7 +14,7 @@ export function EnquiryStatusCard({ enquiry, t }: { enquiry: EnquiryCard; t: Adm
   const text = t.enquiry.status;
   const pendingStatus = update.isPending ? update.variables?.status : undefined;
   const shown = pendingStatus ?? enquiry.status;
-  const error = enquiryChangeErrorText(update.error, t.enquiry.errors);
+  const error = enquiryChangeErrorText(update.error, t.enquiry.errors, t.messages.api);
 
   return (
     <AdminCard id="enquiry-status" title={text.title} className="gap-4">
