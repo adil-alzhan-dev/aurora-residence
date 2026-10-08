@@ -11,10 +11,12 @@ import { contactLinks, sectionHref, sectionIds } from "@/content/navigation";
 import { scrollToSection } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-import { CurrencySwitcher, LanguageSwitcher } from "./settings-switchers";
+import { CurrencySwitcher, LanguageSwitcher, type SettingsText } from "./settings-switchers";
+
+export type MenuText = SettingsText & Pick<Dictionary, "nav" | "actions" | "contacts">;
 
 type MobileMenuProps = {
-  t: Dictionary;
+  t: MenuText;
   className?: string;
 };
 

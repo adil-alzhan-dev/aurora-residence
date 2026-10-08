@@ -71,7 +71,7 @@ export function SiteFooter({ t }: SiteFooterProps) {
           <p className="text-caption text-muted-foreground">{footer.copyright}</p>
           <div className="flex items-center gap-6 text-caption text-muted-foreground">
             <span>{footer.privacy}</span>
-            <LanguageSwitcher t={t} />
+            <LanguageSwitcher t={{ locale: t.locale, a11y: t.a11y, settings: t.settings }} />
           </div>
         </div>
       </div>

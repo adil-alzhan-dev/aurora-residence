@@ -6,17 +6,16 @@ import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import type { Dictionary } from "@/content";
 import { headerVariant, sectionHref, sectionIds } from "@/content/navigation";
 import { cn } from "@/lib/utils";
 
 import { CurrencySwitcher, LanguageSwitcher } from "./settings-switchers";
-import { MobileMenu } from "./mobile-menu";
+import { MobileMenu, type MenuText } from "./mobile-menu";
 
 const SOLID_AFTER_PX = 80;
 
 type SiteHeaderProps = {
-  t: Dictionary;
+  t: MenuText;
   view?: string | null;
 };
 

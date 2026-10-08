@@ -6,8 +6,10 @@ import { Switcher } from "@/components/ui/switcher";
 import type { Dictionary } from "@/content";
 import type { Currency } from "@/lib/money";
 
+export type SettingsText = Pick<Dictionary, "locale" | "a11y" | "settings">;
+
 type SettingsSwitcherProps = {
-  t: Dictionary;
+  t: SettingsText;
   className?: string;
 };
 
