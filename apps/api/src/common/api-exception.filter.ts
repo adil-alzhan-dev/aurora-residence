@@ -40,7 +40,8 @@ export class ApiExceptionFilter implements ExceptionFilter {
     response.status(body.statusCode).json(body);
   }
 
-  private toBody(exception: unknown): ApiErrorBody {
+  private toBody(error: unknown): ApiErrorBody {
+    const exception = isClientHttpError(error) ? new HttpException(error.message, error.status) : error;
     const status: number = exception instanceof HttpException ? exception.getStatus() : 500;
     if (!(exception instanceof HttpException) || (status >= 500 && status !== 503)) {
       const error = exception instanceof Error ? exception : new Error(String(exception));
@@ -55,6 +56,16 @@ export class ApiExceptionFilter implements ExceptionFilter {
       message: messageOf(payload, exception),
     };
   }
+}
+
+/**
+ * Express middleware (the JSON body parser) reports a too large body as a plain
+ * error with status 413 and expose: true; it is the client's mistake, not a 500.
+ */
+function isClientHttpError(error: unknown): error is Error & { status: number } {
+  if (!(error instanceof Error)) return false;
+  const { status, expose } = error as { status?: unknown; expose?: unknown };
+  return expose === true && typeof status === 'number' && status >= 400 && status < 500;
 }
 
 function hasErrorCode(payload: unknown): payload is ApiErrorBody {
