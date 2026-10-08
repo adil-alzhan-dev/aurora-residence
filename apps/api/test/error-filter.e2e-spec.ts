@@ -5,12 +5,15 @@ import {
   HttpException,
   InternalServerErrorException,
   Logger,
+  ServiceUnavailableException,
   UseGuards,
 } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { ApiError } from '../src/common/api-error.js';
+import { ERROR_CODES } from '../src/common/error-codes.js';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard.js';
 import { RolesGuard } from '../src/auth/roles.guard.js';
 import { ReservationsScheduler } from '../src/reservations/reservations.scheduler.js';
@@ -39,6 +42,30 @@ class ProbeController {
   @Get('server-error')
   serverError(): never {
     throw new InternalServerErrorException('Disk /var/lib/postgresql is full');
+  }
+
+  @Get('unavailable')
+  unavailable(): never {
+    throw new ServiceUnavailableException('Prisma SQL SELECT passwordHash FROM AdminUser at /srv/api/db.ts');
+  }
+
+  @Get('unavailable-payload')
+  unavailablePayload(): never {
+    throw new ApiError(503, ERROR_CODES.SERVICE_UNAVAILABLE, 'Pool exhausted at /srv/api/db.ts', {
+      stack: 'at /srv/api/db.ts:42',
+      errors: { query: 'SELECT passwordHash FROM AdminUser' },
+      status: 'evil',
+      database: 'down',
+    });
+  }
+
+  @Get('client-extras')
+  clientExtras(): never {
+    throw new ApiError(401, ERROR_CODES.INVALID_CREDENTIALS, 'Wrong email or password', {
+      attemptsLeft: 3,
+      secret: 'argon2id$v=19$m=65536',
+      stack: 'at /srv/api/auth.service.ts:31',
+    });
   }
 
   @Get('crash')
@@ -99,4 +126,35 @@ describe('Error filter fallbacks (e2e)', () => {
       expect(logged).toHaveBeenCalledTimes(1);
     },
   );
+
+  it.each(['/api/probe/unavailable', '/api/probe/unavailable-payload'])(
+    'answers %s with a fixed SERVICE_UNAVAILABLE text and logs the details',
+    async (path) => {
+      const logged = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      const response = await http(app).get(path);
+      expect(response.status).toBe(503);
+      expect(response.body).toEqual({
+        statusCode: 503,
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Service temporarily unavailable',
+      });
+      expect(response.text).not.toMatch(/passwordHash|AdminUser|srv|evil|stack|query|database/);
+      expect(logged).toHaveBeenCalledWith(
+        expect.stringMatching(/Prisma SQL|Pool exhausted/),
+        expect.stringContaining('at '),
+      );
+    },
+  );
+
+  it('keeps only the allowed extra fields of a 4xx', async () => {
+    const response = await http(app).get('/api/probe/client-extras');
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      statusCode: 401,
+      code: 'INVALID_CREDENTIALS',
+      message: 'Wrong email or password',
+      attemptsLeft: 3,
+    });
+    expect(response.text).not.toMatch(/argon2|srv/);
+  });
 });

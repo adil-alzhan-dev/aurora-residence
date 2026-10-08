@@ -126,6 +126,7 @@ describe('Error codes of the API (e2e)', () => {
   });
 
   it('keeps the health answer useful for the healthcheck when the database is down', async () => {
+    const logged = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     jest.spyOn(app.get(HealthService), 'isDatabaseUp').mockResolvedValue(false);
 
     const response = await http(app).get('/api/health');
@@ -138,5 +139,6 @@ describe('Error codes of the API (e2e)', () => {
       status: 'error',
       database: 'down',
     });
+    expect(logged).toHaveBeenCalledWith('Database is unreachable', expect.stringContaining('at '));
   });
 });

@@ -75,6 +75,24 @@ describe('Sign-in lockout (e2e)', () => {
     expect((locked.body as ErrorBody).message).toMatch(LOCKED);
   });
 
+  it('answers the 5th failure with the same full body for a real and an unknown email', async () => {
+    const failFiveTimes = async (email: string, subnet: number) => {
+      for (let i = 1; i <= 4; i += 1) await login(email, 'wrong', `10.8.${subnet}.${i}`).expect(401);
+      return login(email, 'wrong', `10.8.${subnet}.5`).expect(429);
+    };
+    const realEmail = await failFiveTimes(TEST_ADMIN.email, 1);
+    const unknownEmail = await failFiveTimes('nobody@example.com', 2);
+
+    const expected = {
+      statusCode: 429,
+      code: 'LOGIN_LOCKED',
+      message: 'Too many failed sign-in attempts. Sign-in is paused, try again in 15 minutes.',
+      retryAfterSeconds: 900,
+    };
+    expect(realEmail.body).toEqual(expected);
+    expect(unknownEmail.body).toEqual(expected);
+  });
+
   it('opens sign-in again when the lock is over', async () => {
     for (let i = 1; i <= 5; i += 1) await login(TEST_ADMIN.email, 'wrong', `10.4.0.${i}`);
     await login(TEST_ADMIN.email, TEST_ADMIN.password, '10.4.0.9').expect(429);
