@@ -4,6 +4,8 @@ import { createTestApp, http, reseed } from './app.js';
 import { TEST_ADMIN } from './test-env.js';
 
 interface ErrorBody {
+  statusCode: number;
+  code: string;
   message: string;
   attemptsLeft?: number;
   retryAfterSeconds?: number;
@@ -36,9 +38,12 @@ describe('Sign-in lockout (e2e)', () => {
     const wrongPassword = await login(TEST_ADMIN.email, 'wrong-password', '10.1.0.1').expect(401);
     const unknownEmail = await login('nobody@example.com', 'whatever', '10.1.0.2').expect(401);
     expect(wrongPassword.body).toEqual(unknownEmail.body);
-    expect((wrongPassword.body as ErrorBody).message).toBe(
-      'Wrong email or password. 4 attempts left, then sign-in pauses for 15 minutes.',
-    );
+    expect(wrongPassword.body).toEqual({
+      statusCode: 401,
+      code: 'INVALID_CREDENTIALS',
+      message: 'Wrong email or password. 4 attempts left, then sign-in pauses for 15 minutes.',
+      attemptsLeft: 4,
+    });
   });
 
   it('locks the email for 15 minutes after 5 failures from different IPs and email spellings', async () => {
@@ -53,7 +58,12 @@ describe('Sign-in lockout (e2e)', () => {
       expect((response.body as ErrorBody).attemptsLeft).toBe(4 - index);
     }
     const fifth = await login(TEST_ADMIN.email, 'wrong-password', '10.2.0.5').expect(429);
-    expect((fifth.body as ErrorBody).retryAfterSeconds).toBe(900);
+    expect(fifth.body).toEqual({
+      statusCode: 429,
+      code: 'LOGIN_LOCKED',
+      message: expect.stringMatching(LOCKED) as string,
+      retryAfterSeconds: 900,
+    });
 
     const fromNewIp = await login(TEST_ADMIN.email, TEST_ADMIN.password, '10.2.0.6').expect(429);
     expect((fromNewIp.body as ErrorBody).message).toMatch(LOCKED);

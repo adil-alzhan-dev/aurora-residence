@@ -1,20 +1,17 @@
-import { BadRequestException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';
+import { ApiError } from './api-error.js';
+import { ERROR_CODES } from './error-codes.js';
 
 /**
- * Keeps the default 400 body ({ statusCode, error, message: string[] }) and adds
- * `errors`: the first message for each field, so forms can show it next to the input.
+ * `message` keeps every constraint message; `errors` holds the first message for
+ * each field, so forms can show it next to the input.
  */
-export function validationExceptionFactory(validationErrors: ValidationError[]): BadRequestException {
+export function validationExceptionFactory(validationErrors: ValidationError[]): ApiError {
   const messages: string[] = [];
   const errors: Record<string, string> = {};
   collect(validationErrors, '', messages, errors);
-  return new BadRequestException({
-    statusCode: 400,
-    error: 'Bad Request',
-    message: messages,
-    errors,
-  });
+  return new ApiError(HttpStatus.BAD_REQUEST, ERROR_CODES.VALIDATION_FAILED, messages, { errors });
 }
 
 function collect(

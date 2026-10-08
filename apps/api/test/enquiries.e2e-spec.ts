@@ -4,7 +4,7 @@ import { createTestApp, http, reseed } from './app.js';
 
 interface ValidationBody {
   statusCode: number;
-  error: string;
+  code: string;
   message: string[];
   errors: Record<string, string>;
 }
@@ -43,7 +43,7 @@ describe('POST /api/enquiries (e2e)', () => {
   const expectFieldError = async (body: object, field: string) => {
     const response = await post(body).expect(400);
     const error = response.body as ValidationBody;
-    expect(error).toMatchObject({ statusCode: 400, error: 'Bad Request' });
+    expect(error).toMatchObject({ statusCode: 400, code: 'VALIDATION_FAILED' });
     expect(error.message).toEqual(expect.arrayContaining([error.errors[field]]));
     return error.errors[field];
   };
@@ -115,7 +115,11 @@ describe('POST /api/enquiries (e2e)', () => {
       http(app).post('/api/enquiries').set('X-Forwarded-For', '10.30.0.1').send({ ...contactsEnquiry, website: 'x' });
     for (let i = 0; i < 10; i += 1) await send().expect(201);
     const response = await send().expect(429);
-    expect(response.body).toEqual({ statusCode: 429, message: 'Too many requests. Please try again later.' });
+    expect(response.body).toEqual({
+      statusCode: 429,
+      code: 'RATE_LIMITED',
+      message: 'Too many requests. Please try again later.',
+    });
     const retryAfter = Number(response.headers['retry-after']);
     expect(retryAfter).toBeGreaterThan(540);
     expect(retryAfter).toBeLessThanOrEqual(600);

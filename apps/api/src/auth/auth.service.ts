@@ -1,5 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { IssuedSession } from './auth.types.js';
 import type { LoginDto } from './dto/login.dto.js';
@@ -26,14 +28,13 @@ export class AuthService {
 
     if (!admin || !valid) {
       const attemptsLeft = await this.throttle.fail(attempt);
-      throw new UnauthorizedException({
-        statusCode: 401,
-        error: 'Unauthorized',
-        message:
-          `Wrong email or password. ${attemptsLeft} ${plural(attemptsLeft, 'attempt')} left, ` +
+      throw new ApiError(
+        HttpStatus.UNAUTHORIZED,
+        ERROR_CODES.INVALID_CREDENTIALS,
+        `Wrong email or password. ${attemptsLeft} ${plural(attemptsLeft, 'attempt')} left, ` +
           `then sign-in pauses for ${LOCK_MINUTES} minutes.`,
-        attemptsLeft,
-      });
+        { attemptsLeft },
+      );
     }
 
     await this.throttle.succeed(attempt);

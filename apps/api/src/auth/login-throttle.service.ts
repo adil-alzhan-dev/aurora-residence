@@ -1,4 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { ApiError } from '../common/api-error.js';
+import { ERROR_CODES } from '../common/error-codes.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export const EMAIL_MAX_ATTEMPTS = 5;
@@ -90,17 +92,14 @@ function ipKey(ip: string): string {
 }
 
 // The same answer for an email lock and an IP lock; unknown emails lock the same way.
-function lockedException(remainingMs: number): HttpException {
+function lockedException(remainingMs: number): ApiError {
   const retryAfterSeconds = Math.ceil(remainingMs / 1000);
   const minutes = Math.ceil(retryAfterSeconds / 60);
-  return new HttpException(
-    {
-      statusCode: HttpStatus.TOO_MANY_REQUESTS,
-      error: 'Too Many Requests',
-      message: `Too many failed sign-in attempts. Sign-in is paused, try again in ${minutes} ${plural(minutes, 'minute')}.`,
-      retryAfterSeconds,
-    },
+  return new ApiError(
     HttpStatus.TOO_MANY_REQUESTS,
+    ERROR_CODES.LOGIN_LOCKED,
+    `Too many failed sign-in attempts. Sign-in is paused, try again in ${minutes} ${plural(minutes, 'minute')}.`,
+    { retryAfterSeconds },
   );
 }
 
