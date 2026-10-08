@@ -1,7 +1,7 @@
 import { floorsTopDown } from "@/components/facade/facade-geometry";
 import type { AdminDictionary } from "@/content/en-admin";
 import type { AdminResidenceStatus, DashboardSummary } from "@/lib/admin/schemas";
-import { fillTemplate } from "@/lib/format";
+import { fillTemplate, lowerFirst } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { DashboardCard } from "./dashboard-card";
@@ -45,7 +45,7 @@ export function MiniFacade({ cells: allCells, t }: { cells: FacadeCell[]; t: Adm
             const cells = byFloor.get(floor) ?? [];
             const label = [
               fillTemplate(t.floor, { floor }),
-              ...cells.map((cell) => fillTemplate(t.residence, { number: cell.number, status: t.statuses[cell.status] })),
+              ...cells.map((cell) => fillTemplate(t.residence, { number: cell.number, status: lowerFirst(t.statuses[cell.status]) })),
             ].join(". ");
             return (
               <li key={floor} className={rowClass}>
@@ -57,7 +57,7 @@ export function MiniFacade({ cells: allCells, t }: { cells: FacadeCell[]; t: Adm
                   {cells.map((cell) => (
                     <span
                       key={cell.number}
-                      title={fillTemplate(t.residence, { number: cell.number, status: t.statuses[cell.status] })}
+                      title={fillTemplate(t.residence, { number: cell.number, status: lowerFirst(t.statuses[cell.status]) })}
                       className={cn("h-5 rounded-base", cellColor[cell.status])}
                     />
                   ))}

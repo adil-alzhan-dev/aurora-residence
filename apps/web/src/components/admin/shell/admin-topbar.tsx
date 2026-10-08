@@ -6,6 +6,7 @@ import { LocaleSwitcher } from "@/components/locale-switcher";
 import type { AdminDictionary } from "@/content/en-admin";
 import { useEnquiryCard } from "@/lib/admin/enquiry-queries";
 import { useMe } from "@/lib/admin/queries";
+import { joinPhrase } from "@/lib/format";
 
 import { activeNavKey } from "./admin-nav";
 import { LiveIndicator } from "./live-indicator";
@@ -42,7 +43,7 @@ function CurrentManager({ t }: { t: AdminDictionary }) {
         <span className="text-admin-strong text-foreground">{me.name}</span>
         <span className="text-admin-caption text-muted-foreground">{t.roles[me.role]}</span>
       </div>
-      <span className="sr-only sm:hidden">{`${me.name}, ${t.roles[me.role]}`}</span>
+      <span className="sr-only sm:hidden">{joinPhrase([me.name, t.roles[me.role]])}</span>
     </div>
   );
 }
