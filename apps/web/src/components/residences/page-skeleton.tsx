@@ -5,11 +5,14 @@ type PageSkeletonProps = {
   label: string;
 };
 
-/** Shown while the server loads fresh availability: the page frame without numbers. */
+/**
+ * Shown while the server loads fresh availability: the page frame without numbers. It fills the
+ * screen, so the footer stays below the fold and does not jump when the page streams in.
+ */
 export function PageSkeleton({ theme, label }: PageSkeletonProps) {
   const block = "animate-pulse rounded-base bg-card";
   return (
-    <section data-theme={theme} aria-busy="true" aria-label={label} className="bg-background pt-(--header-height)">
+    <section data-theme={theme} aria-busy="true" aria-label={label} className="min-h-svh bg-background pt-(--header-height)">
       <div className="container-page flex flex-col gap-4 py-8 lg:py-16">
         <div className={cn(block, "h-4 w-32")} />
         <div className={cn(block, "h-12 w-3/4 max-w-[552px] lg:h-18")} />
