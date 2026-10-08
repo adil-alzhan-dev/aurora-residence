@@ -1,0 +1,29 @@
+/*
+  Manrope has no tenge sign (U+20B8). Helvetica Neue, preinstalled on macOS and iOS, has one;
+  size-adjust brings its height to the Manrope digits (0.72 em) and each Manrope weight takes
+  the Helvetica Neue face with the closest stem. Elsewhere the face is skipped and the sign
+  falls through to the rest of the font stack.
+*/
+@font-face {
+  font-family: "Aurora Tenge";
+  font-weight: 100 400;
+  src: local("HelveticaNeue-Light"), local("Helvetica Neue Light");
+  unicode-range: U+20B8;
+  size-adjust: 104%;
+}
+
+@font-face {
+  font-family: "Aurora Tenge";
+  font-weight: 500;
+  src: local("HelveticaNeue"), local("Helvetica Neue");
+  unicode-range: U+20B8;
+  size-adjust: 103%;
+}
+
+@font-face {
+  font-family: "Aurora Tenge";
+  font-weight: 600 900;
+  src: local("HelveticaNeue-Medium"), local("Helvetica Neue Medium");
+  unicode-range: U+20B8;
+  size-adjust: 103%;
+}

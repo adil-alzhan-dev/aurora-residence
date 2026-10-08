@@ -88,7 +88,7 @@
   --color-status-reserved-subtle: color-mix(in srgb, var(--status-reserved) var(--status-subtle-strength), transparent);
   --color-status-sold-subtle: color-mix(in srgb, var(--status-sold) var(--status-subtle-strength), transparent);
   --font-serif: var(--font-digits), var(--font-cormorant), "Times New Roman", serif;
-  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-sans: "Aurora Tenge", var(--font-manrope), system-ui, sans-serif;
 }
 
 @utility container-page {
