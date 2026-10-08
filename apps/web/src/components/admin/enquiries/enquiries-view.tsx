@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { useAdminFormat } from "@/components/admin/admin-locale";
 import { DashboardError } from "@/components/admin/dashboard/dashboard-states";
+import { ResponsiveList } from "@/components/admin/responsive-list";
 import type { AdminDictionary } from "@/content/en-admin";
 import {
   enquiryFiltersToSearch,
@@ -102,19 +103,19 @@ export function EnquiriesView({ t }: { t: AdminDictionary }) {
   } else {
     body = (
       <>
-        <div className="md:hidden">
-          <EnquiryCards items={query.data.items} page={filters.page} total={query.data.total} now={now} t={t} />
-        </div>
-        <div className="max-md:hidden">
-          <EnquiriesTable
-            items={query.data.items}
-            residences={briefs}
-            page={filters.page}
-            total={query.data.total}
-            now={now}
-            t={t}
-          />
-        </div>
+        <ResponsiveList
+          phone={<EnquiryCards items={query.data.items} page={filters.page} total={query.data.total} now={now} t={t} />}
+          desktop={
+            <EnquiriesTable
+              items={query.data.items}
+              residences={briefs}
+              page={filters.page}
+              total={query.data.total}
+              now={now}
+              t={t}
+            />
+          }
+        />
         <EnquiriesPager page={filters.page} total={query.data.total} onPage={(page) => change({ page })} t={text} />
       </>
     );

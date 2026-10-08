@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 import { DashboardError } from "@/components/admin/dashboard/dashboard-states";
+import { ResponsiveList } from "@/components/admin/responsive-list";
 import { RowStatusControl } from "@/components/admin/residence/status-change-dialog";
 import type { AdminDictionary } from "@/content/en-admin";
 import { FLOOR_COUNT, RESIDENCES_PER_FLOOR } from "@/lib/building";
@@ -104,18 +105,16 @@ export function ResidencesView({ t }: { t: AdminDictionary }) {
           </button>
         </div>
       ) : (
-        <>
-          <div className="md:hidden">
-            <ResidenceCards items={items} t={text} statuses={t.facade.statuses} />
-          </div>
-          <div className="max-md:hidden">
+        <ResponsiveList
+          phone={<ResidenceCards items={items} t={text} statuses={t.facade.statuses} />}
+          desktop={
             <ResidencesTable
               items={items}
               t={text}
               renderStatus={(residence) => <RowStatusControl residence={residence} t={t} />}
             />
-          </div>
-        </>
+          }
+        />
       )}
     </>
   );
