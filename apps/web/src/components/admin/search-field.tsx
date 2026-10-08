@@ -34,7 +34,7 @@ export function SearchField({ value, onSearch, clean, label, placeholder, maxLen
   }, [draft, value, onSearch, clean]);
 
   return (
-    <div className="flex h-10 w-full items-center gap-2 rounded-base border border-border bg-card px-3 focus-within:border-primary sm:w-70">
+    <div className="flex h-11 w-full items-center gap-2 rounded-base border border-border bg-card px-3 focus-within:border-primary sm:w-70 md:h-10">
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
@@ -48,7 +48,7 @@ export function SearchField({ value, onSearch, clean, label, placeholder, maxLen
         maxLength={maxLength}
         placeholder={placeholder}
         onChange={(event) => setDraft(event.target.value)}
-        className="min-w-0 flex-1 bg-transparent text-admin-body text-foreground outline-none placeholder:text-muted-foreground"
+        className="h-full min-w-0 flex-1 bg-transparent text-admin-body text-foreground outline-none placeholder:text-muted-foreground"
       />
     </div>
   );

@@ -17,6 +17,7 @@ import {
 import { fillTemplate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { ResidenceCards } from "./residence-cards";
 import { ResidencesFilters } from "./residences-filters";
 import { ResidencesTable } from "./residences-table";
 
@@ -103,11 +104,18 @@ export function ResidencesView({ t }: { t: AdminDictionary }) {
           </button>
         </div>
       ) : (
-        <ResidencesTable
-          items={items}
-          t={text}
-          renderStatus={(residence) => <RowStatusControl residence={residence} t={t} />}
-        />
+        <>
+          <div className="md:hidden">
+            <ResidenceCards items={items} t={text} statuses={t.facade.statuses} />
+          </div>
+          <div className="max-md:hidden">
+            <ResidencesTable
+              items={items}
+              t={text}
+              renderStatus={(residence) => <RowStatusControl residence={residence} t={t} />}
+            />
+          </div>
+        </>
       )}
     </>
   );
