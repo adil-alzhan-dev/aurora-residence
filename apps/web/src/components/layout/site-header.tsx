@@ -41,9 +41,9 @@ export function SiteHeader({ t, view = null }: SiteHeaderProps) {
     <header
       data-theme={solid ? "light" : "dark"}
       className={cn(
-        "fixed inset-x-0 top-0 z-40 animate-fade-down border-b transition-[background-color,border-color,color] duration-300",
+        "fixed inset-x-0 top-0 z-40 animate-fade-down transition-[background-color,border-color,color] duration-300 xl:border-b",
         solid ? "border-border bg-background" : "bg-transparent",
-        !solid && (variant === "overlay" ? "border-transparent" : "border-transparent lg:border-border"),
+        !solid && (variant === "overlay" ? "border-transparent" : "border-transparent xl:border-border"),
       )}
     >
       <a
