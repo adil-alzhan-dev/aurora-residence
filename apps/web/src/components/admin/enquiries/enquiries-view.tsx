@@ -18,6 +18,7 @@ import type { ResidenceBrief } from "@/lib/admin/schemas";
 
 import { EnquiriesFilters } from "./enquiries-filters";
 import { EnquiriesPager, EnquiriesTable } from "./enquiries-table";
+import { EnquiryCards } from "./enquiry-cards";
 
 const NO_RESIDENCE_FILTERS = { search: "", floor: null };
 const NO_ENQUIRY_FILTERS = { search: "", residence: null };
@@ -101,14 +102,19 @@ export function EnquiriesView({ t }: { t: AdminDictionary }) {
   } else {
     body = (
       <>
-        <EnquiriesTable
-          items={query.data.items}
-          residences={briefs}
-          page={filters.page}
-          total={query.data.total}
-          now={now}
-          t={t}
-        />
+        <div className="md:hidden">
+          <EnquiryCards items={query.data.items} page={filters.page} total={query.data.total} now={now} t={t} />
+        </div>
+        <div className="max-md:hidden">
+          <EnquiriesTable
+            items={query.data.items}
+            residences={briefs}
+            page={filters.page}
+            total={query.data.total}
+            now={now}
+            t={t}
+          />
+        </div>
         <EnquiriesPager page={filters.page} total={query.data.total} onPage={(page) => change({ page })} t={text} />
       </>
     );

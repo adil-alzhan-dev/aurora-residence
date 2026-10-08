@@ -9,7 +9,7 @@ import { ENQUIRY_STATUSES, cleanEnquirySearch, type EnquiryFilters } from "@/lib
 import type { EnquiryCounts } from "@/lib/admin/enquiry-queries";
 import { cn } from "@/lib/utils";
 
-const box = "flex h-10 items-center gap-2 rounded-base border border-border bg-card px-3";
+const box = "flex h-11 items-center gap-2 rounded-base border border-border bg-card px-3 md:h-10";
 
 type FiltersProps = {
   filters: EnquiryFilters;
@@ -30,7 +30,7 @@ function StatusTabs({ filters, counts, onChange, t }: Omit<FiltersProps, "reside
     <div
       role="group"
       aria-label={t.enquiryList.statusFilter}
-      className="flex overflow-x-auto rounded-base border border-border bg-card"
+      className="grid grid-cols-2 rounded-base border border-border bg-card md:flex md:overflow-x-auto"
     >
       {options.map((option) => {
         const active = filters.status === option.status;
@@ -41,7 +41,7 @@ function StatusTabs({ filters, counts, onChange, t }: Omit<FiltersProps, "reside
             aria-pressed={active}
             onClick={() => onChange({ status: option.status })}
             className={cn(
-              "flex h-10 shrink-0 items-center gap-2 px-4 transition-colors duration-200 focus-visible:-outline-offset-2",
+              "flex h-11 shrink-0 items-center gap-2 px-4 transition-colors md:h-10 duration-200 focus-visible:-outline-offset-2",
               active ? "bg-foreground text-admin-strong text-card" : "text-admin-body text-muted-foreground hover:text-foreground",
             )}
           >
