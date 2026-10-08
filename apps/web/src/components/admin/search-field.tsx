@@ -48,7 +48,7 @@ export function SearchField({ value, onSearch, clean, label, placeholder, maxLen
         maxLength={maxLength}
         placeholder={placeholder}
         onChange={(event) => setDraft(event.target.value)}
-        className="h-11 min-w-0 flex-1 bg-transparent md:h-full text-admin-body text-foreground outline-none placeholder:text-muted-foreground"
+        className="h-11 min-w-0 flex-1 bg-transparent md:h-auto text-admin-body text-foreground outline-none placeholder:text-muted-foreground"
       />
     </div>
   );
