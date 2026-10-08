@@ -131,6 +131,14 @@
   }
 }
 
+/* Slider value: 32/40 on every screen, unlike text-fact which drops to 24/30 on phones. */
+@utility text-slider-value {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 2rem;
+  line-height: 2.5rem;
+}
+
 @utility text-amount {
   font-family: var(--font-sans);
   font-weight: 300;

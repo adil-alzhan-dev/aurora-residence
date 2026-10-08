@@ -22,7 +22,7 @@ export function RangeField({ id, label, value, valueText, min, max, step, minTex
         <label htmlFor={id} className="text-label text-muted-foreground">
           {label}
         </label>
-        <output htmlFor={id} className="text-fact whitespace-nowrap text-foreground">
+        <output htmlFor={id} className="text-slider-value whitespace-nowrap text-foreground">
           {valueText}
         </output>
       </div>

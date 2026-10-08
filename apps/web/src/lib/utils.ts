@@ -7,7 +7,7 @@ const twMerge = extendTailwindMerge({
       "font-size": [
         {
           text: [
-            "display", "h1", "h2", "h3", "body-l", "body", "caption", "overline", "label", "stat", "fact", "amount",
+            "display", "h1", "h2", "h3", "body-l", "body", "caption", "overline", "label", "stat", "fact", "amount", "slider-value",
             "admin-title", "admin-section", "admin-body", "admin-strong", "admin-stat", "admin-caption",
           ],
         },
