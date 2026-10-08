@@ -1,11 +1,12 @@
 import { ConflictException, HttpStatus } from '@nestjs/common';
 import { ApiError } from '../common/api-error.js';
 import { ERROR_CODES } from '../common/error-codes.js';
-import type { Prisma } from '../generated/prisma/client.js';
+import { Prisma } from '../generated/prisma/client.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 
 export const RESERVATION_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_ATTEMPTS = 3;
 
 export type Tx = Prisma.TransactionClient;
 
@@ -29,6 +30,29 @@ export async function lockResidence(tx: Tx, number: string): Promise<StatusChang
     SELECT id, number, status FROM "Residence" WHERE number = ${number} FOR UPDATE`;
   if (!residence) throw new ApiError(HttpStatus.NOT_FOUND, ERROR_CODES.RESIDENCE_NOT_FOUND, `Residence ${number} not found`);
   return residence;
+}
+
+/**
+ * Runs a whole transaction again when PostgreSQL aborted it over a deadlock or a
+ * write conflict. Rerunning is safe because the aborted attempt wrote nothing.
+ */
+export async function withConflictRetry<T>(run: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await run();
+    } catch (error) {
+      if (!isWriteConflict(error) || attempt >= MAX_ATTEMPTS) throw error;
+    }
+  }
+}
+
+// Prisma reports it as P2034 from model queries, but as P2010 from $queryRaw
+// (lockResidence), where only the driver adapter's cause tells what happened.
+function isWriteConflict(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code === 'P2034') return true;
+  const cause = (error.meta?.driverAdapterError as { cause?: { kind?: unknown } } | undefined)?.cause;
+  return cause?.kind === 'TransactionWriteConflict';
 }
 
 /**

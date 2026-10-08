@@ -1,10 +1,10 @@
-import { BadRequestException, ConflictException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../common/api-error.js';
 import { ERROR_CODES } from '../common/error-codes.js';
 import type { ResidenceStatus } from '../generated/prisma/enums.js';
 import { LiveService } from '../live/live.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { applyStatusChange, defaultStatusNote, lockResidence, type Tx } from './status-change.js';
+import { applyStatusChange, defaultStatusNote, lockResidence, type Tx, withConflictRetry } from './status-change.js';
 
 const EXPIRED_NOTE = 'Reservation ended after 7 days without a deal';
 
@@ -94,44 +94,55 @@ export class ReservationsService {
     if (enquiry?.status === 'NEW') await startEnquiry(tx, enquiry.id, request.actorId);
   }
 
+  /**
+   * Each residence gets its own transaction, so one failure is logged and the rest
+   * of the batch still goes through; the next cron tick picks the failed one up.
+   */
   async releaseExpired(now = new Date()): Promise<number> {
     const expired = await this.prisma.reservation.findMany({
       where: { releasedAt: null, endsAt: { lte: now }, residence: { status: 'RESERVED' } },
-      select: {
-        id: true,
-        enquiryId: true,
-        residence: { select: { id: true, number: true, status: true } },
-      },
+      select: { id: true, residence: { select: { number: true } } },
     });
     let released = 0;
-    for (const { id, enquiryId, residence } of expired) {
+    for (const { id, residence } of expired) {
       try {
-        const done = await this.prisma.$transaction(async (tx) => {
-          // Claim this exact reservation first so a newer one is never released by mistake.
-          const claimed = await tx.reservation.updateMany({
-            where: { id, releasedAt: null },
-            data: { releasedAt: now },
-          });
-          if (claimed.count === 0) return false;
-          await applyStatusChange(tx, {
-            residence,
-            to: 'AVAILABLE',
-            actorId: null,
-            enquiryId,
-            note: EXPIRED_NOTE,
-            now,
-          });
-          return true;
-        });
-        if (!done) continue;
+        if (!(await withConflictRetry(() => this.releaseOneExpired(id, residence.number, now)))) continue;
         released += 1;
         await this.live.residenceUpdated(residence.number);
       } catch (error) {
-        if (!(error instanceof ConflictException)) throw error;
-        this.logger.warn(`Residence ${residence.number} changed while releasing, skipped`);
+        this.logger.error(
+          `Could not release expired reservation ${id} of residence ${residence.number}`,
+          error instanceof Error ? error.stack : String(error),
+        );
       }
     }
     return released;
+  }
+
+  /**
+   * Residence first, then reservation: the same lock order as reserve, release and
+   * sale, so expiry cannot deadlock with them. The list was read before the lock,
+   * so the reservation and the status are checked again under it.
+   */
+  private releaseOneExpired(reservationId: number, number: string, now: Date): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      const residence = await lockResidence(tx, number);
+      if (residence.status !== 'RESERVED') return false;
+      const reservation = await tx.reservation.findFirst({
+        where: { id: reservationId, residenceId: residence.id, releasedAt: null, endsAt: { lte: now } },
+        select: { enquiryId: true },
+      });
+      if (!reservation) return false;
+      await applyStatusChange(tx, {
+        residence,
+        to: 'AVAILABLE',
+        actorId: null,
+        enquiryId: reservation.enquiryId,
+        note: EXPIRED_NOTE,
+        now,
+      });
+      return true;
+    });
   }
 
   async state(number: string): Promise<ResidenceReservationState> {
