@@ -18,6 +18,8 @@ type FacadeRenderProps = {
   dayAlt?: string;
   /** The render is the first screen of the page. */
   preload?: boolean;
+  /** Below the fold and hidden until its reveal: wait for the page to load like a hidden layer. */
+  afterLoad?: boolean;
 };
 
 type FacadeLayerProps = {
@@ -26,10 +28,11 @@ type FacadeLayerProps = {
   sizes: string;
   visible: boolean;
   preload: boolean;
+  afterLoad: boolean;
 };
 
-function FacadeLayer({ time, alt, sizes, visible, preload }: FacadeLayerProps) {
-  if (!useDeferredLayer(visible)) return null;
+function FacadeLayer({ time, alt, sizes, visible, preload, afterLoad }: FacadeLayerProps) {
+  if (!useDeferredLayer(visible && !afterLoad)) return null;
   return (
     <Image
       src={sources[time]}
@@ -47,7 +50,7 @@ function FacadeLayer({ time, alt, sizes, visible, preload }: FacadeLayerProps) {
 }
 
 /** Both renders share the same geometry to the pixel, so the overlay never moves when they crossfade. */
-export function FacadeRender({ time, alt, sizes, dayAlt, preload = false }: FacadeRenderProps) {
+export function FacadeRender({ time, alt, sizes, dayAlt, preload = false, afterLoad = false }: FacadeRenderProps) {
   const layers: { time: TimeOfDay; alt: string }[] = dayAlt
     ? [
         { time: "day", alt: dayAlt },
@@ -63,6 +66,7 @@ export function FacadeRender({ time, alt, sizes, dayAlt, preload = false }: Faca
       sizes={sizes}
       visible={layer.time === time || layers.length === 1}
       preload={preload}
+      afterLoad={afterLoad}
     />
   ));
 }

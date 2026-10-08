@@ -56,6 +56,7 @@ export function FacadeExplorer({ floors, t }: FacadeExplorerProps) {
             time="evening"
             alt={picker.facadeAlt}
             sizes="(min-width: 1024px) min(100vw, 1440px), 182vw"
+            afterLoad
           />
           <div className="absolute inset-0 hidden facade-shade lg:block" />
           <FloorRuler active={active} />
