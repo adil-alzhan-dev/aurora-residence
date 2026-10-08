@@ -9,12 +9,15 @@ type CurrencyContextValue = {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   formatPrice: (amountUsd: number) => string;
+  /** Currency, rates and locale for helpers that need more than formatPrice, such as the price filter. */
+  money: MoneySettings;
 };
 
 const CurrencyContext = createContext<CurrencyContextValue>({
   currency: DEFAULT_CURRENCY,
   setCurrency: () => undefined,
   formatPrice: (amountUsd) => formatMoney(amountUsd, { currency: DEFAULT_CURRENCY, rates: {} }),
+  money: { currency: DEFAULT_CURRENCY, rates: {} },
 });
 
 type CurrencyProviderProps = {
@@ -32,14 +35,10 @@ export function CurrencyProvider({ initial, children }: CurrencyProviderProps) {
     setCurrencyState(next);
   }, []);
 
-  const value = useMemo<CurrencyContextValue>(
-    () => ({
-      currency,
-      setCurrency,
-      formatPrice: (amountUsd) => formatMoney(amountUsd, { currency, rates, locale }),
-    }),
-    [currency, setCurrency, rates, locale],
-  );
+  const value = useMemo<CurrencyContextValue>(() => {
+    const money = { currency, rates, locale };
+    return { currency, setCurrency, money, formatPrice: (amountUsd) => formatMoney(amountUsd, money) };
+  }, [currency, setCurrency, rates, locale]);
 
   return <CurrencyContext value={value}>{children}</CurrencyContext>;
 }

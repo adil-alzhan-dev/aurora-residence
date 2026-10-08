@@ -7,7 +7,8 @@ import { Button, ButtonArrow } from "@/components/ui/button";
 import type { Dictionary } from "@/content";
 import type { Residence, ResidenceStatus } from "@/lib/api/residences";
 import { fillTemplate } from "@/lib/format";
-import type { FormatPrice } from "@/lib/money";
+import { formatMoney, type MoneySettings } from "@/lib/money";
+import { formatMaxPrice } from "@/lib/price-filter";
 import type { ResidenceFilters } from "@/lib/residence-filters";
 import { cn } from "@/lib/utils";
 
@@ -36,19 +37,22 @@ function describeFilters(
   filters: ResidenceFilters,
   range: PriceRange | null,
   t: GridSummaryProps["t"],
-  formatPrice: FormatPrice,
+  money: MoneySettings,
 ) {
   const type = filters.bedrooms === null ? t.grid.anyType : t.floorPage.typeNames[filters.bedrooms];
   const floor = filters.floor === null ? t.grid.anyFloor : fillTemplate(t.grid.floorNumber, { floor: filters.floor });
   const price = range
-    ? fillTemplate(t.filters.priceRange, { min: formatPrice(range.min), max: formatPrice(filters.maxPrice ?? range.max) })
+    ? fillTemplate(t.filters.priceRange, {
+        min: formatMoney(range.min, money),
+        max: filters.maxPrice === null ? formatMoney(range.max, money) : formatMaxPrice(filters.maxPrice, money),
+      })
     : t.filters.anyPrice;
   return fillTemplate(t.grid.filtersText, { type: type ?? t.grid.anyType, floor, price });
 }
 
 /** Right column of the Floor grid frame: the whole house by status, then the result of the filters. */
 export function GridSummary({ residences, matching, filters, priceRange, listHref, t }: GridSummaryProps) {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, money } = useCurrency();
   const counts = statuses.map((status) => ({
     status,
     count: residences.filter((residence) => residence.status === status).length,
@@ -93,7 +97,7 @@ export function GridSummary({ residences, matching, filters, priceRange, listHre
       </div>
       <div className="flex flex-col gap-2 pt-4">
         <p className="text-overline text-primary">{t.grid.yourFilters}</p>
-        <p className="text-body text-muted-foreground">{describeFilters(filters, priceRange, t, formatPrice)}</p>
+        <p className="text-body text-muted-foreground">{describeFilters(filters, priceRange, t, money)}</p>
       </div>
       <dl>
         {filterStats.map((stat) => (

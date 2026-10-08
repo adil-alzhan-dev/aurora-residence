@@ -6,8 +6,9 @@ import { Switcher, type SwitcherOption } from "@/components/ui/switcher";
 import type { Dictionary } from "@/content";
 import { floorNumbers } from "@/lib/building";
 import { fillTemplate } from "@/lib/format";
-import type { FormatPrice } from "@/lib/money";
-import { bedroomOptions, maxPriceOptions, type ResidenceFilters } from "@/lib/residence-filters";
+import { formatAmount, formatMoney, type MoneySettings } from "@/lib/money";
+import { maxPriceChoices } from "@/lib/price-filter";
+import { bedroomOptions, type ResidenceFilters } from "@/lib/residence-filters";
 import { cn } from "@/lib/utils";
 
 export type PriceRange = { min: number; max: number };
@@ -29,20 +30,21 @@ function priceOptions(
   current: number | null,
   range: PriceRange | null,
   t: Dictionary["filters"],
-  formatPrice: FormatPrice,
+  money: MoneySettings,
 ): SelectOption[] {
-  const label = (max: number) =>
-    range ? fillTemplate(t.priceRange, { min: formatPrice(range.min), max: formatPrice(max) }) : formatPrice(max);
-  const limits = new Set<number>(maxPriceOptions.filter((limit) => !range || limit > range.min));
-  if (current !== null) limits.add(current);
+  const label = (amount: string) =>
+    range ? fillTemplate(t.priceRange, { min: formatMoney(range.min, money), max: amount }) : amount;
   return [
-    { value: ANY, label: range ? label(range.max) : t.anyPrice },
-    ...[...limits].sort((a, b) => a - b).map((limit) => ({ value: String(limit), label: label(limit) })),
+    { value: ANY, label: range ? label(formatMoney(range.max, money)) : t.anyPrice },
+    ...maxPriceChoices(current, money, range?.min ?? null).map((option) => ({
+      value: String(option.usd),
+      label: label(formatAmount(option.amount, money)),
+    })),
   ];
 }
 
 export function FilterFields({ filters, priceRange, onChange, t, idPrefix, className }: FilterFieldsProps) {
-  const { currency, formatPrice } = useCurrency();
+  const { currency, money } = useCurrency();
   const bedrooms: SwitcherOption<string>[] = [
     { value: ANY, label: t.bedroomsAll },
     ...bedroomOptions.map((count) => ({ value: String(count), label: t.bedroomOptions[count] })),
@@ -70,7 +72,7 @@ export function FilterFields({ filters, priceRange, onChange, t, idPrefix, class
         id={`${idPrefix}-price`}
         label={fillTemplate(t.price, { currency })}
         value={filters.maxPrice === null ? ANY : String(filters.maxPrice)}
-        options={priceOptions(filters.maxPrice, priceRange, t, formatPrice)}
+        options={priceOptions(filters.maxPrice, priceRange, t, money)}
         onValueChange={(value) => onChange({ maxPrice: toNumber(value) })}
         className="lg:w-[280px]"
       />

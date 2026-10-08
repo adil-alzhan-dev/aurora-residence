@@ -14,8 +14,6 @@ export const emptyFilters: ResidenceFilters = { bedrooms: null, maxPrice: null, 
 
 export const bedroomOptions = [0, 1, 2, 3] as const;
 
-export const maxPriceOptions = [150_000, 200_000, 250_000, 300_000, 400_000] as const;
-
 const firstValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
 const filterParam = (schema: z.ZodNumber) =>

@@ -31,11 +31,22 @@ export function convertUsd(amountUsd: number, settings: MoneySettings) {
   return Math.round(amountUsd * rate);
 }
 
-export function formatMoney(amountUsd: number, settings: MoneySettings) {
+/** The way back to dollars for amounts typed or picked in the display currency, rounded to the dollar. */
+export function toUsd(amount: number, settings: MoneySettings) {
+  const rate = settings.rates[displayCurrency(settings)] ?? 1;
+  return Math.round(amount / rate);
+}
+
+/** Formats an amount that is already in the display currency. */
+export function formatAmount(amount: number, settings: MoneySettings) {
   return new Intl.NumberFormat(settings.locale ?? "en-US", {
     style: "currency",
     currency: displayCurrency(settings),
     currencyDisplay: "narrowSymbol",
     maximumFractionDigits: 0,
-  }).format(convertUsd(amountUsd, settings));
+  }).format(amount);
+}
+
+export function formatMoney(amountUsd: number, settings: MoneySettings) {
+  return formatAmount(convertUsd(amountUsd, settings), settings);
 }
