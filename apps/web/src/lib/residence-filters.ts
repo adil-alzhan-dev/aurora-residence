@@ -1,4 +1,5 @@
-import { z } from "zod";
+// zod/mini: the filter helpers below run in the browser too.
+import * as z from "zod/mini";
 
 import type { FloorSummary } from "./api/floors";
 import type { Residence } from "./api/residences";
@@ -16,13 +17,13 @@ export const bedroomOptions = [0, 1, 2, 3] as const;
 
 const firstValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
-const filterParam = (schema: z.ZodNumber) =>
-  z.preprocess(firstValue, z.coerce.number().pipe(schema)).nullable().catch(null);
+const filterParam = (schema: z.ZodMiniNumber<number>) =>
+  z.catch(z.nullable(z.pipe(z.transform(firstValue), z.pipe(z.coerce.number(), schema))), null);
 
 const filtersSchema = z.object({
-  bedrooms: filterParam(z.number().int().min(0).max(3)),
-  maxPrice: filterParam(z.number().int().positive()),
-  floor: filterParam(z.number().int().min(1).max(FLOOR_COUNT)),
+  bedrooms: filterParam(z.int().check(z.minimum(0), z.maximum(3))),
+  maxPrice: filterParam(z.int().check(z.positive())),
+  floor: filterParam(z.int().check(z.minimum(1), z.maximum(FLOOR_COUNT))),
 });
 
 type SearchParams = Record<string, string | string[] | undefined>;

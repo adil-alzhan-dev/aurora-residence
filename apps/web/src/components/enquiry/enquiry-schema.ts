@@ -1,4 +1,5 @@
-import { z } from "zod";
+// zod/mini keeps the enquiry forms light; checks run in the same order as the API DTO.
+import * as z from "zod/mini";
 
 const MIN_PHONE_DIGITS = 7;
 const MAX_PHONE_DIGITS = 15;
@@ -23,27 +24,26 @@ type EnquiryErrors = {
 export function createEnquirySchema(errors: EnquiryErrors) {
   return z
     .object({
-      name: z.string().trim().min(2, { error: errors.name }).max(80, { error: errors.name }),
-      code: z.string().regex(/^\+\d{1,4}$/, { error: errors.code }),
-      phone: z
-        .string()
-        .trim()
-        .regex(/^[\d\s()-]+$/, { error: errors.phone }),
-      email: z.string().trim().max(254, { error: errors.email }).pipe(z.email({ error: errors.email })),
-      comment: z.string().trim().max(MAX_COMMENT_LENGTH, { error: errors.comment }).optional(),
-      consent: z
-        .boolean()
-        .optional()
-        .refine((consent) => consent === true, { error: errors.consent }),
-      website: z.string().max(500).optional(),
+      name: z.string().check(z.trim(), z.minLength(2, { error: errors.name }), z.maxLength(80, { error: errors.name })),
+      code: z.string().check(z.regex(/^\+\d{1,4}$/, { error: errors.code })),
+      phone: z.string().check(z.trim(), z.regex(/^[\d\s()-]+$/, { error: errors.phone })),
+      email: z.pipe(
+        z.string().check(z.trim(), z.maxLength(254, { error: errors.email })),
+        z.email({ error: errors.email }),
+      ),
+      comment: z.optional(z.string().check(z.trim(), z.maxLength(MAX_COMMENT_LENGTH, { error: errors.comment }))),
+      consent: z.optional(z.boolean()).check(z.refine((consent) => consent === true, { error: errors.consent })),
+      website: z.optional(z.string().check(z.maxLength(500))),
     })
-    .refine(
-      ({ code, phone }) => {
-        const fullPhone = toFullPhone(code, phone);
-        const digits = countDigits(fullPhone);
-        return digits >= MIN_PHONE_DIGITS && digits <= MAX_PHONE_DIGITS && fullPhone.length <= MAX_PHONE_LENGTH;
-      },
-      { path: ["phone"], error: errors.phone },
+    .check(
+      z.refine(
+        ({ code, phone }) => {
+          const fullPhone = toFullPhone(code, phone);
+          const digits = countDigits(fullPhone);
+          return digits >= MIN_PHONE_DIGITS && digits <= MAX_PHONE_DIGITS && fullPhone.length <= MAX_PHONE_LENGTH;
+        },
+        { path: ["phone"], error: errors.phone },
+      ),
     );
 }
 

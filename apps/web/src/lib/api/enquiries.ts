@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import type { Dictionary } from "@/content";
 
@@ -40,10 +40,10 @@ export type EnquiryResult =
   | { kind: "refused"; text: EnquiryErrorText }
   | { kind: "failed" };
 
-const receiptSchema = z.object({ residence: z.string().nullable() });
+const receiptSchema = z.object({ residence: z.nullable(z.string()) });
 const errorSchema = z.object({
-  code: z.string().optional(),
-  errors: z.record(z.string(), z.string()).optional(),
+  code: z.optional(z.string()),
+  errors: z.optional(z.record(z.string(), z.string())),
 });
 
 /** The form's text for a refusal: by its code, else by the status; null means the general text. */
