@@ -1,38 +1,78 @@
 # Aurora Residence
 
-Portfolio project: the website of Aurora Residence, a fictional residential
-complex by Meridian Group. Visitors pick a residence on an interactive facade,
-floor plan or grid and send an enquiry; the sales team works with residences
-and enquiries in an admin panel. Status and price changes reach every open
-page in real time.
+Residential complex website with an interactive apartment selector and a sales
+admin panel, built for the fictional developer Meridian Group.
 
-The building has 11 residential floors with 6 residences each (66 in total):
-studios, one-, two- and three-bedroom residences and two penthouses with
-terraces on the top floor.
+## Highlights
 
-## Stack
+- Pick a residence on the building facade, on a floor plan, in a floor grid or
+  in a list with filters (bedrooms, price, floor). Filters live in the URL.
+- Live status: when a manager reserves or sells a residence in the admin panel,
+  the facade, floor plan and residence page update without a reload
+  (WebSocket).
+- English and Russian, prices in USD, EUR or KZT.
+- Instalment calculator on every residence page (0%, 10-70% down payment,
+  6-60 months).
+- Admin panel for the sales team: dashboard, residences, enquiries and 7-day
+  reservations that are released automatically. Works on a phone.
+- Lighthouse mobile performance 93-94, no layout shift.
+
+## Screenshots
+
+Home page
+
+![Home page](docs/screenshots/home.png)
+
+Facade selector
+
+![Facade selector](docs/screenshots/facade.png)
+
+Floor plan
+
+![Floor plan](docs/screenshots/floor.png)
+
+Residence page
+
+![Residence page](docs/screenshots/residence.png)
+
+Admin dashboard
+
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
+
+Mobile
+
+<img src="docs/screenshots/mobile.png" alt="Home page on a phone" width="390">
+
+## Tech stack
 
 - Web: Next.js 16 (App Router), TypeScript, Tailwind CSS v4
-- API: NestJS 11, TypeScript, Prisma 7 with the `pg` driver adapter
+- API: NestJS 11, TypeScript, Prisma 7
 - Database: PostgreSQL 16
-- Runtime: Docker Compose with nginx as the single entry point
+- Runtime: Docker Compose, nginx as the single entry point
 
-## Structure
+## Architecture
 
 ```
 apps/
-  api/            NestJS API
-    prisma/       schema, migrations and the demo seed
-    src/          application modules
-  web/            Next.js site and admin panel
-nginx/            reverse proxy config
-docker-compose.yml
+  api/      NestJS API, Prisma schema, migrations and the demo seed
+  web/      Next.js site and admin panel
+nginx/      reverse proxy config
 ```
 
-nginx routes `/` to the web app, `/api` to the API and `/socket` to the API
-with WebSocket upgrade headers.
+- nginx is the only public service (port 80): `/` goes to the web app, `/api`
+  to the API, `/socket` to the API with WebSocket upgrade.
+- The web app renders pages on the server and reads data from the API over the
+  internal Compose network.
+- The API owns all data in PostgreSQL. Every status change is written to the
+  residence history and, after the transaction commits, broadcast to open pages
+  through `/socket`.
+- A job in the API releases expired reservations every minute.
+- Admin auth: 15-minute JWT access token, refresh token in an httpOnly cookie,
+  sessions stored in the database, sign-in rate limits by email and by IP.
 
-## Run with Docker
+## Run locally
+
+Requirements: Docker with Docker Compose.
 
 ```bash
 cp .env.example .env
@@ -40,50 +80,65 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Open http://localhost. API health check: http://localhost/api/health.
+Open http://localhost (use `localhost`, not `127.0.0.1`: the live socket only
+accepts origins from `WS_ALLOWED_ORIGINS`). API health check:
+http://localhost/api/health.
 
-On start the API container applies migrations and seeds the demo data if the
-database is empty.
+On start the API applies migrations and seeds the demo data if the database is
+empty.
 
-## API
+Demo login at http://localhost/admin:
 
-All routes are under `/api`. Public: `GET /residences`, `GET /residences/:number`,
-`GET /floors`, `GET /floors/:n`, `GET /rates`, `POST /enquiries`. Sign-in:
-`POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `GET /auth/me`.
-Admin (Bearer access token): `/admin/dashboard`, `/admin/residences`,
-`/admin/residences/:number/reserve|release`, `/admin/enquiries`.
+- Email: `maya.collins@aurora-residence.com`
+- Password: the `ADMIN_PASSWORD` value from your `.env`
 
-The access token lives 15 minutes and is sent as `Authorization: Bearer`; the
-refresh token is an httpOnly cookie limited to `/api/auth`. Every access token
-belongs to a session row in the database, and admin routes check that session
-on each request, so logout signs the device out at once.
+Reset demo data (dates are relative to the day of seeding):
 
-Sign-in limits are stored in PostgreSQL and work across restarts and several
-API instances: 5 failed attempts for one email (from any IP) pause sign-in for
-that email for 15 minutes, and 20 failed attempts from one IP (for any emails)
-pause that IP for 15 minutes. A wrong email and a wrong password get the same
-answer.
+```bash
+docker compose exec api node dist/prisma/seed.js
+```
 
-A residence is reserved only with `POST /admin/residences/:number/reserve` and
-an enquiry about that residence. `PATCH /admin/residences/:number` accepts the
-status `AVAILABLE` or `SOLD`: from Reserved it releases or closes the
-reservation. Every change is written to the residence history. Reservations
-last 7 days and are released automatically by a job that runs every minute.
+### Development without Docker for the apps
 
-## HTTP and HTTPS
+Requirements: Node.js 20.19+ and pnpm 10 (`corepack enable`).
 
-`HTTPS_ENABLED` in `.env` switches on everything that needs https: the `Secure`
-flag on the refresh cookie and the HSTS header. It is `false` by default, so the
-production build works on http://localhost, for example when showing the
-project from a laptop. Set it to `true` only when the site is served over https,
-otherwise browsers drop the cookie and the session cannot be refreshed. For a
-public server follow the Deploy section: never publish the admin over plain
-http.
+```bash
+pnpm install
+
+# PostgreSQL from Compose on localhost:5432 (POSTGRES_DEV_PORT in .env to change)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+
+# API env: same values as .env, but DATABASE_URL points to localhost
+cp .env apps/api/.env
+
+pnpm --filter api exec prisma migrate deploy
+pnpm --filter api db:seed
+pnpm --filter api start:dev    # http://localhost:4000/api/health
+pnpm --filter web dev          # http://localhost:3000
+```
+
+## Tests
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm --filter web test
+pnpm --filter api test
+```
+
+`pnpm --filter api test` needs only Docker: it starts a throwaway PostgreSQL
+from `docker-compose.test.yml` on `127.0.0.1:5443`, runs the unit and
+end-to-end tests and removes the database. It does not touch the main stack.
+If the port is taken: `TEST_POSTGRES_PORT=5444 pnpm --filter api test`.
 
 ## Deploy
 
-The stack runs on any VPS with Docker. TLS ends at the nginx container, the
-API and the web app stay on the internal Compose network.
+HTTPS is required on a public server: never publish the admin panel over plain
+http. The stack runs on any VPS with Docker. TLS ends at the nginx container,
+the API and the web app stay on the internal Compose network.
+
+`HTTPS_ENABLED` in `.env` switches on the `Secure` flag on the refresh cookie
+and the HSTS header. Keep it `false` only for http://localhost.
 
 1. Point the domain (for example `aurora.example.com`) to the server and open
    ports 80 and 443.
@@ -110,8 +165,8 @@ API and the web app stay on the internal Compose network.
    ```
 
    `nginx/https.conf` is `nginx/default.conf` with these changes: the port 80
-   server only redirects, and the existing `location` blocks move to a 443
-   server.
+   server only redirects, and the existing `location` blocks and `error_page`
+   move to a 443 server.
 
    ```nginx
    server {
@@ -155,71 +210,6 @@ sign-in limits. If another proxy or a CDN is put in front of nginx, change
 `trust proxy` in `apps/api/src/app.setup.ts` to match, otherwise all visitors
 share one IP limit.
 
-## Demo login
+## Note
 
-- Email: `maya.collins@aurora-residence.com` (the `ADMIN_EMAIL` value)
-- Password: the `ADMIN_PASSWORD` value from `.env`
-
-## Reset demo data
-
-Demo dates are relative to the day of seeding (the mockups use Oct 4, 2026 as
-"today"). To restore all demo residences, enquiries, reservations and history
-with fresh dates:
-
-```bash
-docker compose exec api node dist/prisma/seed.js
-```
-
-The seed is idempotent: residences and the admin are upserted, enquiries,
-reservations and the activity log are recreated in one transaction.
-
-## Local development
-
-Requirements: Node.js 20.19+ and pnpm 10 (`corepack enable`).
-
-```bash
-pnpm install
-
-# PostgreSQL from Compose, published on localhost:5432
-# (set POSTGRES_DEV_PORT in .env if that port is taken)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
-
-# API env: same values as .env, but DATABASE_URL points to localhost
-cp .env apps/api/.env
-# edit apps/api/.env: ...@localhost:5432/...
-
-pnpm --filter api exec prisma migrate deploy
-pnpm --filter api db:seed
-pnpm --filter api start:dev    # http://localhost:4000/api/health
-pnpm --filter web dev          # http://localhost:3000
-```
-
-## Tests
-
-```bash
-pnpm --filter api test
-```
-
-One command, only Docker is needed: it starts a throwaway PostgreSQL from
-`docker-compose.test.yml` (in memory, on `127.0.0.1:5443`), applies the
-migrations, runs the unit and end-to-end tests and removes the database, also
-when tests fail. It does not touch the main stack or its data. `pnpm test` in
-the root runs the same for the API. If port 5443 is taken:
-`TEST_POSTGRES_PORT=5444 pnpm --filter api test`.
-
-To run the tests against a database you already have, set `TEST_DATABASE_URL`
-(the name must end with `_test`) and run `pnpm --filter api test:run`.
-
-## Checks
-
-Across the workspace:
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-New database changes go through migrations: edit
-`apps/api/prisma/schema.prisma`, then run `pnpm --filter api db:migrate`.
+All names, brands, people and data in this project are fictional.
