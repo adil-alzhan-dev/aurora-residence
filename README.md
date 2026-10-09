@@ -3,6 +3,10 @@
 Residential complex website with an interactive apartment selector and a sales
 admin panel, built for the fictional developer Meridian Group.
 
+![Live update demo](docs/demo-live.gif)
+
+Booking in the admin panel updates the site live, no reload.
+
 ## Highlights
 
 - Pick a residence on the building facade, on a floor plan, in a floor grid or
