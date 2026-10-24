@@ -217,3 +217,9 @@ share one IP limit.
 ## Note
 
 All names, brands, people and data in this project are fictional.
+
+## Author
+
+Adil Alzhan, GitHub [adil-alzhan-dev](https://github.com/adil-alzhan-dev)
+
+Copyright (c) 2026 Adil Alzhan. All rights reserved. The code is shared for portfolio review.
